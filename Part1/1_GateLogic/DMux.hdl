@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/01/DMux.hdl
 
 /**
  * Demultiplexor:
@@ -13,6 +12,10 @@ CHIP DMux {
     IN in, sel;
     OUT a, b;
 
+    // Implementation by Matt Buckley.
     PARTS:
-    // Put your code here:
+    Not(in=sel, out=Notsel);
+    And(a=in, b=Notsel, out=a);
+    And(a=in, b=sel, out=b);
+
 }
