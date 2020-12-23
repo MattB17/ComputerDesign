@@ -1,0 +1,33 @@
+// This file is a helper function
+// as part of www.nand2tetris.org
+// by Nisan and Schocken, MIT Press.
+// File name: Dup16.hdl
+
+/**
+ * 16-bit duplication
+ * for i=0..15: out[i] = in
+*/
+
+CHIP Dup16 {
+  IN in;
+  OUT out[16];
+
+  PARTS:
+  Not(in=in, out=Notin);
+  Not(in=Notin, out=out[0]);
+  Not(in=Notin, out=out[1]);
+  Not(in=Notin, out=out[2]);
+  Not(in=Notin, out=out[3]);
+  Not(in=Notin, out=out[4]);
+  Not(in=Notin, out=out[5]);
+  Not(in=Notin, out=out[6]);
+  Not(in=Notin, out=out[7]);
+  Not(in=Notin, out=out[8]);
+  Not(in=Notin, out=out[9]);
+  Not(in=Notin, out=out[10]);
+  Not(in=Notin, out=out[11]);
+  Not(in=Notin, out=out[12]);
+  Not(in=Notin, out=out[13]);
+  Not(in=Notin, out=out[14]);
+  Not(in=Notin, out=out[15]);
+}
