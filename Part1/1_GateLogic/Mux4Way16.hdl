@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/01/Mux4Way16.hdl
 
 /**
  * 4-way 16-bit multiplexor:
@@ -15,6 +14,9 @@ CHIP Mux4Way16 {
     IN a[16], b[16], c[16], d[16], sel[2];
     OUT out[16];
 
+    // Implementation by Matt Buckley.
     PARTS:
-    // Put your code here:
+    Mux16(a=a, b=b, sel=sel[0], out=aMuxb);
+    Mux16(a=c, b=d, sel=sel[0], out=cMuxd);
+    Mux16(a=aMuxb, b=cMuxd, sel=sel[1], out=out);
 }
