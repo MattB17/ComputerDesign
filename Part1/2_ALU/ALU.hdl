@@ -70,5 +70,18 @@ CHIP ALU {
     // a mux with out and !out. If no == 1 then
     // !out is output, otherwise out is output
     Not16(in=outTemp, out=notOutTemp);
-    Mux16(a=outTemp, b=notOutTemp, sel=no, out=out);
+    Mux16(a=outTemp, b=notOutTemp, sel=no, out=outFinal, out[15]=outFinalMSB);
+    Or16(a=outFinal, b[0]=false, out=out);
+
+    // if out == 0 then !out is all 1s so the most
+    // significant bit of !out is 1 and incrementing
+    // by 1 gives all 0s
+    Not16(in=outFinal, out=notOut, out[15]=notOutMSB);
+    Inc16(in=notOut, out=notOutInc, out[15]=notOutIncMSB);
+    Not(in=notOutIncMSB, out=incMSBNot);
+    And(a=notOutMSB, b=incMSBNot, out=zr);
+
+    // if out < 0 then its most significant bit
+    // is 1.
+    And(a=outFinalMSB, b=true, out=ng);
 }
