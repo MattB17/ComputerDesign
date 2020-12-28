@@ -1,13 +1,12 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/02/ALU.hdl
 
 /**
  * The ALU (Arithmetic Logic Unit).
  * Computes one of the following functions:
  * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
- * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs,
  * according to 6 input bits denoted zx,nx,zy,ny,f,no.
  * In addition, the ALU computes two 1-bit outputs:
  * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
@@ -27,8 +26,8 @@
 // if (out < 0) set ng = 1
 
 CHIP ALU {
-    IN  
-        x[16], y[16],  // 16-bit inputs        
+    IN
+        x[16], y[16],  // 16-bit inputs
         zx, // zero the x input?
         nx, // negate the x input?
         zy, // zero the y input?
@@ -36,11 +35,40 @@ CHIP ALU {
         f,  // compute out = x + y (if 1) or x & y (if 0)
         no; // negate the out output?
 
-    OUT 
+    OUT
         out[16], // 16-bit output
         zr, // 1 if (out == 0), 0 otherwise
         ng; // 1 if (out < 0),  0 otherwise
 
+    // Implementation by Matt Buckley
     PARTS:
-   // Put you code here:
+
+    // a mux with x and all 0s. If zx == 1 then
+    // all 0s is output, otherwise x is output
+    Mux16(a=x, b[0]=false, sel=zx, out=xZero);
+
+    // a mux with x and not x. If nx == 1 then
+    // not x is output, otherwise x is output
+    Not16(in=xZero, out=notxZero);
+    Mux16(a=xZero, b=notxZero, sel=nx, out=xFinal);
+
+    // a mux with y and all 0s. If zy == 1 then
+    // all 0s is output, otherwise y is output
+    Mux16(a=y, b[0]=false, sel=zy, out=yZero);
+
+    // a mux with y and not y. If ny == 1 then
+    // not y is output, otherwise y is output
+    Not16(in=yZero, out=notyZero);
+    Mux16(a=yZero, b=notyZero, sel=ny, out=yFinal);
+
+    // a mux with x&y and x+y. If f == 1 then
+    // x+y is output, otherwise x&y is output
+    And16(a=xFinal, b=yFinal, out=xAndy);
+    Add16(a=xFinal, b=yFinal, out=xAddy);
+    Mux16(a=xAndy, b=xAddy, sel=f, out=outTemp);
+
+    // a mux with out and !out. If no == 1 then
+    // !out is output, otherwise out is output
+    Not16(in=outTemp, out=notOutTemp);
+    Mux16(a=outTemp, b=notOutTemp, sel=no, out=out);
 }
