@@ -1,12 +1,11 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/03/b/RAM16K.hdl
 
 /**
  * Memory of 16K registers, each 16 bit-wide. Out holds the value
- * stored at the memory location specified by address. If load==1, then 
- * the in value is loaded into the memory location specified by address 
+ * stored at the memory location specified by address. If load==1, then
+ * the in value is loaded into the memory location specified by address
  * (the loaded value will be emitted to out from the next time step onward).
  */
 
@@ -14,6 +13,27 @@ CHIP RAM16K {
     IN in[16], load, address[14];
     OUT out[16];
 
+    // Implementation by Matt Buckley
     PARTS:
-    // Put your code here:
+    // Idea: 2 most significant bits of address refer to which RAM4K
+    // unit and the 12 least significant bits refer to the particular
+    // register within that RAM4K
+
+    // Use 4 way DMux to set the load bit to 0 for every
+    // RAM4K other than the RAM4K referred to by the 3 most
+    // significant bits of address
+    DMux4Way(in=load, sel=address[12..13], a=load0, b=load1, c=load2, d=load3);
+
+    // Then feed the input to the 4 RAM4K units with the
+    // individual load bits and the first 12 bits of address
+    RAM4K(in=in, load=load0, address=address[0..11], out=outA);
+    RAM4K(in=in, load=load1, address=address[0..11], out=outB);
+    RAM4K(in=in, load=load2, address=address[0..11], out=outC);
+    RAM4K(in=in, load=load3, address=address[0..11], out=outD);
+
+    // Lastly, use 16 bit 4 way Mux to select the output from the
+    // appropriate RAM4K unit based on the 2 most significant bits
+    // of address
+    Mux4Way16(a=outA, b=outB, c=outC, d=outD,
+              sel=address[12..13], out=out);
 }
