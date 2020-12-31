@@ -23,7 +23,7 @@ CHIP RAM64 {
     // RAM8 other than the RAM8 referred to by the 3 most
     // significant bits of address
     DMux8Way(in=load, sel=address[3..5], a=load0, b=load1, c=load2, d=load3,
-                                   e=load4, f=load5, g=load6, h=load7);
+                                         e=load4, f=load5, g=load6, h=load7);
 
     // Then feed the input to the 8 RAM8 units with the
     // individual load bits and the first 3 bits of address
