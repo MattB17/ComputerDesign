@@ -26,7 +26,7 @@ CHIP RAM512 {
                                          e=load4, f=load5, g=load6, h=load7);
 
     // Then feed the input to the 8 RAM8 units with the
-    // individual load bits and the first 3 bits of address
+    // individual load bits and the first 6 bits of address
     RAM64(in=in, load=load0, address=address[0..5], out=outA);
     RAM64(in=in, load=load1, address=address[0..5], out=outB);
     RAM64(in=in, load=load2, address=address[0..5], out=outC);
