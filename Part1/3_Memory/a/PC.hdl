@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/03/a/PC.hdl
 
 /**
  * A 16-bit counter with load and reset control bits.
@@ -15,6 +14,25 @@ CHIP PC {
     IN in[16],load,inc,reset;
     OUT out[16];
 
+    // Implementation by Matt Buckley
     PARTS:
-    // Put your code here:
+    // Resetting if reset is 1
+    Mux16(a=in, b[0]=false, sel=reset, out=in0);
+
+    // Only take the inc output if reset and load are 0 and
+    // inc is 1
+    Not(in=reset, out=notReset);
+    Not(in=load, out=notLoad);
+    And(a=notLoad, b=notReset, out=notLoadNotReset);
+    And(a=notLoadNotReset, b=inc, out=doInc);
+    Mux16(a=in0, b=incOut, sel=doInc, out=inFinal);
+
+    // for the register load a new value if any of reset, inc,
+    // or load is 1
+    Or(a=reset, b=load, out=loadOrReset);
+    Or(a=loadOrReset, b=inc, out=doLoad);
+    Register(in=inFinal, load=doLoad, out=registerOut, out=out);
+
+    // then increment output to feed into the Mux in the next clock cycle
+    Inc16(in=registerOut, out=incOut);
 }
