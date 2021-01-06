@@ -15,12 +15,65 @@
 // Pseudo Code
 //  LOOP:
 //    addr = SCREEN
-//    key = RAM[KBD]
 //    color = 0
-//    if key == 0 goto COLORSCREEN
+//    if RAM[KBD] == 0 goto COLORSCREEN
 //    color = -1
 //    COLORSCREEN:
 //      if addr >= 8192 + SCREEN goto LOOP
 //      RAM[addr] = color
 //      addr = addr + 1
 //      goto COLORSCREEN
+
+(LOOP)
+  // get the screen address and save it to addr variable
+  @SCREEN
+  D=A
+  @addr
+  M=D
+
+  // set color variable to 0 (default white)
+  @color
+  M=0
+
+  // get key pressed on keyboard
+  @KBD
+  D=M
+
+  // if no key pressed, don't update color
+  @COLORSCREEN
+  D;JEQ
+
+  // otherwise set color to black
+  @color
+  M=-1
+
+  // color the screen
+  (COLORSCREEN)
+    // check if addr >= 8192 + SCREEN
+    // and if so jump back to top of loop
+    @addr
+    D=M
+    @8192
+    D=D-A
+    @SCREEN
+    D=D-A
+    @LOOP
+    D;JGE
+
+    // save the current color into D
+    @color
+    D=M
+
+    // recover the current address, go to that address
+    // and set the register value to color
+    @addr
+    A=M
+    M=D
+
+    // increment addr
+    @addr
+    M=M+1
+
+    // return to top of COLORSCREEN loop
+    @COLORSCREEN
+    0;JMP
