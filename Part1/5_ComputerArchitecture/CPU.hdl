@@ -40,11 +40,15 @@ CHIP CPU {
     // Implementation by Matt Buckley
     PARTS:
     // Use Mux16 to decide whether to load instruction or previous ALU output
-    Mux16(a=instruction, b=ALUOut, sel=instruction[15], out=AIn);
+    Mux16(a=instruction, b=ALUOut, sel=instruction[15], out[0..14]=AIn);
 
     // Load data into A Register if it is an A instruction or the A register
     // bit is 1
     Not(in=instruction[15], out=isA);
     Or(a=isA, b=instruction[5], out=loadA);
-    ARegister(in=AIn, load=loadA, out=AOut, out[0..14]=addressM);
+    ARegister(in=AIn, load=loadA, out=AOut, out=addressM);
+
+    \\ we writeM is 1 if it is a C instruction and the third destination
+    \\ bit is 1
+    And(a=instruction[15], b=instruction[3], out=writeM);
 }
