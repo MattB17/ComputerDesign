@@ -38,17 +38,37 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     // Implementation by Matt Buckley
+    // A instructions have the form 0 <address> where <address> is a
+    // 15-bit address. C instructions have the form 111accccccdddjjj
     PARTS:
     // Use Mux16 to decide whether to load instruction or previous ALU output
-    Mux16(a=instruction, b=ALUOut, sel=instruction[15], out[0..14]=AIn);
+    Mux16(a=instruction, b=ALUOut, sel=instruction[15], out=AIn);
 
     // Load data into A Register if it is an A instruction or the A register
     // bit is 1
     Not(in=instruction[15], out=isA);
     Or(a=isA, b=instruction[5], out=loadA);
-    ARegister(in=AIn, load=loadA, out=AOut, out=addressM);
+    ARegister(in=AIn, load=loadA, out=AOut, out[0..14]=addressM);
 
-    \\ we writeM is 1 if it is a C instruction and the third destination
-    \\ bit is 1
+    // we writeM is 1 if it is a C instruction and the third destination
+    // bit is 1
     And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Use a Mux16 to decide on the y value for the ALU. If the a bit in
+    // c instruction is 1 then we load inM, otherwise, we load the value
+    // in the A register
+    And(a=instruction[15], b=instruction[12], out=loadIn);
+    Mux16(a=AOut, b=inM, sel=loadIn, out=yALU);
+
+    // D register is loaded if instruction is a C instruction and
+    // the second d bit in instruction is 1
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=ALUOut, load=loadD, out=xALU);
+
+    // the ALU. If instruction is a C instruction then the 6 c bits are
+    // the control bits of the ALU. If instruction is an A instruction
+    // the ALU output does not matter so we just use the 6 c bits anyway
+    ALU(x=xALU, y=yALU, zx=instruction[11], nx=instruction[10],
+        zy=instruction[9], ny=instruction[8], f=instruction[7],
+        no=instruction[6], out=ALUOut, out=outM, zr=zr, ng=ng);
 }
