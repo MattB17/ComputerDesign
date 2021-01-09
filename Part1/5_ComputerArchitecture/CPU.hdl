@@ -71,4 +71,32 @@ CHIP CPU {
     ALU(x=xALU, y=yALU, zx=instruction[11], nx=instruction[10],
         zy=instruction[9], ny=instruction[8], f=instruction[7],
         no=instruction[6], out=ALUOut, out=outM, zr=zr, ng=ng);
+
+    // Implementing Program Counter. PC has the following logic:
+    // If reset == 1, PC = 0. If load == 1, PC = address from A register.
+    // otherwise, increment PC. Thus inc is always 1 (as it is only used
+    // if both the reset and load bits are 0. Reset comes
+    // directly from the input
+
+    // We now construct the load bit. We start by making a bit isPos
+    // which signals that the output of the ALU is positive
+    Not(in=ng, out=NotNg);
+    Not(in=zr, out=NotZr);
+    And(a=NotNg, b=NotZr, out=isPos);
+
+    // Now to decide if a jump needs to occur we use the three j bits.
+    // If the output is negative and the first j bit is 1, or the output
+    // is zero and the second j bit is 1, or the output is positive and
+    // the third j bit is 1 then we jump
+    And(a=ng, b=instruction[2], out=jmpNg);
+    And(a=zr, b=instruction[1], out=jmpZr);
+    And(a=isPos, b=instruction[0], out=jmpPos);
+
+    // so we take the Or of those three conditions, but we only jump
+    // in the case of a C instruction
+    Or(a=jmpNg, b=jmpZr, out=jmpNonPos);
+    Or(a=jmpNonPos, b=jmpPos, out=jmpC);
+    And(a=instruction[15], b=jmpC, out=jmp);
+
+    PC(in=AOut, load=jmp, inc=true, reset=reset, out[0..14]=pc);
 }
