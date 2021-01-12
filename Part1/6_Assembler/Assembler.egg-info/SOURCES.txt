@@ -1,0 +1,8 @@
+setup.cfg
+setup.py
+Assembler/Parser.py
+Assembler/__init__.py
+Assembler.egg-info/PKG-INFO
+Assembler.egg-info/SOURCES.txt
+Assembler.egg-info/dependency_links.txt
+Assembler.egg-info/top_level.txt

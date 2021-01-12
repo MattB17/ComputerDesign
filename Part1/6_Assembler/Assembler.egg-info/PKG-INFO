@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: Assembler
+Version: 0.1.0
+Summary: Hack Assembler
+Home-page: https://github.com/MattB17/SystemDesign/tree/main/Part1/6_Assembler/Assembler
+Author: Matt Buckley
+Author-email: matt.buckley1755@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
