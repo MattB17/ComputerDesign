@@ -41,8 +41,28 @@ class Parser:
         None
 
         """
-        with open(self._file_path, 'r') as assembly_file:
-            self._file = assembly_file
+        self._file = open(self._file_path, 'r')
+
+    def get_next_assembly_line(self):
+        """Retrieves the next assembly line from the file being parsed.
+
+        Only the next valid assembly line corresponding to assembly code
+        is retrieved. All empty lines or comment lines are skipped.
+
+        Returns
+        -------
+        str
+            A string corresponding to the next valid line of assembly
+            code from the file being parsed.
+
+        """
+        while True:
+            line = self._file.readline()
+            if line == "":
+                return None
+            line = line.strip()
+            if line and line != "" and line[:2] != "//":
+                return line
 
     def close_file(self):
         """Closes the assembly file.
