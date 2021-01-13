@@ -1,4 +1,5 @@
-"""A container class holding the contents of an A-instruction.
+"""A container class holding the contents of an A-instruction used to convert
+to the binary equivalent instruction.
 
 """
 
