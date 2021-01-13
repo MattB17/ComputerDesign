@@ -2,6 +2,8 @@
 convert to the binary-equivalent instruction.
 
 """
+from Assembler import specs
+from Assembler.utils import fix_comp_component
 
 
 class CInstruction:
@@ -73,3 +75,65 @@ class CInstruction:
 
         """
         return self._jump
+
+    def _dest_to_binary(self):
+        """Converts the destination component to binary.
+
+        Returns
+        -------
+        str
+            A 3-element binary string representing the destination
+            for the C-instruction.
+
+        """
+        if not self._dest:
+            return "000"
+        return (str(int(self._dest.find("A") > -1)) +
+                str(int(self._dest.find("D") > -1)) +
+                str(int(self._dest.find("M") > -1)))
+
+    def _jump_to_binary(self):
+        """Converts the jump component to binary.
+
+        Returns
+        -------
+        str
+            A 3-element binary string representing the jump condition
+            for the C-instruction.
+
+        """
+        if not self._jump:
+            return "000"
+        return specs.JUMP_DICT[self._jump]
+
+    def _comp_to_binary(self):
+        """Converts the computation component to binary.
+
+        Returns
+        -------
+        str
+            A 7-element binary string representing the computation
+            for the C-instruction.
+
+        """
+        a_bit = "0"
+        m_pos = self._comp.find("M")
+        comp_str = self._comp
+        if m_pos > -1:
+            a_bit = "1"
+            comp_str = self._comp.replace("M", "A")
+        return "{0}{1}".format(a_bit,
+                               specs.COMP_DICT[fix_comp_component(comp_str)])
+
+    def get_binary_instruction(self):
+        """Retrieves the 16-bit binary representation of the instruction.
+
+        Returns
+        -------
+        str
+            The 16-bit binary string representation of the C-instruction.
+
+        """
+        return "111{0}{1}{2}".format(self._comp_to_binary(),
+                                     self._dest_to_binary(),
+                                     self._jump_to_binary())
