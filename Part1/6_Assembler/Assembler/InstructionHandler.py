@@ -4,6 +4,8 @@ instruction.
 
 """
 from Assembler.utils import get_instruction_components
+from Assembler.AInstruction import AInstruction
+from Assembler.CInstruction import CInstruction
 
 class InstructionHandler:
     """Handles the details of interacting with an assembly instruction.
@@ -49,3 +51,35 @@ class InstructionHandler:
 
         """
         return self._components
+
+    def _AInstruction(self):
+        """Gets the A-instruction from the handler.
+
+        Returns
+        -------
+        AInstruction
+            The A-instruction associated with the handler.
+
+        """
+        return AInstruction(self._components[0])
+
+    def _CInstruction(self):
+        """Gets the C-instruction from the handler.
+
+        Returns
+        -------
+        CInstruction
+            The C-instruction associated with the handler.
+
+        """
+        if len(self._components) == 3:
+            return CInstruction(comp=self._components[1],
+                                dest=self._components[0],
+                                jump=self._components[2])
+        if len(self._components) == 2 and self._components[1][0] == "J":
+            return CInstruction(comp=self._components[0],
+                                jump=self._components[1])
+        if len(self._components) == 2:
+            return CInstruction(comp=self._components[1],
+                                dest=self._components[0])
+        return CInstruction(comp=self._components[0])
