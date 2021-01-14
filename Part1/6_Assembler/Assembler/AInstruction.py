@@ -2,9 +2,10 @@
 to the binary equivalent instruction.
 
 """
+from Assembler.Instruction import Instruction
 
 
-class AInstruction:
+class AInstruction(Instruction):
     """Holds the information related to an A-Instruction.
 
     Parameters

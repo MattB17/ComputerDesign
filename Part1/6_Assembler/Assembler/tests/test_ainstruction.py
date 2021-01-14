@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 from Assembler.AInstruction import AInstruction
+from Assembler.Instruction import Instruction
 
 
 @pytest.fixture(scope="function")
@@ -10,6 +11,10 @@ def instruction1():
 @pytest.fixture(scope="function")
 def instruction2():
     return AInstruction(1755)
+
+
+def test_correct_inheritance():
+    assert issubclass(AInstruction, Instruction)
 
 
 def test_instantiation(instruction1, instruction2):

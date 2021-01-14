@@ -4,9 +4,10 @@ convert to the binary-equivalent instruction.
 """
 from Assembler import specs
 from Assembler.utils import fix_comp_component
+from Assembler.Instruction import Instruction
 
 
-class CInstruction:
+class CInstruction(Instruction):
     """Holds the components of a C-instruction.
 
     A C-instruction has three components: a computation instruction, a

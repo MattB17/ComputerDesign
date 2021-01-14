@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from Assembler.CInstruction import CInstruction
+from Assembler.Instruction import Instruction
 
 
 FIX_STR = "Assembler.CInstruction.fix_comp_component"
@@ -29,6 +30,10 @@ def no_jump():
 @pytest.fixture(scope="function")
 def wrong_order():
     return CInstruction(comp="M&D", dest="MD", jump="JNE")
+
+
+def test_correct_inheritance():
+    assert issubclass(CInstruction, Instruction)
 
 
 def test_instantiation(comp_m, comp_a, no_dest, no_jump, wrong_order):
