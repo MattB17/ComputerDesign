@@ -117,3 +117,17 @@ def test_CInstruction_simple(cinstruction, c_handler_simple):
     cinstruction.return_value = mock_cinstruction
     assert c_handler_simple._CInstruction() == mock_cinstruction
     cinstruction.assert_called_once_with(comp="M+1")
+
+
+def test_get_instruction_a_instruction(a_handler):
+    mock_a_instruction = MagicMock()
+    a_handler._AInstruction = MagicMock(return_value=mock_a_instruction)
+    assert a_handler.get_instruction() == mock_a_instruction
+    a_handler._AInstruction.assert_called_once()
+
+
+def test_get_instruction_c_instruction(c_handler_full):
+    mock_c_instruction = MagicMock()
+    c_handler_full._CInstruction = MagicMock(return_value=mock_c_instruction)
+    assert c_handler_full.get_instruction() == mock_c_instruction
+    c_handler_full._CInstruction.assert_called_once()

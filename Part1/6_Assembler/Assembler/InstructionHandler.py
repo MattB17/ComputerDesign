@@ -83,3 +83,17 @@ class InstructionHandler:
             return CInstruction(comp=self._components[1],
                                 dest=self._components[0])
         return CInstruction(comp=self._components[0])
+
+    def get_instruction(self):
+        """Retrieves the instruction associated with the handler.
+
+        Returns
+        -------
+        Instruction
+            The Instruction corresponding to the assembly instruction being
+            managed by the handler.
+
+        """
+        if self._type == "A":
+            return self._AInstruction()
+        return self._CInstruction()
