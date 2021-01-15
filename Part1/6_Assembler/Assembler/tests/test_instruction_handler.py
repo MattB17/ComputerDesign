@@ -84,7 +84,7 @@ def test_AInstruction(ainstruction, a_handler):
     mock_ainstruction = MagicMock()
     ainstruction.return_value = mock_ainstruction
     assert a_handler._AInstruction() == mock_ainstruction
-    ainstruction.assert_called_once_with("18")
+    ainstruction.assert_called_once_with(18)
 
 
 @patch(C_STR)

@@ -1,4 +1,4 @@
-from Assembler import Assembler
+from Assembler.Assembler import Assembler
 import sys
 
 
