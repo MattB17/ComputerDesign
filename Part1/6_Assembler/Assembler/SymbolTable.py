@@ -2,6 +2,7 @@
 also handles the conversion from a symbol to an A-instruction.
 
 """
+from Assembler import exceptions as exc
 
 
 class SymbolTable:
@@ -11,7 +12,7 @@ class SymbolTable:
     ----------
     _table: dict
         A dictionary in which the keys are strings representing values
-        and the values are strings representing the corresponding values.
+        and the values are integers representing the corresponding address.
 
     """
     def __init__(self):
@@ -28,3 +29,56 @@ class SymbolTable:
 
         """
         return self._table
+
+    def add_symbol(self, symbol, value):
+        """Adds the `symbol` and `value` as a key-value pair to the table.
+
+        Parameters
+        ----------
+        symbol: str
+            A string representing the symbol being added to the table.
+        value: int
+            An integer representing the address associated with `symbol`
+
+        Returns
+        -------
+        None
+
+        """
+        self._table[symbol] = value
+
+    def has_symbol(self, symbol):
+        """Determines if `symbol` is in the table.
+
+        Parameters
+        ----------
+        symbol: str
+            A string representing the symbol being queried.
+
+        Returns
+        -------
+        bool
+            True if there is an entry for `symbol` in the table.
+            Otherwise, False.
+
+        """
+        return symbol in self._table
+
+    def convert_to_address(self, symbol):
+        """Converts symbol to an address.
+
+        Parameters
+        ----------
+        symbol: str
+            A string representing the symbol to be converted.
+
+        Returns
+        -------
+        int
+            An integer representing the address associated with `symbol`.
+
+        """
+        if self.has_symbol(symbol):
+            return self._table[symbol]
+        else:
+            raise exc.SymbolNotFound(symbol)
