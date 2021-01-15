@@ -39,7 +39,6 @@ def get_instruction_components(instruction_str):
         A list of strings containing the components of the instruction.
 
     """
-    instruction_str = remove_comment_from_instruction(instruction_str)
     if instruction_str[0] == "@":
         return [instruction_str[1:]]
     return [command.strip().replace(" ", "")

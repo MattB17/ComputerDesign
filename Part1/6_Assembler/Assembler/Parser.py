@@ -1,6 +1,7 @@
 """Parser is a class used to parse an assembly file.
 
 """
+from Assembler.utils import remove_comment_from_instruction
 
 class Parser:
     """A class used to read and parse an assembly file.
@@ -62,7 +63,7 @@ class Parser:
                 return None
             line = line.strip()
             if line and line != "" and line[:2] != "//":
-                return line
+                return remove_comment_from_instruction(line)
 
     def close_file(self):
         """Closes the assembly file.

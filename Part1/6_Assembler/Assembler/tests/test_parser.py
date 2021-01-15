@@ -1,6 +1,9 @@
 import pytest
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, mock_open, MagicMock, call
 from Assembler.Parser import Parser
+
+
+REMOVE_STR = "Assembler.Parser.remove_comment_from_instruction"
 
 
 @pytest.fixture(scope="function")
@@ -23,8 +26,10 @@ def test_open(parser):
 def test_next_assembly_line_simple(parser):
     with patch("builtins.open", mock_open(read_data="@18\n")):
         parser.open_file()
-    assert parser.get_next_assembly_line() == "@18"
-    assert parser.get_next_assembly_line() is None
+    with patch(REMOVE_STR, return_value="@18") as mock_remover:
+        assert parser.get_next_assembly_line() == "@18"
+        assert parser.get_next_assembly_line() is None
+    mock_remover.assert_called_once_with("@18")
     parser.close_file()
 
 
@@ -39,11 +44,21 @@ def test_next_assembly_line_complex(parser):
                  "0;JMP\n")
     with patch("builtins.open", mock_open(read_data=file_text)):
         parser.open_file()
-    assert parser.get_next_assembly_line() == "@18 // a comment"
-    assert parser.get_next_assembly_line() == "D=D+M"
-    assert parser.get_next_assembly_line() == "@24"
-    assert parser.get_next_assembly_line() == "0;JMP"
-    assert parser.get_next_assembly_line() is None
+    line1_unclean = "@18 // a comment"
+    line1_clean = "@18"
+    line2 = "D=D+M"
+    line3 = "@24"
+    line4 = "0;JMP"
+    with patch(REMOVE_STR,
+               side_effect=(line1_clean, line2, line3, line4)) as mock_remover:
+        assert parser.get_next_assembly_line() == line1_clean
+        assert parser.get_next_assembly_line() == line2
+        assert parser.get_next_assembly_line() == line3
+        assert parser.get_next_assembly_line() == line4
+        assert parser.get_next_assembly_line() is None
+    assert mock_remover.call_count == 4
+    remove_calls = [call(line1_unclean), call(line2), call(line3), call(line4)]
+    mock_remover.assert_has_calls(remove_calls)
     parser.close_file()
 
 
