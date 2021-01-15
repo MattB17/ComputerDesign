@@ -1,10 +1,11 @@
 import pytest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock, mock_open, call
 from Assembler.Assembler import Assembler
 
 
 PARSER_STR = "Assembler.Assembler.Parser"
 HACK_FILE = "/path/to/assembly/file.hack"
+INSTRUCTION_STR = "Assembler.Assembler.InstructionHandler"
 
 
 @pytest.fixture(scope="function")
@@ -54,3 +55,57 @@ def test_finish_assembly_open_file(parser, assembler):
     parser.close_file.assert_called_once()
     mock_file.close.assert_called_once()
     assert assembler._machine_file is None
+
+@patch(INSTRUCTION_STR)
+def test_assemble_next_instruction(handler, assembler):
+    mock_handler = MagicMock()
+    handler.return_value = mock_handler
+    mock_instruction = MagicMock()
+    mock_handler.get_instruction = MagicMock(return_value=mock_instruction)
+    mock_instruction.get_binary_instruction = MagicMock(
+        return_value="1111000010010111")
+    mock_file = MagicMock()
+    assembler._machine_file = mock_file
+    mock_file.write = MagicMock(side_effect=None)
+    instruction_str = "D=D+M;JMP // Some comment"
+    assembler.assemble_next_instruction(instruction_str)
+    handler.assert_called_once_with(instruction_str)
+    mock_handler.get_instruction.assert_called_once()
+    mock_instruction.get_binary_instruction.assert_called_once()
+    mock_file.write.assert_called_once_with("1111000010010111\n")
+
+
+def test_run_conversion_empty_file(parser, assembler):
+    parser.get_next_assembly_line = MagicMock(return_value=None)
+    assembler.assemble_next_instruction = MagicMock()
+    assembler.run_conversion()
+    parser.get_next_assembly_line.assert_called_once()
+    assembler.assemble_next_instruction.assert_not_called()
+
+
+def test_run_conversion_one_line_file(parser, assembler):
+    line1 = "D=D+M // adding RAM[A] to D register"
+    parser.get_next_assembly_line = MagicMock(side_effect=(line1, None))
+    assembler.assemble_next_instruction = MagicMock(side_effect=None)
+    assembler.run_conversion()
+    assert parser.get_next_assembly_line.call_count == 2
+    assembler.assemble_next_instruction.assert_called_once_with(line1)
+
+
+def test_run_conversion_multi_line_file(parser, assembler):
+    line1 = "D=D+M // adding RAM[A] to D register"
+    line2 = "M=D"
+    line3 = "0;JMP // unconditional jump"
+    parser.get_next_assembly_line = MagicMock(
+        side_effect=(line1, line2, line3, None))
+    assembler.assemble_next_instruction = MagicMock(side_effect=None)
+    assembler.run_conversion()
+    assert parser.get_next_assembly_line.call_count == 4
+    assemble_calls = [call(line1), call(line2), call(line3)]
+    assembler.assemble_next_instruction.assert_has_calls(assemble_calls)
+    assert assembler.assemble_next_instruction.call_count == 3
+
+def test_assemble(assembler):
+    assembler.start_assembly = MagicMock(side_effect=None)
+    assembler.run_conversion = MagicMock(side_effect=None)
+    assembler.finish_assembly = MagicMock(side_effect=None)
