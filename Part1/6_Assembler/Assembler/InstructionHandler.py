@@ -61,7 +61,7 @@ class InstructionHandler:
             The A-instruction associated with the handler.
 
         """
-        return AInstruction(self._components[0])
+        return AInstruction(int(self._components[0]))
 
     def _CInstruction(self):
         """Gets the C-instruction from the handler.
