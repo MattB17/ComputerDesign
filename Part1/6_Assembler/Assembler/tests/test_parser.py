@@ -34,6 +34,36 @@ def test_next_assembly_line_simple(parser):
     parser.close_file()
 
 
+def test_next_assembly_line_complex(parser):
+    file_text = ("// Some random preamble\n" +
+                 " // Some more preamble\n" +
+                 "\n" +
+                 "(LOOP)\n" +
+                 "@18 // a comment\n" +
+                 "D=D+M\n" +
+                 "\n" +
+                 "@LOOP\n" +
+                 "0;JMP\n")
+    with patch("builtins.open", mock_open(read_data=file_text)):
+        parser.open_file()
+    line1_unclean = "@18 // a comment"
+    line1_clean = "@18"
+    line2 = "D=D+M"
+    line3 = "@LOOP"
+    line4 = "0;JMP"
+    with patch(REMOVE_STR,
+               side_effect=(line1_clean, line2, line3, line4)) as mock_remover:
+        assert parser.get_next_assembly_line() == line1_clean
+        assert parser.get_next_assembly_line() == line2
+        assert parser.get_next_assembly_line() == line3
+        assert parser.get_next_assembly_line() == line4
+        assert parser.get_next_assembly_line() is None
+    assert mock_remover.call_count == 4
+    remove_calls = [call(line1_unclean), call(line2), call(line3), call(line4)]
+    mock_remover.assert_has_calls(remove_calls)
+    parser.close_file()
+
+
 def test_next_symbol_line_no_symbol(parser):
     with patch("builtins.open", mock_open(read_data="@18\n")):
         parser.open_file()
@@ -66,36 +96,6 @@ def test_next_symbol_line_simple_label(parser):
         assert parser.get_next_symbol_line() is None
     mock_remover.assert_called_once_with("(LOOP)")
     mock_symbol.assert_not_called()
-    parser.close_file()
-
-
-def test_next_assembly_line_complex(parser):
-    file_text = ("// Some random preamble\n" +
-                 " // Some more preamble\n" +
-                 "\n" +
-                 "(LOOP)\n" +
-                 "@18 // a comment\n" +
-                 "D=D+M\n" +
-                 "\n" +
-                 "@LOOP\n" +
-                 "0;JMP\n")
-    with patch("builtins.open", mock_open(read_data=file_text)):
-        parser.open_file()
-    line1_unclean = "@18 // a comment"
-    line1_clean = "@18"
-    line2 = "D=D+M"
-    line3 = "@LOOP"
-    line4 = "0;JMP"
-    with patch(REMOVE_STR,
-               side_effect=(line1_clean, line2, line3, line4)) as mock_remover:
-        assert parser.get_next_assembly_line() == line1_clean
-        assert parser.get_next_assembly_line() == line2
-        assert parser.get_next_assembly_line() == line3
-        assert parser.get_next_assembly_line() == line4
-        assert parser.get_next_assembly_line() is None
-    assert mock_remover.call_count == 4
-    remove_calls = [call(line1_unclean), call(line2), call(line3), call(line4)]
-    mock_remover.assert_has_calls(remove_calls)
     parser.close_file()
 
 

@@ -2,7 +2,9 @@
 also handles the conversion from a symbol to an A-instruction.
 
 """
+import copy
 from Assembler import exceptions as exc
+from Assembler import specs
 
 
 class SymbolTable:
@@ -16,7 +18,7 @@ class SymbolTable:
 
     """
     def __init__(self):
-        self._table = {}
+        self._table = copy.deepcopy(specs.HACK_SYMBOLS)
 
     def get_table(self):
         """Retrieves the symbol table.
