@@ -4,6 +4,7 @@ from Assembler.Parser import Parser
 
 
 REMOVE_STR = "Assembler.Parser.remove_comment_from_instruction"
+SYMBOL_STR = "Assembler.Parser.is_symbol_reference"
 
 
 @pytest.fixture(scope="function")
@@ -33,21 +34,57 @@ def test_next_assembly_line_simple(parser):
     parser.close_file()
 
 
+def test_next_symbol_line_no_symbol(parser):
+    with patch("builtins.open", mock_open(read_data="@18\n")):
+        parser.open_file()
+    with patch(REMOVE_STR, return_value="@18") as mock_remover, \
+        patch(SYMBOL_STR, return_value=False) as mock_symbol:
+        assert parser.get_next_symbol_line() is None
+    mock_remover.assert_called_once_with("@18")
+    mock_symbol.assert_called_once_with("@18")
+    parser.close_file()
+
+
+def test_next_symbol_line_simple_variable(parser):
+    with patch("builtins.open", mock_open(read_data="@var\n")):
+        parser.open_file()
+    with patch(REMOVE_STR, return_value="@var") as mock_remover, \
+        patch(SYMBOL_STR, return_value=True) as mock_symbol:
+        assert parser.get_next_symbol_line() == "@var"
+        assert parser.get_next_symbol_line() is None
+    mock_remover.assert_called_once_with("@var")
+    mock_symbol.assert_called_once_with("@var")
+    parser.close_file()
+
+
+def test_next_symbol_line_simple_label(parser):
+    with patch("builtins.open", mock_open(read_data="(LOOP)\n")):
+        parser.open_file()
+    with patch(REMOVE_STR, return_value="(LOOP)") as mock_remover, \
+        patch(SYMBOL_STR, return_value=True) as mock_symbol:
+        assert parser.get_next_symbol_line() == "(LOOP)"
+        assert parser.get_next_symbol_line() is None
+    mock_remover.assert_called_once_with("(LOOP)")
+    mock_symbol.assert_not_called()
+    parser.close_file()
+
+
 def test_next_assembly_line_complex(parser):
     file_text = ("// Some random preamble\n" +
                  " // Some more preamble\n" +
                  "\n" +
+                 "(LOOP)\n" +
                  "@18 // a comment\n" +
                  "D=D+M\n" +
                  "\n" +
-                 "@24\n" +
+                 "@LOOP\n" +
                  "0;JMP\n")
     with patch("builtins.open", mock_open(read_data=file_text)):
         parser.open_file()
     line1_unclean = "@18 // a comment"
     line1_clean = "@18"
     line2 = "D=D+M"
-    line3 = "@24"
+    line3 = "@LOOP"
     line4 = "0;JMP"
     with patch(REMOVE_STR,
                side_effect=(line1_clean, line2, line3, line4)) as mock_remover:
@@ -60,6 +97,43 @@ def test_next_assembly_line_complex(parser):
     remove_calls = [call(line1_unclean), call(line2), call(line3), call(line4)]
     mock_remover.assert_has_calls(remove_calls)
     parser.close_file()
+
+
+def test_next_symbol_line_complex(parser):
+    file_text = ("// Some random preamble\n" +
+                 " // Some more preamble\n" +
+                 "\n" +
+                 "(LOOP)\n" +
+                 "@var // a comment\n" +
+                 "D=D+M\n" +
+                 "\n" +
+                 "@LOOP\n" +
+                 "0;JMP\n")
+    with patch("builtins.open", mock_open(read_data=file_text)):
+        parser.open_file()
+    symbol1 = "(LOOP)"
+    symbol2_unclean = "@var // a comment"
+    symbol2_clean = "@var"
+    commanda = "D=D+M"
+    symbol3 = "@LOOP"
+    commandb = "0;JMP"
+    with patch(REMOVE_STR,
+               side_effect=(symbol1, symbol2_clean, commanda,
+                            symbol3, commandb)) as mock_remover, \
+        patch(SYMBOL_STR,
+              side_effect=(True, False, True, False)) as mock_symbol:
+        assert parser.get_next_symbol_line() == symbol1
+        assert parser.get_next_symbol_line() == symbol2_clean
+        assert parser.get_next_symbol_line() == symbol3
+        assert parser.get_next_symbol_line() is None
+    remove_calls = [call(symbol1), call(symbol2_unclean),
+                    call(commanda), call(symbol3), call(commandb)]
+    mock_remover.assert_has_calls(remove_calls)
+    assert mock_remover.call_count == 5
+    assert mock_symbol.call_count == 4
+    symbol_calls = [call(symbol2_clean), call(commanda),
+                    call(symbol3), call(commandb)]
+    mock_symbol.assert_has_calls(symbol_calls)
 
 
 def test_close_on_unopened_file(parser):

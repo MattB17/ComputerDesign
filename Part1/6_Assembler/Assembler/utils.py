@@ -70,3 +70,24 @@ def fix_comp_component(comp_str):
             (comp_str[1] == '+' and comp_str[0] == '1')):
             return comp_str[2] + comp_str[1] + comp_str[0]
     return comp_str
+
+
+def is_symbol_reference(instruction_str):
+    """Checks if `instruction_str` is a symbol reference.
+
+    A symbol reference has the form "@<symbol>" where <symbol> is
+    text corresponding to a variable or label.
+
+    Parameters
+    ----------
+    instruction_str: str
+        A string representing an assembly instruction.
+
+    Returns
+    -------
+    bool
+        True if `instruction_str` is a symbol reference. False, otherwise.
+
+    """
+    return (instruction_str[0] == '@' and
+            (not instruction_str[1:].isnumeric()))
