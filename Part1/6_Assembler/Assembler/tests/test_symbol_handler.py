@@ -10,7 +10,9 @@ REMOVE_STR = "Assembler.SymbolHandler.remove_comment_from_instruction"
 
 @pytest.fixture(scope="function")
 def symbol_table():
-    return MagicMock()
+    table = MagicMock()
+    table.add_symbol = MagicMock(side_effect=None)
+    return table
 
 
 @pytest.fixture(scope="function")
@@ -90,6 +92,55 @@ def test_find_next_label_complex(handler):
     remove_calls = [call("(INITIAL) // Base case"), call("(LOOP)")]
     mock_remover.assert_has_calls(remove_calls)
     handler.close_file()
+
+
+def test_add_label_to_symbol_table_simple(handler, symbol_table):
+    handler.add_label_to_symbol_table("(LABEL)", 10)
+    symbol_table.add_symbol.assert_called_once_with("LABEL", 10)
+
+
+def test_add_label_to_symbol_table_complex(handler, symbol_table):
+    handler.add_label_to_symbol_table("(DIFFERENT_LABEL)", 21)
+    symbol_table.add_symbol.assert_called_once_with("DIFFERENT_LABEL", 21)
+
+
+def test_find_all_labels_no_labels(handler):
+    handler.add_label_to_symbol_table = MagicMock()
+    handler._find_next_label = MagicMock(return_value=(None, 1))
+    handler._find_all_labels()
+    handler._find_next_label.assert_called_once()
+    handler.add_label_to_symbol_table.assert_not_called()
+
+
+def test_find_all_labels_one_label(handler):
+    handler.add_label_to_symbol_table = MagicMock(side_effect=None)
+    handler._find_next_label = MagicMock(
+        side_effect=(("(LABEL)", 0), (None, 0)))
+    handler._find_all_labels()
+    assert handler._find_next_label.call_count == 2
+    handler.add_label_to_symbol_table.assert_called_once_with("(LABEL)", 0)
+
+
+def test_find_all_labels_multi_label(handler):
+    handler.add_label_to_symbol_table = MagicMock(side_effect=None)
+    handler._find_next_label = MagicMock(
+        side_effect=(("(INITIAL)", 0), ("(LOOP)", 4),
+                     ("(END)", 20), (None, 2)))
+    handler._find_all_labels()
+    assert handler._find_next_label.call_count == 4
+    add_calls = [call("(INITIAL)", 0), call("(LOOP)", 4), call("(END)", 24)]
+    handler.add_label_to_symbol_table.assert_has_calls(add_calls)
+    assert handler.add_label_to_symbol_table.call_count == 3
+
+
+def test_parse_assembly_file_for_labels(handler):
+    handler.open_file = MagicMock(side_effect=None)
+    handler._find_all_labels = MagicMock(side_effect=None)
+    handler.close_file = MagicMock(side_effect=None)
+    handler.parse_assembly_file_for_labels()
+    handler.open_file.assert_called_once()
+    handler._find_all_labels.assert_called_once()
+    handler.close_file.assert_called_once()
 
 
 def test_close_on_unopened_file(handler):

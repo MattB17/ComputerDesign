@@ -71,6 +71,72 @@ class SymbolHandler:
             if line and line != "" and line[0:2] != "//":
                 lines_parsed += 1
 
+    def add_label_to_symbol_table(self, label, line_number):
+        """Adds the pair (`label`, `line_number`) to the symbol table.
+
+        Parameters
+        ----------
+        label: str
+            A string representing the label to be added.
+        line_number: int
+            An integer representing the line number to which the label
+            points in the assembly file.
+
+        Returns
+        -------
+        None
+
+        Side Effect
+        -----------
+        Adds `label` and `line_number` as a symbol-value pair to the
+        symbol table.
+
+        """
+        label_end = label.find(")")
+        self._symbol_table.add_symbol(label[1:label_end], line_number)
+
+    def _find_all_labels(self):
+        """Finds all labels in the assembly file.
+
+        The assembly file is parsed to find all labels. These labels are
+        then added to the symbol table to enable the conversion to machine
+        code.
+
+        Returns
+        -------
+        None
+
+        Side Effect
+        -----------
+        Adds all labels and their corresponding line number in the assembly
+        file to the symbol table.
+
+        """
+        line_number = 0
+        while True:
+            label, lines_parsed = self._find_next_label()
+            if label is None:
+                return
+            line_number += lines_parsed
+            self.add_label_to_symbol_table(label, line_number)
+
+    def parse_assembly_file_for_labels(self):
+        """Parses the assembly file, looking for all labels.
+
+        Returns
+        -------
+        None
+
+        Side Effect
+        -----------
+        Adds all the labels and their corresponding line numbers in the
+        assembly file to the symbol table.
+
+        """
+        self.open_file()
+        self._find_all_labels()
+        self.close_file()
+
 
     def close_file(self):
         """Closes the assembly file.
