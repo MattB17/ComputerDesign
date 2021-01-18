@@ -137,6 +137,100 @@ class SymbolHandler:
         self._find_all_labels()
         self.close_file()
 
+    def is_register_instruction(self, instruction):
+        """Checks if `instruction` corresponds to a register instruction.
+
+        A register instruction has the form @R<num> where <num> is an integer
+        in the range [0, 15]
+
+        Returns
+        -------
+        bool
+            True if `instruction` is a register instruction. Otherwise, False.
+
+        """
+        return ((instruction[0:2] == "@R") and
+                (instruction[2:].isnumeric()) and
+                (0 <= int(instruction[2:]) <= 15))
+
+    def convert_register_instruction(self, register_instruction):
+        """Converts `register_instruction` to an address instruction.
+
+        An address instruction has the form @<num> where <num> is an
+        integer referring to an actual physical address in RAM.
+
+        Parameters
+        ----------
+        register_instruction: str
+            A string representing a register instruction of the form @R<num>
+            where <num> is an integer in the range [0, 15]
+
+        Returns
+        -------
+        str
+            A string representing the address instruction obtained from
+            translating `register_instruction`.
+
+        """
+        return "@{}".format(register_instruction[2:])
+
+
+    def ensure_symbol_in_table(self, symbol_instruction):
+        """Ensures that the symbol of `symbol_instruction` is in the table.
+
+        If the symbol associated with `symbol_instruction` already appears
+        in the symbol table then it either corresponds to a label or a
+        previously defined variable. Otherwise, it corresponds to a variable
+        that has not been allocated.
+
+        Parameters
+        ----------
+        symbol_instruction: str
+            A string representing an A-instruction of the form @<var> where
+            <var> is the name of a symbol.
+
+        Returns
+        -------
+        None
+
+        Side Effect
+        -----------
+        If the symbol associated with `symbol_instruction` is not in the
+        symbol table then it is added to the table with an associated value
+        equal to the next free variable address.
+
+        """
+        symbol = symbol_instruction[1:]
+        if not self._symbol_table.has_symbol(symbol):
+            self._symbol_table.add_symbol(symbol, self._new_var_address)
+            self._new_var_address += 1
+
+    def convert_to_address_instruction(self, symbol_instruction):
+        """Converts `symbol_instruction` to an address instruction
+
+        The conversion is done by substituting the symbol in
+        `symbol_instruction` with the corresponding address from the
+        symbol table.
+
+        Parameters
+        ----------
+        symbol_instruction: str
+            A string representing a symbol instruction having the form
+            @<var> where <var> is a symbol
+
+        Returns
+        -------
+        str
+            A string representing an address instruction having the form
+            @<num> where <num> is the value associated with the symbol from
+            `symbol_instruction` found in the symbol table.
+
+        """
+        if self.is_register_instruction(symbol_instruction):
+            return self.convert_register_instruction(symbol_instruction)
+        self.ensure_symbol_in_table(symbol_instruction)
+        return self._symbol_table.convert_to_address(symbol_instruction[1:])
+
 
     def close_file(self):
         """Closes the assembly file.

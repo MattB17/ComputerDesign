@@ -143,6 +143,94 @@ def test_parse_assembly_file_for_labels(handler):
     handler.close_file.assert_called_once()
 
 
+def test_is_register_instruction(handler):
+    assert not handler.is_register_instruction("@var")
+    assert not handler.is_register_instruction("@READY")
+    assert not handler.is_register_instruction("@R-5")
+    assert not handler.is_register_instruction("@R27")
+    assert handler.is_register_instruction("@R0")
+    assert handler.is_register_instruction("@R7")
+    assert handler.is_register_instruction("@R15")
+
+
+def test_convert_register_instruction(handler):
+    assert handler.convert_register_instruction("@R2") == "@2"
+    assert handler.convert_register_instruction("@R13") == "@13"
+
+
+def test_ensure_symbol_in_table_already_in_table(handler, symbol_table):
+    symbol_table.has_symbol = MagicMock(return_value=True)
+    assert handler._new_var_address == 16
+    handler.ensure_symbol_in_table("@LOOP")
+    symbol_table.has_symbol.assert_called_once_with("LOOP")
+    symbol_table.add_symbol.assert_not_called()
+    assert handler._new_var_address == 16
+
+
+def test_ensure_symbol_in_table_not_in_table(handler, symbol_table):
+    symbol_table.has_symbol = MagicMock(return_value=False)
+    assert handler._new_var_address == 16
+    handler.ensure_symbol_in_table("@var")
+    symbol_table.has_symbol.assert_called_once_with("var")
+    symbol_table.add_symbol.assert_called_once_with("var", 16)
+    assert handler._new_var_address == 17
+
+
+def test_ensure_symbol_in_table_multi_symbol(handler, symbol_table):
+    symbol_table.has_symbol = MagicMock(
+        side_effect=(False, True, True, False))
+    assert handler._new_var_address == 16
+    handler.ensure_symbol_in_table("@var1")
+    handler.ensure_symbol_in_table("@LOOP")
+    handler.ensure_symbol_in_table("@var1")
+    handler.ensure_symbol_in_table("@var2")
+    has_symbol_calls = [call("var1"), call("LOOP"),
+                        call("var1"), call("var2")]
+    symbol_table.has_symbol.assert_has_calls(has_symbol_calls)
+    assert symbol_table.has_symbol.call_count == 4
+    add_symbol_calls = [call("var1", 16), call("var2", 17)]
+    symbol_table.add_symbol.assert_has_calls(add_symbol_calls)
+    assert symbol_table.add_symbol.call_count == 2
+    assert handler._new_var_address == 18
+
+
+def test_convert_to_address_instruction_register_instruction(handler,
+                                                             symbol_table):
+    address_instruction = "@12"
+    register_instruction = "@R12"
+    handler.is_register_instruction = MagicMock(return_value=True)
+    handler.convert_register_instruction = MagicMock(
+        return_value=address_instruction)
+    handler.ensure_symbol_in_table = MagicMock()
+    symbol_table.convert_to_address = MagicMock()
+    assert handler.convert_to_address_instruction(
+        register_instruction) == address_instruction
+    handler.is_register_instruction.assert_called_once_with(
+        register_instruction)
+    handler.convert_register_instruction.assert_called_once_with(
+        register_instruction)
+    handler.ensure_symbol_in_table.assert_not_called()
+    symbol_table.convert_to_address.assert_not_called()
+
+
+def test_convert_to_address_instruction_var_instruction(handler,
+                                                        symbol_table):
+    address_instruction = "@24"
+    var_instruction = "@LOOP"
+    handler.is_register_instruction = MagicMock(return_value=False)
+    handler.convert_register_instruction = MagicMock()
+    handler.ensure_symbol_in_table = MagicMock(side_effect=None)
+    symbol_table.convert_to_address = MagicMock(
+        return_value=address_instruction)
+    assert handler.convert_to_address_instruction(
+        var_instruction) == address_instruction
+    handler.is_register_instruction.assert_called_once_with(var_instruction)
+    handler.convert_register_instruction.assert_not_called()
+    handler.ensure_symbol_in_table.assert_called_once_with(var_instruction)
+    symbol_table.convert_to_address.assert_called_once_with("LOOP")
+
+
+
 def test_close_on_unopened_file(handler):
     assert handler._file is None
     handler.close_file()
