@@ -4,6 +4,7 @@ from Assembler.Assembler import Assembler
 
 
 PARSER_STR = "Assembler.Assembler.Parser"
+HANDLER_STR = "Assembler.Assembler.SymbolHandler"
 HACK_FILE = "/path/to/assembly/file.hack"
 INSTRUCTION_STR = "Assembler.Assembler.InstructionHandler"
 
@@ -17,17 +18,28 @@ def parser():
 
 
 @pytest.fixture(scope="function")
-def assembler(parser):
+def symbol_handler():
+    handler = MagicMock()
+    handler.parse_assembly_file_for_labels = MagicMock(side_effect=None)
+    return handler
+
+
+@pytest.fixture(scope="function")
+def assembler(parser, symbol_handler):
     assembly_file = "/path/to/assembly/file.asm"
-    with patch(PARSER_STR) as mock_parser:
+    with patch(PARSER_STR) as mock_parser, \
+        patch(HANDLER_STR) as mock_handler:
         mock_parser.return_value = parser
+        mock_handler.return_value = symbol_handler
         assembler = Assembler(assembly_file)
     mock_parser.assert_called_once_with(assembly_file)
+    mock_handler.assert_called_once_with(assembly_file)
     return assembler
 
 
-def test_instantiation(parser, assembler):
+def test_instantiation(parser, symbol_handler, assembler):
     assert assembler._parser == parser
+    assert assembler._symbol_handler == symbol_handler
     assert assembler.get_machine_file_path() == HACK_FILE
     assert assembler._machine_file is None
 
@@ -55,6 +67,12 @@ def test_finish_assembly_open_file(parser, assembler):
     parser.close_file.assert_called_once()
     mock_file.close.assert_called_once()
     assert assembler._machine_file is None
+
+
+def test_execute_first_pass(symbol_handler, assembler):
+    assembler.execute_first_pass()
+    symbol_handler.parse_assembly_file_for_labels.assert_called_once()
+
 
 @patch(INSTRUCTION_STR)
 def test_assemble_next_instruction(handler, assembler):

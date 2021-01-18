@@ -3,6 +3,7 @@
 """
 from Assembler.Parser import Parser
 from Assembler.InstructionHandler import InstructionHandler
+from Assembler.SymbolHandler import SymbolHandler
 
 
 class Assembler:
@@ -17,12 +18,18 @@ class Assembler:
     ----------
     _parser: Parser
         A Parser used to parse the assembly file.
-    _machine_file: str
+    _symbol_handler: SymbolHandler
+        A SYmbolHandler used to convert symbols to addresses during assembly.
+    _machine_file_path: str
         The name of the file containing the assembled machine code.
+    _machine_file: object
+        The machine file being written to. A value of None indicates
+        that the file is not open.
 
     """
     def __init__(self, assembly_file):
         self._parser = Parser(assembly_file)
+        self._symbol_handler = SymbolHandler(assembly_file)
         self._machine_file_path = assembly_file[:-4] + ".hack"
         self._machine_file = None
 
@@ -65,6 +72,26 @@ class Assembler:
         if self._machine_file:
             self._machine_file.close()
             self._machine_file = None
+
+    def execute_first_pass(self):
+        """Executes the first pass of the assembly process.
+
+        In the first pass, the symbol table is initialized. Then the assembly
+        file is parsed once and all labels are added to the symbol table.
+        This is done in preparation for the second pass to enable conversion
+        to machine code.
+
+        Returns
+        -------
+        None
+
+        Side Effect
+        -----------
+        Initializes the symbol table and adds all labels in the assembly file
+        to the symbol file.
+
+        """
+        self._symbol_handler.parse_assembly_file_for_labels()
 
     def assemble_next_instruction(self, assembly_line):
         """Assembles `assembly_line` to machine code.
