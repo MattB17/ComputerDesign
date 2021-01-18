@@ -66,26 +66,6 @@ class Parser:
             if line and line != "" and line[:2] != "//" and line[0] != "(":
                 return remove_comment_from_instruction(line)
 
-    def get_next_symbol_line(self):
-        """Retrieves the next line containing a symbol from the assembly file.
-
-        Returns
-        -------
-        str
-            A string corresponding to the next valid line of assembly
-            code containing a symbol.
-
-        """
-        while True:
-            line = self._file.readline()
-            if line == "":
-                return None
-            line = line.strip()
-            if line and line != "" and line[:2] != "//":
-                line = remove_comment_from_instruction(line)
-                if line[0] == "(" or is_symbol_reference(line):
-                    return line
-
     def close_file(self):
         """Closes the assembly file.
 
