@@ -221,7 +221,7 @@ def test_convert_to_address_instruction_var_instruction(handler,
     handler.convert_register_instruction = MagicMock()
     handler.ensure_symbol_in_table = MagicMock(side_effect=None)
     symbol_table.convert_to_address = MagicMock(
-        return_value=address_instruction)
+        return_value="24")
     assert handler.convert_to_address_instruction(
         var_instruction) == address_instruction
     handler.is_register_instruction.assert_called_once_with(var_instruction)

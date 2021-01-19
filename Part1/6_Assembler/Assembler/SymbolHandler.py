@@ -229,7 +229,8 @@ class SymbolHandler:
         if self.is_register_instruction(symbol_instruction):
             return self.convert_register_instruction(symbol_instruction)
         self.ensure_symbol_in_table(symbol_instruction)
-        return self._symbol_table.convert_to_address(symbol_instruction[1:])
+        return "@{}".format(
+            self._symbol_table.convert_to_address(symbol_instruction[1:]))
 
 
     def close_file(self):
