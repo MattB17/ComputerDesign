@@ -3,6 +3,7 @@ from Assembler.utils import is_symbol_reference
 
 def test_with_symbol_reference():
     assert is_symbol_reference("@var")
+    assert is_symbol_reference("@R12")
 
 
 def test_with_c_instruction():

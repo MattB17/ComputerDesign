@@ -230,7 +230,6 @@ def test_convert_to_address_instruction_var_instruction(handler,
     symbol_table.convert_to_address.assert_called_once_with("LOOP")
 
 
-
 def test_close_on_unopened_file(handler):
     assert handler._file is None
     handler.close_file()

@@ -7,6 +7,7 @@ PARSER_STR = "Assembler.Assembler.Parser"
 HANDLER_STR = "Assembler.Assembler.SymbolHandler"
 HACK_FILE = "/path/to/assembly/file.hack"
 INSTRUCTION_STR = "Assembler.Assembler.InstructionHandler"
+CHECKER_STR = "Assembler.Assembler.is_symbol_reference"
 
 
 @pytest.fixture(scope="function")
@@ -75,7 +76,9 @@ def test_execute_first_pass(symbol_handler, assembler):
 
 
 @patch(INSTRUCTION_STR)
-def test_assemble_next_instruction(handler, assembler):
+def test_assemble_next_instruction_no_symbol(handler, assembler,
+                                             symbol_handler):
+    symbol_handler.convert_to_address_instruction = MagicMock()
     mock_handler = MagicMock()
     handler.return_value = mock_handler
     mock_instruction = MagicMock()
@@ -85,12 +88,44 @@ def test_assemble_next_instruction(handler, assembler):
     mock_file = MagicMock()
     assembler._machine_file = mock_file
     mock_file.write = MagicMock(side_effect=None)
-    instruction_str = "D=D+M;JMP // Some comment"
-    assembler.assemble_next_instruction(instruction_str)
+    instruction_str = "D=D+M;JMP"
+    with patch(CHECKER_STR, return_value=False) as mock_checker:
+        assembler.assemble_next_instruction(instruction_str)
+    mock_checker.assert_called_once_with(instruction_str)
+    symbol_handler.convert_to_address_instruction.assert_not_called()
     handler.assert_called_once_with(instruction_str)
     mock_handler.get_instruction.assert_called_once()
     mock_instruction.get_binary_instruction.assert_called_once()
     mock_file.write.assert_called_once_with("1111000010010111\n")
+
+
+@patch(INSTRUCTION_STR)
+def test_assemble_next_instruction_with_symbol(handler, assembler,
+                                               symbol_handler):
+    symbol_str = "@LOOP"
+    address_str = "@1755"
+    bin_str = "0000011011011011"
+    symbol_handler.convert_to_address_instruction = MagicMock(
+        return_value=address_str)
+    mock_handler = MagicMock()
+    handler.return_value = mock_handler
+    mock_instruction = MagicMock()
+    mock_handler.get_instruction = MagicMock(return_value=mock_instruction)
+    mock_instruction.get_binary_instruction = MagicMock(
+        return_value="0000011011011011")
+    mock_file = MagicMock()
+    assembler._machine_file = mock_file
+    mock_file.write = MagicMock(side_effect=None)
+    with patch(CHECKER_STR, return_value=True) as mock_checker:
+        assembler.assemble_next_instruction(symbol_str)
+    mock_checker.assert_called_once_with(symbol_str)
+    symbol_handler.convert_to_address_instruction.assert_called_once_with(
+        symbol_str)
+    handler.assert_called_once_with(address_str)
+    mock_handler.get_instruction.assert_called_once()
+    mock_instruction.get_binary_instruction.assert_called_once()
+    mock_file.write.assert_called_once_with("0000011011011011\n")
+
 
 
 def test_run_conversion_empty_file(parser, assembler):
@@ -102,7 +137,7 @@ def test_run_conversion_empty_file(parser, assembler):
 
 
 def test_run_conversion_one_line_file(parser, assembler):
-    line1 = "D=D+M // adding RAM[A] to D register"
+    line1 = "D=D+M"
     parser.get_next_assembly_line = MagicMock(side_effect=(line1, None))
     assembler.assemble_next_instruction = MagicMock(side_effect=None)
     assembler.run_conversion()
@@ -111,9 +146,9 @@ def test_run_conversion_one_line_file(parser, assembler):
 
 
 def test_run_conversion_multi_line_file(parser, assembler):
-    line1 = "D=D+M // adding RAM[A] to D register"
+    line1 = "D=D+M"
     line2 = "M=D"
-    line3 = "0;JMP // unconditional jump"
+    line3 = "0;JMP"
     parser.get_next_assembly_line = MagicMock(
         side_effect=(line1, line2, line3, None))
     assembler.assemble_next_instruction = MagicMock(side_effect=None)
@@ -124,6 +159,12 @@ def test_run_conversion_multi_line_file(parser, assembler):
     assert assembler.assemble_next_instruction.call_count == 3
 
 def test_assemble(assembler):
+    assembler.execute_first_pass = MagicMock(side_effect=None)
     assembler.start_assembly = MagicMock(side_effect=None)
     assembler.run_conversion = MagicMock(side_effect=None)
     assembler.finish_assembly = MagicMock(side_effect=None)
+    assembler.assemble()
+    assembler.execute_first_pass.assert_called_once()
+    assembler.start_assembly.assert_called_once()
+    assembler.run_conversion.assert_called_once()
+    assembler.finish_assembly.assert_called_once()

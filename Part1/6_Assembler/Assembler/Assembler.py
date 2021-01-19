@@ -4,6 +4,7 @@
 from Assembler.Parser import Parser
 from Assembler.InstructionHandler import InstructionHandler
 from Assembler.SymbolHandler import SymbolHandler
+from Assembler.utils import is_symbol_reference
 
 
 class Assembler:
@@ -110,6 +111,10 @@ class Assembler:
         Writes a 16-bit machine instruction to the machine file.
 
         """
+        if is_symbol_reference(assembly_line):
+            assembly_line = \
+                self._symbol_handler.convert_to_address_instruction(
+                    assembly_line)
         instruction = InstructionHandler(assembly_line).get_instruction()
         self._machine_file.write(instruction.get_binary_instruction() + "\n")
 
@@ -145,6 +150,7 @@ class Assembler:
         Writes the assembled machine code to the machine file.
 
         """
+        self.execute_first_pass()
         self.start_assembly()
         self.run_conversion()
         self.finish_assembly()

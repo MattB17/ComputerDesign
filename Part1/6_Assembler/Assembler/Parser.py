@@ -1,8 +1,7 @@
 """Parser is a class used to parse an assembly file.
 
 """
-from Assembler.utils import (remove_comment_from_instruction,
-                             is_symbol_reference)
+from Assembler.utils import remove_comment_from_instruction
 
 class Parser:
     """A class used to read and parse an assembly file.
