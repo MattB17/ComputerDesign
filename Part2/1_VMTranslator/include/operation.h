@@ -7,17 +7,17 @@
 
 enum Operation {
   // The set of possible VM operations
-  ARITHMETIC = 0;
-  PUSH = 1;
-  POP = 2;
-  LABEL = 3;
-  GOTO = 4;
-  IF = 5;
-  FUNCTION = 6;
-  CALL = 7
-  RETURN = 8;
-  UNKNOWN = 9;
-}
+  ARITHMETIC = 0,
+  PUSH = 1,
+  POP = 2,
+  LABEL = 3,
+  GOTO = 4,
+  IF = 5,
+  FUNCTION = 6,
+  CALL = 7,
+  RETURN = 8,
+  UNKNOWN = 9
+};
 
 static std::unordered_map<std::string, Operation> const operation_map =
   {
