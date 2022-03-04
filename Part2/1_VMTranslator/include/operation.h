@@ -40,12 +40,23 @@ static std::unordered_map<std::string, Operation> const operation_map =
     {"return", Operation::RETURN}
   };
 
-static Operation GetOperationFromString(std::string op_str) {
+static Operation GetOperationFromString(const std::string op_str) {
   auto op_pair = operation_map.find(op_str);
   if (op_pair == operation_map.end()) {
     return Operation::UNKNOWN;
   }
   return op_pair->second;
+}
+
+static bool IsOperationWithNoArguments(const Operation vm_op) {
+  return (vm_op == Operation::RETURN || vm_op == Operation::UNKNOWN);
+}
+
+static bool IsOperationWithTwoArguments(const Operation vm_op) {
+  return (vm_op == Operation::PUSH ||
+          vm_op == Operation::POP ||
+          vm_op == Operation::FUNCTION ||
+          vm_op == Operation::CALL);
 }
 
 #endif  // OPERATION_H

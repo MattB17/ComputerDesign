@@ -26,16 +26,16 @@ public:
   void advance();
 
   // identifies the type of the current command
-  Operation commandType();
+  Operation commandType() { return curr_command_type_; }
 
   // retrieves the first argument of the current command
   // this should not be called if the command type is RETURN.
-  std::string get_arg1();
+  std::string get_arg1() { return arg1_; }
 
   // retrieves the second argument of the current command
   // this should only be called in the command type is PUSH, POP, FUNCTION,
   // or CALL.
-  int get_arg2();
+  int get_arg2() { return arg2_; }
 private:
   std::ifstream vm_stream_;
   Operation curr_command_type_;
