@@ -30,15 +30,22 @@ public:
 
   // retrieves the first argument of the current command
   // this should not be called if the command type is RETURN.
-  std::string get_arg1() { return arg1_; }
+  std::string getArg1() { return arg1_; }
 
   // retrieves the second argument of the current command
   // this should only be called in the command type is PUSH, POP, FUNCTION,
   // or CALL.
-  int get_arg2() { return arg2_; }
+  int getArg2() { return arg2_; }
 private:
+  void getCurrCommandComponents();
+  // the input file stream
   std::ifstream vm_stream_;
-  Operation curr_command_type_;
+
+  // identifies the raw text of the current command
+  std::string curr_command_;
+
+  // the components of the current command
+  Operation command_type_;
   std::string arg1_;
   int arg2_;
 };

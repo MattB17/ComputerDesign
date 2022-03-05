@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include <sstream>
+
 Parser::Parser(std::string vm_file) : curr_command_type_(Operation::UNKNOWN),
                                       arg1_(""),
                                       arg2_(-1)
@@ -13,18 +15,24 @@ bool Parser::hasMoreCommands() { return !vm_stream_.eof(); }
 
 void Parser::advance() {
   if (!vm_stream_.eof()) {
-    std::string vm_op;
-    vm_stream_ >> vm_op;
-    curr_command_type_ = GetOperationFromString(vm_op);
-    if (curr_command_type_ == Operation::ARITHMETIC) {
-      arg1_ = vm_op;
-      return;
-    }
-    if (!IsOperationWithNoArguments(curr_command_type_)) {
-      vm_stream_ >> arg1_;
-    }
-    if (IsOperationWithTwoArguments(curr_command_type_)) {
-      vm_stream_ >> arg2_;
-    }
+    std::getline(vm_stream_, curr_command_);
+    getCurrCommandComponents();
+  }
+}
+
+void Parser::getCurrCommandComponents() {
+  std::istringstream command_stream(curr_command_);
+  std::string vm_op;
+  command_stream >> vm_op;
+  curr_command_type_ = GetOperationFromString(vm_op);
+  if (curr_command_type_ == Operation::ARITHMETIC) {
+    arg1_ = vm_op;
+    return;
+  }
+  if (!IsOperationWithNoArguments(curr_command_type_)) {
+    curr_command_ >> arg1_;
+  }
+  if (IsOperationWithTwoArguments(curr_command_type_)) {
+    curr_command_ >> arg2_;
   }
 }
