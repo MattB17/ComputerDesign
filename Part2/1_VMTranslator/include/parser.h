@@ -25,8 +25,11 @@ public:
   // advances to the next command and makes it the current command
   void advance();
 
+  // the raw VM operation representing the current command
+  std::string getCurrentCommand() { return curr_command_; }
+
   // identifies the type of the current command
-  Operation commandType() { return curr_command_type_; }
+  Operation commandType() { return command_type_; }
 
   // retrieves the first argument of the current command
   // this should not be called if the command type is RETURN.
@@ -36,6 +39,7 @@ public:
   // this should only be called in the command type is PUSH, POP, FUNCTION,
   // or CALL.
   int getArg2() { return arg2_; }
+
 private:
   void getCurrCommandComponents();
   // the input file stream

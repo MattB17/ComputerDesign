@@ -24,15 +24,15 @@ void Parser::getCurrCommandComponents() {
   std::istringstream command_stream(curr_command_);
   std::string vm_op;
   command_stream >> vm_op;
-  curr_command_type_ = GetOperationFromString(vm_op);
-  if (curr_command_type_ == Operation::ARITHMETIC) {
+  command_type_ = GetOperationFromString(vm_op);
+  if (command_type_ == Operation::ARITHMETIC) {
     arg1_ = vm_op;
     return;
   }
-  if (!IsOperationWithNoArguments(curr_command_type_)) {
+  if (!IsOperationWithNoArguments(command_type_)) {
     curr_command_ >> arg1_;
   }
-  if (IsOperationWithTwoArguments(curr_command_type_)) {
+  if (IsOperationWithTwoArguments(command_type_)) {
     curr_command_ >> arg2_;
   }
 }
