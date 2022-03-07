@@ -2,7 +2,8 @@
 
 #include <sstream>
 
-Parser::Parser(std::string vm_file) : curr_command_type_(Operation::UNKNOWN),
+Parser::Parser(std::string vm_file) : curr_command_(""),
+                                      command_type_(Operation::UNKNOWN),
                                       arg1_(""),
                                       arg2_(-1)
 {
@@ -11,13 +12,20 @@ Parser::Parser(std::string vm_file) : curr_command_type_(Operation::UNKNOWN),
 
 Parser::~Parser() { vm_stream_.close(); }
 
-bool Parser::hasMoreCommands() { return !vm_stream_.eof(); }
+bool Parser::hasMoreCommands() {
+  while (!vm_stream_.eof()) {
+    if (isalnum(vm_stream_.peek())) {
+      return true;
+    }
+    std::string line;
+    std::getline(vm_stream_, line);
+  }
+  return false;
+}
 
 void Parser::advance() {
-  if (!vm_stream_.eof()) {
-    std::getline(vm_stream_, curr_command_);
-    getCurrCommandComponents();
-  }
+  std::getline(vm_stream_, curr_command_);
+  getCurrCommandComponents();
 }
 
 void Parser::getCurrCommandComponents() {
@@ -30,9 +38,9 @@ void Parser::getCurrCommandComponents() {
     return;
   }
   if (!IsOperationWithNoArguments(command_type_)) {
-    curr_command_ >> arg1_;
+    command_stream >> arg1_;
   }
   if (IsOperationWithTwoArguments(command_type_)) {
-    curr_command_ >> arg2_;
+    command_stream >> arg2_;
   }
 }
