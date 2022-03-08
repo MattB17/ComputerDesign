@@ -21,12 +21,12 @@ public:
 
   void writeArithmetic(std::string arithmetic_command);
 
-  void writePushPop(Operation command, std::string segment, int idx);
+  void writePushPop(Operation command, std::string segment, int val);
 
   void close() { assembly_stream_.close(); }
 
-private:
-  std::ostream assembly_stream_;
+protected:
+  std::ofstream assembly_stream_;
 };
 
 #endif  // CODE_WRITER_H

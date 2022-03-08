@@ -16,4 +16,6 @@ add_executable(
 
   src/main.cc
   src/parser.cc
+  src/translation.cc
+  src/code_writer.cc
 )
