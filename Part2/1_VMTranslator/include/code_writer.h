@@ -27,6 +27,7 @@ public:
 
 protected:
   std::ofstream assembly_stream_;
+  int label_count_;
 };
 
 #endif  // CODE_WRITER_H
