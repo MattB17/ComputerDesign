@@ -15,6 +15,8 @@ int main(int argc, char** argv) {
       if (parser.commandType() == Operation::PUSH) {
         code_writer.writePushPop(
           parser.commandType(), parser.getArg1(), parser.getArg2());
+      } else if (parser.commandType() == Operation::ARITHMETIC) {
+        code_writer.writeArithmetic(parser.getArg1());
       }
     }
     code_writer.close();

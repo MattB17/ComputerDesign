@@ -4,6 +4,9 @@
 
 #include <fstream>
 
-void PushConstant(std::ofstream& assembly_stream, int i);
+void TranslatePushConstant(std::ofstream& assembly_stream, int i);
+
+void TranslateBinaryArithmetic(
+  std::ofstream& assembly_stream, std::string operation);
 
 #endif  // TRANSLATION_H

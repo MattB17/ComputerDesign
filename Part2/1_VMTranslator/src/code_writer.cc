@@ -13,8 +13,13 @@ void CodeWriter::writeCommandComment(std::string command) {
 void CodeWriter::writePushPop(
   Operation command, std::string segment, int val) {
   if (command == Operation::PUSH && segment.compare("constant") == 0) {
-    PushConstant(assembly_stream_, val);
+    TranslatePushConstant(assembly_stream_, val);
   }
 }
 
-void CodeWriter::writeArithmetic(std::string arithmetic_command) {}
+void CodeWriter::writeArithmetic(std::string arithmetic_command) {
+  if (arithmetic_command.compare("add") == 0 ||
+      arithmetic_command.compare("sub") == 0) {
+    TranslateBinaryArithmetic(assembly_stream_, arithmetic_command);
+  }
+}
