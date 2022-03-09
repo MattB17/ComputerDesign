@@ -1,8 +1,8 @@
 #include "code_writer.h"
 
-#include "translation.h"
-
-CodeWriter::CodeWriter(std::string assembly_file) : label_count_(0) {
+CodeWriter::CodeWriter(std::string assembly_file)
+  : translator_(std::make_unique<Translator>())
+{
   assembly_stream_.open(assembly_file);
 }
 
@@ -13,18 +13,19 @@ void CodeWriter::writeCommandComment(std::string command) {
 void CodeWriter::writePushPop(
   Operation command, std::string segment, int val) {
   if (command == Operation::PUSH && segment.compare("constant") == 0) {
-    TranslatePushConstant(assembly_stream_, val);
+    assembly_stream_ << translator_->pushConstant(val);
   }
 }
 
 void CodeWriter::writeArithmetic(std::string arithmetic_command) {
   if (arithmetic_command.compare("add") == 0 ||
       arithmetic_command.compare("sub") == 0) {
-    TranslateBinaryArithmetic(assembly_stream_, arithmetic_command);
+    assembly_stream_ << translator_->binaryArithmetic(arithmetic_command);
   } else if (arithmetic_command.compare("neg") == 0) {
-    TranslateNeg(assembly_stream_);
-  } else if (arithmetic_command.compare("eq") == 0) {
-    TranslateEq(assembly_stream_, label_count_);
-    label_count_++;
+    assembly_stream_ << translator_->negate();
+  } else if (arithmetic_command.compare("eq") == 0 ||
+             arithmetic_command.compare("gt") == 0 ||
+             arithmetic_command.compare("lt") == 0) {
+    assembly_stream_ << translator_->comparison(arithmetic_command);
   }
 }

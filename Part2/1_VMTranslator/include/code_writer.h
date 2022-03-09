@@ -5,8 +5,10 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 #include "operation.h"
+#include "translator.h"
 
 class CodeWriter {
 public:
@@ -27,7 +29,7 @@ public:
 
 protected:
   std::ofstream assembly_stream_;
-  int label_count_;
+  std::unique_ptr<Translator> translator_;
 };
 
 #endif  // CODE_WRITER_H
