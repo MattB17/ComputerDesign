@@ -22,7 +22,40 @@ std::string Translator::pushConstant(int i) {
   return out_stream.str();
 }
 
-std::string Translator::binaryArithmetic(std::string operation) {
+std::string Translator::translateArithmeticOperation(std::string operation) {
+  if (operation.compare("add") == 0) {
+    // D = x + y
+    return translateCombination("D=D+M");
+  } else if (operation.compare("sub") == 0) {
+    // D = x - y
+    return translateCombination("D=M-D");
+  } else if (operation.compare("and") == 0) {
+    // D = x & y
+    return translateCombination("D=D&M");
+  } else if (operation.compare("or") == 0) {
+    // D = x | y
+    return translateCombination("D=D|M");
+  } else if (operation.compare("neg") == 0) {
+    // M = -x
+    return translateNegation("M=-M");
+  } else if (operation.compare("not") == 0) {
+    // M = !x
+    return translateNegation("M=!M");
+  } else if (operation.compare("eq") == 0) {
+    // D = x - y, jump if D == 0
+    return translateComparison("D;JEQ");
+  } else if (operation.compare("lt") == 0) {
+    // D = x - y, jump if D < 0
+    return translateComparison("D;JLT");
+  } else if (operation.compare("gt") == 0) {
+    // D = x - y, jump if D > 0
+    return translateComparison("D;JGT");
+  }
+  return "";
+}
+
+std::string Translator::translateCombination(
+  std::string combination_expression) {
   std::stringstream out_stream;
   // D = *(SP-1) - this is the variable y
   out_stream << "@SP\n";
@@ -31,20 +64,9 @@ std::string Translator::binaryArithmetic(std::string operation) {
 
   // A = *(SP-2) - this is now the address of x
   out_stream << "A=A-1\n";
-  // M stores the value of X and D stores the value of y
-  if (operation.compare("add") == 0) {
-    // D = y + x
-    out_stream << "D=D+M\n";
-  } else if (operation.compare("sub") == 0 ) {
-    // D = x - y
-    out_stream << "D=M-D\n";
-  } else if (operation.compare("and") == 0) {
-    // D = y & x
-    out_stream << "D=D&M\n";
-  } else {
-    // D = y | x
-    out_stream << "D=D|M\n";
-  }
+  // M stores the value of X and D stores the value of y.
+  // So add the line with the combination expression
+  out_stream << combination_expression << "\n";
 
   // *(SP-2) = D
   out_stream << "M=D\n";
@@ -56,22 +78,20 @@ std::string Translator::binaryArithmetic(std::string operation) {
   return out_stream.str();
 }
 
-std::string Translator::negate(std::string operation) {
+std::string Translator::translateNegation(std::string negation_expression) {
   std::stringstream out_stream;
   // *(SP-1) = -(*(SP-1)) - that is just directly access the variable
   // and negate, no need to pop it off and push it back
   out_stream << "@SP\n";
   out_stream << "A=M-1\n";
-  if (operation.compare("neg") == 0) {
-    out_stream << "M=-M\n";
-  } else {
-    out_stream << "M=!M\n";
-  }
+  // M stores the variable x so write out the negation expression
+  out_stream << negation_expression << "\n";
 
   return out_stream.str();
 }
 
-std::string Translator::comparison(std::string compare_type) {
+std::string Translator::translateComparison(
+  std::string comparison_expression) {
   std::stringstream out_stream;
   // D = *(SP-1) - this is the variable y
   out_stream << "@SP\n";
@@ -86,18 +106,10 @@ std::string Translator::comparison(std::string compare_type) {
   // put value of true in *(SP-2)
   out_stream << "M=-1\n";
 
-  // if D = 0 (x == y) we already put true in the stack so jump to
-  // the cleanup
+  // if D = x - y and we already put true in the stack position.
+  // So if the comparison evaluates to true jump to cleanup
   out_stream << "@CLEANUP" << label_idx_ << "\n";
-  // depending on the comparison, check for equality, less than, or
-  // greater than.
-  if (compare_type.compare("eq") == 0) {
-    out_stream << "D;JEQ\n";
-  } else if (compare_type.compare("lt") == 0) {
-    out_stream << "D;JLT\n";
-  } else {
-    out_stream << "D;JGT\n";
-  }
+  out_stream << comparison_expression << "\n";
 
   // otherwise, flip true to false in the stack position
   out_stream << "@SP\n";
@@ -111,6 +123,5 @@ std::string Translator::comparison(std::string compare_type) {
   out_stream << "M=M-1\n";
 
   label_idx_++;
-
   return out_stream.str();
 }

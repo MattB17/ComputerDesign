@@ -14,20 +14,22 @@ public:
   Translator &operator=(Translator&&) = delete;
   ~Translator() {}
 
-  // translates the VM instruction `push constant i`
+  // translates the VM arithmetic command given by `operation`.
+  std::string translateArithmeticOperation(std::string operation);
+
+  // translates the VM instruction `push constant i`.
   std::string pushConstant(int i);
 
-  // translates the VM binary arithmetic operation given by `operation`. One
-  // of `add` or `sub`
-  std::string binaryArithmetic(std::string operation);
-
-  // translates the VM `neg` operation
-  std::string negate(std::string operation);
-
-  // translates a VM comparison operation. One of `eq`, `lt`, or `gt`
-  std::string comparison(std::string compare_type);
-
 private:
+  // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
+  std::string translateCombination(std::string comparison_expression);
+
+  // translates a VM negation command. One of `neg` or `not`.
+  std::string translateNegation(std::string negation_expression);
+
+  // translates a VM comparison command. One of `eq`, `lt`, or `gt`.
+  std::string translateComparison(std::string comparison_expression);
+
   int label_idx_;
 };
 
