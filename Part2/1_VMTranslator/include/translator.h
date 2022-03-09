@@ -22,7 +22,7 @@ public:
   std::string binaryArithmetic(std::string operation);
 
   // translates the VM `neg` operation
-  std::string negate();
+  std::string negate(std::string operation);
 
   // translates a VM comparison operation. One of `eq`, `lt`, or `gt`
   std::string comparison(std::string compare_type);
