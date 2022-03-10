@@ -22,6 +22,132 @@ std::string Translator::pushConstant(int i) {
   return out_stream.str();
 }
 
+std::string Translator::pushSegment(std::string segment, int i) {
+  std::stringstream out_stream;
+  // D = @segment
+  if (segment.compare("local") == 0) {
+    out_stream << "@LCL\n";
+  } else if (segment.compare("argument") == 0) {
+    out_stream << "@ARG\n";
+  } else if (segment.compare("this") == 0) {
+    out_stream << "@THIS\n";
+  } else {
+    out_stream << "@THAT\n";
+  }
+  out_stream << "D=M\n";
+
+  // A = D + i (where D = *segment, so A = *segment + i)
+  out_stream << "@" << i << "\n";
+  out_stream << "A=D+A\n";
+
+  // D = RAM[A] (where A = @segment + i)
+  out_stream << "D=M\n";
+
+  // *SP = D
+  out_stream << "@SP\n";
+  out_stream << "A=M\n";
+  out_stream << "M=D\n";
+
+  // SP++
+  out_stream << "@SP\n";
+  out_stream << "M=M+1\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::pushTemp(int i) {
+  std::stringstream out_stream;
+  // D = 5
+  out_stream << "@5\n";
+  out_stream << "D=A\n";
+
+  // A = D + i (where D = 5 so A = 5 + i)
+  out_stream << "@" << i << "\n";
+  out_stream << "A=D+A\n";
+
+  // D = RAM[A] (where A = @segment + i)
+  out_stream << "D=M\n";
+
+  // *SP = D
+  out_stream << "@SP\n";
+  out_stream << "A=M\n";
+  out_stream << "M=D\n";
+
+  // SP++
+  out_stream << "@SP\n";
+  out_stream << "M=M+1\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::popSegment(std::string segment, int i) {
+  std::stringstream out_stream;
+  // D = @segment
+  if (segment.compare("local") == 0) {
+    out_stream << "@LCL\n";
+  } else if (segment.compare("argument") == 0) {
+    out_stream << "@ARG\n";
+  } else if (segment.compare("this") == 0) {
+    out_stream << "@THIS\n";
+  } else {
+    out_stream << "@THAT\n";
+  }
+  out_stream << "D=M\n";
+
+  // D = D + i (where D = @segment, so D = @segment + i)
+  out_stream << "@" << i << "\n";
+  out_stream << "D=D+A\n";
+
+  // SP--; M = *SP
+  out_stream << "@SP\n";
+  out_stream << "M=M-1\n";
+
+  // go to the memory location of the last element
+  out_stream << "A=M\n";
+
+  // add this element to D so now D stores `@segment + i + val` where
+  // `val` is the value popped off the stack
+  out_stream << "D=D+M\n";
+
+  // update A to `@segment + i`
+  out_stream << "A=D-M\n";
+
+  // update RAM[@segment + i] to `val` which is D - A
+  out_stream << "M=D-A\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::popTemp(int i) {
+  std::stringstream out_stream;
+  // D = 5
+  out_stream << "@5\n";
+  out_stream << "D=A\n";
+
+  // D = D + i (where D = 5 so D = 5 + i)
+  out_stream << "@" << i << "\n";
+  out_stream << "D=D+A\n";
+
+  // SP--; M = *SP
+  out_stream << "@SP\n";
+  out_stream << "M=M-1\n";
+
+  // go to the memory location of the last element
+  out_stream << "A=M\n";
+
+  // add this element to D so now D stores `5 + i + val` where `val` is the
+  // value popped off the stack
+  out_stream << "D=D+M\n";
+
+  // update A to `5 + i`
+  out_stream << "A=D-M\n";
+
+  // update RAM[5 + i] to `val` which is D - A
+  out_stream << "M=D-A\n";
+
+  return out_stream.str();
+}
+
 std::string Translator::translateArithmeticOperation(std::string operation) {
   if (operation.compare("add") == 0) {
     // D = x + y

@@ -12,7 +12,8 @@ int main(int argc, char** argv) {
     while (parser.hasMoreCommands()) {
       parser.advance();
       code_writer.writeCommandComment(parser.getCurrentCommand());
-      if (parser.commandType() == Operation::PUSH) {
+      if (parser.commandType() == Operation::PUSH ||
+          parser.commandType() == Operation::POP) {
         code_writer.writePushPop(
           parser.commandType(), parser.getArg1(), parser.getArg2());
       } else if (parser.commandType() == Operation::ARITHMETIC) {

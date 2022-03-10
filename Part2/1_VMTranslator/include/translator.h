@@ -14,11 +14,25 @@ public:
   Translator &operator=(Translator&&) = delete;
   ~Translator() {}
 
-  // translates the VM arithmetic command given by `operation`.
-  std::string translateArithmeticOperation(std::string operation);
-
   // translates the VM instruction `push constant i`.
   std::string pushConstant(int i);
+
+  // translates the VM instruction `push segment i` where segment is
+  // one of `local`, `argument`, `this`, or `that`.
+  std::string pushSegment(std::string segment, int i);
+
+  // translates the VM instruction `push temp i`.
+  std::string pushTemp(int i);
+
+  // translates the VM instruction `pop segment i` where segment is
+  // one of `local`, `argument`, `this`, or `that`.
+  std::string popSegment(std::string segment, int i);
+
+  // translates the VM instruction `pop temp i`.
+  std::string popTemp(int i);
+
+  // translates the VM arithmetic command given by `operation`.
+  std::string translateArithmeticOperation(std::string operation);
 
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
