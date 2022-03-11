@@ -5,6 +5,39 @@
 Translator::Translator(std::string static_segment_)
   : label_idx_(0),  static_segment_(static_segment_) {}
 
+std::string Translator::translateArithmeticOperation(std::string operation) {
+  std::stringstream out_stream;
+  if (operation.compare("add") == 0) {
+    // D = x + y
+    return translateCombination(out_stream, "D=D+M");
+  } else if (operation.compare("sub") == 0) {
+    // D = x - y
+    return translateCombination(out_stream, "D=M-D");
+  } else if (operation.compare("and") == 0) {
+    // D = x & y
+    return translateCombination(out_stream, "D=D&M");
+  } else if (operation.compare("or") == 0) {
+    // D = x | y
+    return translateCombination(out_stream, "D=D|M");
+  } else if (operation.compare("neg") == 0) {
+    // M = -x
+    return translateNegation(out_stream, "M=-M");
+  } else if (operation.compare("not") == 0) {
+    // M = !x
+    return translateNegation(out_stream, "M=!M");
+  } else if (operation.compare("eq") == 0) {
+    // D = x - y, jump if D == 0
+    return translateComparison(out_stream, "D;JEQ");
+  } else if (operation.compare("lt") == 0) {
+    // D = x - y, jump if D < 0
+    return translateComparison(out_stream, "D;JLT");
+  } else if (operation.compare("gt") == 0) {
+    // D = x - y, jump if D > 0
+    return translateComparison(out_stream, "D;JGT");
+  }
+  return "";
+}
+
 std::string Translator::translatePushOperation(std::string segment, int i) {
   std::stringstream out_stream;
   if (segment.compare("constant") == 0) {
@@ -38,125 +71,27 @@ std::string Translator::translatePushOperation(std::string segment, int i) {
   return "";
 }
 
-std::string Translator::popSegment(std::string segment, int i) {
+std::string Translator::translatePopOperation(std::string segment, int i) {
   std::stringstream out_stream;
-  // D = @segment
   if (segment.compare("local") == 0) {
     out_stream << "@LCL\n";
+    return popSegment(out_stream, i);
   } else if (segment.compare("argument") == 0) {
     out_stream << "@ARG\n";
+    return popSegment(out_stream, i);
   } else if (segment.compare("this") == 0) {
     out_stream << "@THIS\n";
-  } else {
+    return popSegment(out_stream, i);
+  } else if (segment.compare("that") == 0) {
     out_stream << "@THAT\n";
-  }
-  out_stream << "D=M\n";
-
-  // D = D + i (where D = @segment, so D = @segment + i)
-  out_stream << "@" << i << "\n";
-  out_stream << "D=D+A\n";
-
-  // SP--; AM = *SP
-  out_stream << decrementStackPointerAndAssignToA();
-
-  // add this element to D so now D stores `@segment + i + val` where
-  // `val` is the value popped off the stack
-  out_stream << "D=D+M\n";
-
-  // update A to `@segment + i`
-  out_stream << "A=D-M\n";
-
-  // update RAM[@segment + i] to `val` which is D - A
-  out_stream << "M=D-A\n";
-
-  return out_stream.str();
-}
-
-std::string Translator::popTemp(int i) {
-  std::stringstream out_stream;
-  // D = 5
-  out_stream << "@5\n";
-  out_stream << "D=A\n";
-
-  // D = D + i (where D = 5 so D = 5 + i)
-  out_stream << "@" << i << "\n";
-  out_stream << "D=D+A\n";
-
-  // SP--; AM = *SP
-  out_stream << decrementStackPointerAndAssignToA();
-
-  // add this element to D so now D stores `5 + i + val` where `val` is the
-  // value popped off the stack
-  out_stream << "D=D+M\n";
-
-  // update A to `5 + i`
-  out_stream << "A=D-M\n";
-
-  // update RAM[5 + i] to `val` which is D - A
-  out_stream << "M=D-A\n";
-
-  return out_stream.str();
-}
-
-std::string Translator::popStatic(int i) {
-  std::stringstream out_stream;
-  // D = *SP; SP--;
-  out_stream << decrementStackPointerAndAssignToA();
-  out_stream << "D=M\n";
-
-  // @Foo.i = D where `Foo` is the name of the static segment
-  out_stream << "@" << static_segment_ << "." << i << "\n";
-  out_stream << "M=D\n";
-
-  return out_stream.str();
-}
-
-std::string Translator::popPointer(int i) {
-  std::stringstream out_stream;
-  // D = *SP; SP--;
-  out_stream << decrementStackPointerAndAssignToA();
-  out_stream << "D=M\n";
-
-  // @Ptr = D where `Ptr` is either `THIS` or `THAT` depending on `i`.
-  if (i == 0) {
-    out_stream << "@THIS\n";
-  } else {
-    out_stream << "@THAT\n";
-  }
-  out_stream << "M=D\n";
-
-  return out_stream.str();
-}
-
-std::string Translator::translateArithmeticOperation(std::string operation) {
-  std::stringstream out_stream;
-  if (operation.compare("add") == 0) {
-    // D = x + y
-    return translateCombination(out_stream, "D=D+M");
-  } else if (operation.compare("sub") == 0) {
-    // D = x - y
-    return translateCombination(out_stream, "D=M-D");
-  } else if (operation.compare("and") == 0) {
-    // D = x & y
-    return translateCombination(out_stream, "D=D&M");
-  } else if (operation.compare("or") == 0) {
-    // D = x | y
-    return translateCombination(out_stream, "D=D|M");
-  } else if (operation.compare("neg") == 0) {
-    // M = -x
-    return translateNegation(out_stream, "M=-M");
-  } else if (operation.compare("not") == 0) {
-    // M = !x
-    return translateNegation(out_stream, "M=!M");
-  } else if (operation.compare("eq") == 0) {
-    // D = x - y, jump if D == 0
-    return translateComparison(out_stream, "D;JEQ");
-  } else if (operation.compare("lt") == 0) {
-    // D = x - y, jump if D < 0
-    return translateComparison(out_stream, "D;JLT");
-  } else if (operation.compare("gt") == 0) {
-    // D = x - y, jump if D > 0
-    return translateComparison(out_stream, "D;JGT");
+    return popSegment(out_stream, i);
+  } else if (segment.compare("temp") == 0) {
+    out_stream << "@5\n";
+    return popTemp(out_stream, i);
+  } else if (segment.compare("static") == 0) {
+    return popStatic(out_stream, i);
+  } else if (segment.compare("pointer") == 0) {
+    return popPointer(out_stream, i);
   }
   return "";
 }
@@ -286,6 +221,66 @@ std::string Translator::addOffsetAndPushToStack(
   return out_stream.str();
 }
 
+std::string Translator::popSegment(std::stringstream& out_stream, int i) {
+  // D = RAM[@segment] (A already has the value @segment)
+  out_stream << "D=M\n";
+
+  return addOffsetAndPopFromStack(out_stream, /*offset=*/i);
+}
+
+std::string Translator::popTemp(std::stringstream& out_stream, int i) {
+  // D = 5 (A already stores 5, the start of the temp segment)
+  out_stream << "D=A\n";
+
+  return addOffsetAndPopFromStack(out_stream, /*offset=*/i);
+}
+
+std::string Translator::popStatic(std::stringstream& out_stream, int i) {
+  out_stream << decrementStackPointerAndAssignToD();
+
+  // @Foo.i = D where `Foo` is the name of the static segment
+  out_stream << "@" << static_segment_ << "." << i << "\n";
+  out_stream << "M=D\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::popPointer(std::stringstream& out_stream, int i) {
+  out_stream << decrementStackPointerAndAssignToD();
+
+  // @Ptr = D where `Ptr` is either `THIS` or `THAT` depending on `i`.
+  if (i == 0) {
+    out_stream << "@THIS\n";
+  } else {
+    out_stream << "@THAT\n";
+  }
+  out_stream << "M=D\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::addOffsetAndPopFromStack(
+  std::stringstream& out_stream, int offset) {
+  // D = D + i (where D = RAM[@segment], so D = RAM[@segment] + i)
+  out_stream << "@" << offset << "\n";
+  out_stream << "D=D+A\n";
+
+  // SP--; AM = *SP
+  out_stream << decrementStackPointerAndAssignToA();
+
+  // add this element to D so now D stores `@segment + i + val` where
+  // `val` is the value popped off the stack
+  out_stream << "D=D+M\n";
+
+  // update A to `@segment + i`
+  out_stream << "A=D-M\n";
+
+  // update RAM[@segment + i] to `val` which is D - A
+  out_stream << "M=D-A\n";
+
+  return out_stream.str();
+}
+
 std::string Translator::stackPointerIncrementInstruction() {
   return "@SP\nM=M+1\n";
 }
@@ -296,4 +291,8 @@ std::string Translator::stackPointerDecrementInstruction() {
 
 std::string Translator::decrementStackPointerAndAssignToA() {
   return "@SP\nAM=M-1\n";
+}
+
+std::string Translator::decrementStackPointerAndAssignToD() {
+  return "@SP\nAM=M-1\nD=M\n";
 }

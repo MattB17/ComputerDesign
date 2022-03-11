@@ -15,18 +15,7 @@ void CodeWriter::writePushPop(
   if (command == Operation::PUSH) {
     assembly_stream_ << translator_->translatePushOperation(segment, val);
   } else {
-    if (segment.compare("temp") == 0) {
-      assembly_stream_ << translator_->popTemp(val);
-    } else if (segment.compare("local") == 0 ||
-               segment.compare("argument") == 0 ||
-               segment.compare("this") == 0 ||
-               segment.compare("that") == 0) {
-      assembly_stream_ << translator_->popSegment(segment, val);
-    } else if (segment.compare("static") == 0) {
-      assembly_stream_ << translator_->popStatic(val);
-    } else if (segment.compare("pointer") == 0) {
-      assembly_stream_ << translator_->popPointer(val);
-    }
+    assembly_stream_ << translator_->translatePopOperation(segment, val);
   }
 }
 

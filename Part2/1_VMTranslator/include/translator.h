@@ -14,23 +14,14 @@ public:
   Translator &operator=(Translator&&) = delete;
   ~Translator() {}
 
-  // translates the VM instruction `pop segment i` where segment is
-  // one of `local`, `argument`, `this`, or `that`.
-  std::string popSegment(std::string segment, int i);
-
-  // translates the VM instruction `pop temp i`.
-  std::string popTemp(int i);
-
-  // translates the VM instruction `pop static i`.
-  std::string popStatic(int i);
-
-  // translates the VM instruction `push pointer i`
-  std::string popPointer(int i);
-
-  std::string translatePushOperation(std::string segment, int i);
-
   // translates the VM arithmetic command given by `operation`.
   std::string translateArithmeticOperation(std::string operation);
+
+  // translates the VM push operation of the form `push segment i`.
+  std::string translatePushOperation(std::string segment, int i);
+
+  // translates the VM pop operation of the form `pop segment i`.
+  std::string translatePopOperation(std::string segment, int i);
 
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
@@ -59,10 +50,29 @@ private:
   // stack pointer.
   std::string pushMemoryContentsToStack(std::stringstream& out_stream);
 
-  // adds `offset` to the current address pointed to by the A register and
+  // adds `offset` to the current address pointed to by the D register and
   // pushes the contents of that address to the stack, while incrementing the
   // stack pointer.
   std::string addOffsetAndPushToStack(
+    std::stringstream& out_stream, int offset);
+
+  // translates the VM instruction `pop segment i` where segment is
+  // one of `local`, `argument`, `this`, or `that`.
+  std::string popSegment(std::stringstream& out_stream, int i);
+
+  // translates the VM instruction `pop temp i`.
+  std::string popTemp(std::stringstream& out_stream, int i);
+
+  // translates the VM instruction `pop static i`.
+  std::string popStatic(std::stringstream& out_stream, int i);
+
+  // translates the VM instruction `push pointer i`
+  std::string popPointer(std::stringstream& out_stream, int i);
+
+  // adds `offset` to the current address pointed to by the D register and
+  // pops the head of the stack to that address, while decrementing the
+  // stack pointer.
+  std::string addOffsetAndPopFromStack(
     std::stringstream& out_stream, int offset);
 
   // the assembly commands for incrementing the stack pointer
@@ -71,7 +81,13 @@ private:
   // the assembly commands for decrementing the stack pointer
   static std::string stackPointerDecrementInstruction();
 
+  // the assembly commands to assign the top of the stack to the A register
+  // and to decrement the stack pointer.
   static std::string decrementStackPointerAndAssignToA();
+
+  // the assembly commands to assign the top of the stack to the A register
+  // and to decrement the stack pointer.
+  static std::string decrementStackPointerAndAssignToD();
 
   int label_idx_;
 
