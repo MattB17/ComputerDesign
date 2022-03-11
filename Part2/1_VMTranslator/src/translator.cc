@@ -16,8 +16,7 @@ std::string Translator::pushConstant(int i) {
   out_stream << "M=D\n";
 
   // SP++
-  out_stream << "@SP\n";
-  out_stream << "M=M+1\n";
+  out_stream << stackPointerIncrementInstruction();
 
   return out_stream.str();
 }
@@ -49,8 +48,7 @@ std::string Translator::pushSegment(std::string segment, int i) {
   out_stream << "M=D\n";
 
   // SP++
-  out_stream << "@SP\n";
-  out_stream << "M=M+1\n";
+  out_stream << stackPointerIncrementInstruction();
 
   return out_stream.str();
 }
@@ -74,8 +72,7 @@ std::string Translator::pushTemp(int i) {
   out_stream << "M=D\n";
 
   // SP++
-  out_stream << "@SP\n";
-  out_stream << "M=M+1\n";
+  out_stream << stackPointerIncrementInstruction();
 
   return out_stream.str();
 }
@@ -99,8 +96,7 @@ std::string Translator::popSegment(std::string segment, int i) {
   out_stream << "D=D+A\n";
 
   // SP--; M = *SP
-  out_stream << "@SP\n";
-  out_stream << "M=M-1\n";
+  out_stream << stackPointerDecrementInstruction();
 
   // go to the memory location of the last element
   out_stream << "A=M\n";
@@ -129,8 +125,7 @@ std::string Translator::popTemp(int i) {
   out_stream << "D=D+A\n";
 
   // SP--; M = *SP
-  out_stream << "@SP\n";
-  out_stream << "M=M-1\n";
+  out_stream << stackPointerDecrementInstruction();
 
   // go to the memory location of the last element
   out_stream << "A=M\n";
@@ -198,8 +193,7 @@ std::string Translator::translateCombination(
   out_stream << "M=D\n";
 
   // SP--;
-  out_stream << "@SP\n";
-  out_stream << "M=M-1\n";
+  out_stream << stackPointerDecrementInstruction();
 
   return out_stream.str();
 }
@@ -245,9 +239,16 @@ std::string Translator::translateComparison(
 
   // SP--;
   out_stream << "(CLEANUP" << label_idx_ << ")\n";
-  out_stream << "@SP\n";
-  out_stream << "M=M-1\n";
+  out_stream << stackPointerDecrementInstruction();
 
   label_idx_++;
   return out_stream.str();
+}
+
+std::string Translator::stackPointerIncrementInstruction() {
+  return "@SP\nM=M+1\n";
+}
+
+std::string Translator::stackPointerDecrementInstruction() {
+  return "@SP\nM=M-1\n";
 }

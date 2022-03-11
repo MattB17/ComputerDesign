@@ -44,6 +44,10 @@ private:
   // translates a VM comparison command. One of `eq`, `lt`, or `gt`.
   std::string translateComparison(std::string comparison_expression);
 
+  static std::string stackPointerIncrementInstruction();
+
+  static std::string stackPointerDecrementInstruction();
+
   int label_idx_;
 };
 
