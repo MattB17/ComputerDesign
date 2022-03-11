@@ -62,6 +62,8 @@ private:
   // the assembly commands for decrementing the stack pointer
   static std::string stackPointerDecrementInstruction();
 
+  static std::string decrementStackPointerAndAssignToA();
+
   int label_idx_;
 
   std::string static_segment_;

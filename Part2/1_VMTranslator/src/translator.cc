@@ -11,13 +11,10 @@ std::string Translator::pushConstant(int i) {
   out_stream << "@" << i << "\n";
   out_stream << "D=A\n";
 
-  // *SP = D
-  out_stream << "@SP\n";
-  out_stream << "A=M\n";
-  out_stream << "M=D\n";
-
-  // SP++
+  // SP++; *(SP-1) = D
   out_stream << stackPointerIncrementInstruction();
+  out_stream << "A=M-1\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }
@@ -43,13 +40,10 @@ std::string Translator::pushSegment(std::string segment, int i) {
   // D = RAM[A] (where A = @segment + i)
   out_stream << "D=M\n";
 
-  // *SP = D
-  out_stream << "@SP\n";
-  out_stream << "A=M\n";
-  out_stream << "M=D\n";
-
-  // SP++
+  // SP++; *(SP-1) = D
   out_stream << stackPointerIncrementInstruction();
+  out_stream << "A=M-1\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }
@@ -68,12 +62,9 @@ std::string Translator::pushTemp(int i) {
   out_stream << "D=M\n";
 
   // *SP = D
-  out_stream << "@SP\n";
-  out_stream << "A=M\n";
-  out_stream << "M=D\n";
-
-  // SP++
   out_stream << stackPointerIncrementInstruction();
+  out_stream << "A=M-1\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }
@@ -84,13 +75,10 @@ std::string Translator::pushStatic(int i) {
   out_stream << "@" << static_segment_ << "." << i << "\n";
   out_stream << "D=M\n";
 
-  // *SP = D
-  out_stream << "@SP\n";
-  out_stream << "A=M\n";
-  out_stream << "M=D\n";
-
-  // SP++
+  // SP++; *(SP-1) = D
   out_stream << stackPointerIncrementInstruction();
+  out_stream << "A=M-1\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }
@@ -105,13 +93,10 @@ std::string Translator::pushPointer(int i) {
   }
   out_stream << "D=M\n";
 
-  // *SP = D
-  out_stream << "@SP\n";
-  out_stream << "A=M\n";
-  out_stream << "M=D\n";
-
-  // SP++
+  // SP++; *(SP-1) = D
   out_stream << stackPointerIncrementInstruction();
+  out_stream << "A=M-1\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }
@@ -134,11 +119,8 @@ std::string Translator::popSegment(std::string segment, int i) {
   out_stream << "@" << i << "\n";
   out_stream << "D=D+A\n";
 
-  // SP--; M = *SP
-  out_stream << stackPointerDecrementInstruction();
-
-  // go to the memory location of the last element
-  out_stream << "A=M\n";
+  // SP--; AM = *SP
+  out_stream << decrementStackPointerAndAssignToA();
 
   // add this element to D so now D stores `@segment + i + val` where
   // `val` is the value popped off the stack
@@ -163,11 +145,8 @@ std::string Translator::popTemp(int i) {
   out_stream << "@" << i << "\n";
   out_stream << "D=D+A\n";
 
-  // SP--; M = *SP
-  out_stream << stackPointerDecrementInstruction();
-
-  // go to the memory location of the last element
-  out_stream << "A=M\n";
+  // SP--; AM = *SP
+  out_stream << decrementStackPointerAndAssignToA();
 
   // add this element to D so now D stores `5 + i + val` where `val` is the
   // value popped off the stack
@@ -185,8 +164,7 @@ std::string Translator::popTemp(int i) {
 std::string Translator::popStatic(int i) {
   std::stringstream out_stream;
   // D = *SP; SP--;
-  out_stream << stackPointerDecrementInstruction();
-  out_stream << "A=M\n";
+  out_stream << decrementStackPointerAndAssignToA();
   out_stream << "D=M\n";
 
   // @Foo.i = D where `Foo` is the name of the static segment
@@ -199,8 +177,7 @@ std::string Translator::popStatic(int i) {
 std::string Translator::popPointer(int i) {
   std::stringstream out_stream;
   // D = *SP; SP--;
-  out_stream << stackPointerDecrementInstruction();
-  out_stream << "A=M\n";
+  out_stream << decrementStackPointerAndAssignToA();
   out_stream << "D=M\n";
 
   // @Ptr = D where `Ptr` is either `THIS` or `THAT` depending on `i`.
@@ -322,4 +299,8 @@ std::string Translator::stackPointerIncrementInstruction() {
 
 std::string Translator::stackPointerDecrementInstruction() {
   return "@SP\nM=M-1\n";
+}
+
+std::string Translator::decrementStackPointerAndAssignToA() {
+  return "@SP\nAM=M-1\n";
 }
