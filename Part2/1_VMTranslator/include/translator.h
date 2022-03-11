@@ -7,7 +7,7 @@
 
 class Translator {
 public:
-  Translator();
+  Translator(std::string static_segment);
   Translator(const Translator&) = delete;
   Translator &operator=(const Translator&) = delete;
   Translator(Translator&&) = delete;
@@ -24,12 +24,18 @@ public:
   // translates the VM instruction `push temp i`.
   std::string pushTemp(int i);
 
+  // translates the VM instruction `push static i`.
+  std::string pushStatic(int i);
+
   // translates the VM instruction `pop segment i` where segment is
   // one of `local`, `argument`, `this`, or `that`.
   std::string popSegment(std::string segment, int i);
 
   // translates the VM instruction `pop temp i`.
   std::string popTemp(int i);
+
+  // translates the VM instruction `pop static i`.
+  std::string popStatic(int i);
 
   // translates the VM arithmetic command given by `operation`.
   std::string translateArithmeticOperation(std::string operation);
@@ -44,11 +50,15 @@ private:
   // translates a VM comparison command. One of `eq`, `lt`, or `gt`.
   std::string translateComparison(std::string comparison_expression);
 
+  // the assembly commands for incrementing the stack pointer
   static std::string stackPointerIncrementInstruction();
 
+  // the assembly commands for decrementing the stack pointer
   static std::string stackPointerDecrementInstruction();
 
   int label_idx_;
+
+  std::string static_segment_;
 };
 
 #endif  // TRANSLATOR_H

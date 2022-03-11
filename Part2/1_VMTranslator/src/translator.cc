@@ -2,7 +2,8 @@
 
 #include <sstream>
 
-Translator::Translator() : label_idx_(0) {}
+Translator::Translator(std::string static_segment_)
+  : label_idx_(0),  static_segment_(static_segment_) {}
 
 std::string Translator::pushConstant(int i) {
   std::stringstream out_stream;
@@ -64,6 +65,23 @@ std::string Translator::pushTemp(int i) {
   out_stream << "A=D+A\n";
 
   // D = RAM[A] (where A = @segment + i)
+  out_stream << "D=M\n";
+
+  // *SP = D
+  out_stream << "@SP\n";
+  out_stream << "A=M\n";
+  out_stream << "M=D\n";
+
+  // SP++
+  out_stream << stackPointerIncrementInstruction();
+
+  return out_stream.str();
+}
+
+std::string Translator::pushStatic(int i) {
+  std::stringstream out_stream;
+  // D = @Foo.i where `Foo` is the name of the static segment
+  out_stream << "@" << static_segment_ << "." << i << "\n";
   out_stream << "D=M\n";
 
   // *SP = D
@@ -139,6 +157,20 @@ std::string Translator::popTemp(int i) {
 
   // update RAM[5 + i] to `val` which is D - A
   out_stream << "M=D-A\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::popStatic(int i) {
+  std::stringstream out_stream;
+  // D = *SP; SP--;
+  out_stream << stackPointerDecrementInstruction();
+  out_stream << "A=M\n";
+  out_stream << "D=M\n";
+
+  // @Foo.i = D where `Foo` is the name of the static segment
+  out_stream << "@" << static_segment_ << "." << i << "\n";
+  out_stream << "M=D\n";
 
   return out_stream.str();
 }

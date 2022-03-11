@@ -1,7 +1,7 @@
 #include "code_writer.h"
 
-CodeWriter::CodeWriter(std::string assembly_file)
-  : translator_(std::make_unique<Translator>())
+CodeWriter::CodeWriter(std::string assembly_file, std::string file_name)
+  : translator_(std::make_unique<Translator>(file_name))
 {
   assembly_stream_.open(assembly_file);
 }
@@ -22,6 +22,8 @@ void CodeWriter::writePushPop(
                segment.compare("this") == 0 ||
                segment.compare("that") == 0) {
       assembly_stream_ << translator_->pushSegment(segment, val);
+    } else if (segment.compare("static") == 0) {
+      assembly_stream_ << translator_->pushStatic(val);
     }
   } else {
     if (segment.compare("temp") == 0) {
@@ -31,6 +33,8 @@ void CodeWriter::writePushPop(
                segment.compare("this") == 0 ||
                segment.compare("that") == 0) {
       assembly_stream_ << translator_->popSegment(segment, val);
+    } else if (segment.compare("static") == 0) {
+      assembly_stream_ << translator_->popStatic(val);
     }
   }
 }

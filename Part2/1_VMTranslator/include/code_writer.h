@@ -12,7 +12,7 @@
 
 class CodeWriter {
 public:
-  CodeWriter(std::string assembly_file);
+  CodeWriter(std::string assembly_file, std::string file_name);
   CodeWriter(const CodeWriter&) = delete;
   CodeWriter &operator=(const CodeWriter&) = delete;
   CodeWriter(CodeWriter&&) = delete;

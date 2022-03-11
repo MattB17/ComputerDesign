@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     std::string file_name = getFileNameFromPathWithoutExtension(file_path);
     std::string assembly_path = constructAssemblyFile(file_path);
 
-    CodeWriter code_writer(assembly_path);
+    CodeWriter code_writer(assembly_path, file_name);
     while (parser.hasMoreCommands()) {
       parser.advance();
       code_writer.writeCommandComment(parser.getCurrentCommand());
