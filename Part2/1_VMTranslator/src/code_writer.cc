@@ -24,6 +24,8 @@ void CodeWriter::writePushPop(
       assembly_stream_ << translator_->pushSegment(segment, val);
     } else if (segment.compare("static") == 0) {
       assembly_stream_ << translator_->pushStatic(val);
+    } else if (segment.compare("pointer") == 0) {
+      assembly_stream_ << translator_->pushPointer(val);
     }
   } else {
     if (segment.compare("temp") == 0) {
@@ -35,6 +37,8 @@ void CodeWriter::writePushPop(
       assembly_stream_ << translator_->popSegment(segment, val);
     } else if (segment.compare("static") == 0) {
       assembly_stream_ << translator_->popStatic(val);
+    } else if (segment.compare("pointer") == 0) {
+      assembly_stream_ << translator_->popPointer(val);
     }
   }
 }

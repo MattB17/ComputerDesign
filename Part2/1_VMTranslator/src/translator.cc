@@ -95,6 +95,27 @@ std::string Translator::pushStatic(int i) {
   return out_stream.str();
 }
 
+std::string Translator::pushPointer(int i) {
+  std::stringstream out_stream;
+  // D = @Ptr where `Ptr` is either THIS or THAT depending on `i`
+  if (i == 0) {
+    out_stream << "@THIS\n";
+  } else {
+    out_stream << "@THAT\n";
+  }
+  out_stream << "D=M\n";
+
+  // *SP = D
+  out_stream << "@SP\n";
+  out_stream << "A=M\n";
+  out_stream << "M=D\n";
+
+  // SP++
+  out_stream << stackPointerIncrementInstruction();
+
+  return out_stream.str();
+}
+
 std::string Translator::popSegment(std::string segment, int i) {
   std::stringstream out_stream;
   // D = @segment
@@ -170,6 +191,24 @@ std::string Translator::popStatic(int i) {
 
   // @Foo.i = D where `Foo` is the name of the static segment
   out_stream << "@" << static_segment_ << "." << i << "\n";
+  out_stream << "M=D\n";
+
+  return out_stream.str();
+}
+
+std::string Translator::popPointer(int i) {
+  std::stringstream out_stream;
+  // D = *SP; SP--;
+  out_stream << stackPointerDecrementInstruction();
+  out_stream << "A=M\n";
+  out_stream << "D=M\n";
+
+  // @Ptr = D where `Ptr` is either `THIS` or `THAT` depending on `i`.
+  if (i == 0) {
+    out_stream << "@THIS\n";
+  } else {
+    out_stream << "@THAT\n";
+  }
   out_stream << "M=D\n";
 
   return out_stream.str();

@@ -27,6 +27,9 @@ public:
   // translates the VM instruction `push static i`.
   std::string pushStatic(int i);
 
+  // translates the VM instruction `push pointer i`.
+  std::string pushPointer(int i);
+
   // translates the VM instruction `pop segment i` where segment is
   // one of `local`, `argument`, `this`, or `that`.
   std::string popSegment(std::string segment, int i);
@@ -36,6 +39,9 @@ public:
 
   // translates the VM instruction `pop static i`.
   std::string popStatic(int i);
+
+  // translates the VM instruction `push pointer i`
+  std::string popPointer(int i);
 
   // translates the VM arithmetic command given by `operation`.
   std::string translateArithmeticOperation(std::string operation);
