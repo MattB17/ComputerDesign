@@ -25,6 +25,12 @@ public:
 
   void writePushPop(Operation command, std::string segment, int val);
 
+  void writeLabel(std::string label_str);
+
+  void writeGoTo(std::string label_str);
+
+  void writeIf(std::string label_str);
+
   void close() { assembly_stream_.close(); }
 
 protected:

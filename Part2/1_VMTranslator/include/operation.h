@@ -34,7 +34,7 @@ static std::unordered_map<std::string, Operation> const operation_map =
     {"pop", Operation::POP},
     {"label", Operation::LABEL},
     {"goto", Operation::GOTO},
-    {"if", Operation::IF},
+    {"if-goto", Operation::IF},
     {"function", Operation::FUNCTION},
     {"call", Operation::CALL},
     {"return", Operation::RETURN}

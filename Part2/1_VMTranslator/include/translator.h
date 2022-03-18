@@ -24,6 +24,15 @@ public:
   // translates the VM pop operation of the form `pop segment i`.
   std::string translatePopOperation(std::string segment, int i);
 
+  // translates the VM label operation of the form `label label_str`.
+  std::string translateLabelOperation(std::string label_str);
+
+  // translates the VM goto operation of the form `goto label_str`.
+  std::string translateGoToOperation(std::string label_str);
+
+  // translates the VM if-goto operation of the form `if-goto label_str`.
+  std::string translateIfGoToOperation(std::string label_str);
+
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
   std::string translateCombination(std::string comparison_expression);

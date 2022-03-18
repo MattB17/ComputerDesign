@@ -23,3 +23,15 @@ void CodeWriter::writeArithmetic(std::string arithmetic_command) {
   assembly_stream_ << translator_->translateArithmeticOperation(
     arithmetic_command);
 }
+
+void CodeWriter::writeLabel(std::string label_str) {
+  assembly_stream_ << translator_->translateLabelOperation(label_str);
+}
+
+void CodeWriter::writeGoTo(std::string label_str) {
+  assembly_stream_ << translator_->translateGoToOperation(label_str);
+}
+
+void CodeWriter::writeIf(std::string label_str) {
+  assembly_stream_ << translator_->translateIfGoToOperation(label_str);
+}

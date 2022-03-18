@@ -92,6 +92,27 @@ std::string Translator::translatePopOperation(std::string segment, int i) {
   return "";
 }
 
+std::string Translator::translateLabelOperation(std::string label_str) {
+  refreshOutputStream();
+  out_stream_ << "(" << label_str << ")" << "\n";
+  return out_stream_.str();
+}
+
+std::string Translator::translateGoToOperation(std::string label_str) {
+  refreshOutputStream();
+  out_stream_ << "@" << label_str << "\n";
+  out_stream_ << "0;JMP\n";
+  return out_stream_.str();
+}
+
+std::string Translator::translateIfGoToOperation(std::string label_str) {
+  refreshOutputStream();
+  decrementStackPointerAndAssignToD();
+  out_stream_ << "@" << label_str << "\n";
+  out_stream_ << "D;JNE\n";
+  return out_stream_.str();
+}
+
 std::string Translator::translateCombination(
   std::string combination_expression) {
   // D = *(SP-1) - this is the variable y

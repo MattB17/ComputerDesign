@@ -41,6 +41,12 @@ int main(int argc, char** argv) {
           parser.commandType(), parser.getArg1(), parser.getArg2());
       } else if (parser.commandType() == Operation::ARITHMETIC) {
         code_writer.writeArithmetic(parser.getArg1());
+      } else if (parser.commandType() == Operation::LABEL) {
+        code_writer.writeLabel(parser.getArg1());
+      } else if (parser.commandType() == Operation::GOTO) {
+        code_writer.writeGoTo(parser.getArg1());
+      } else if (parser.commandType() == Operation::IF) {
+        code_writer.writeIf(parser.getArg1());
       }
     }
     code_writer.close();
