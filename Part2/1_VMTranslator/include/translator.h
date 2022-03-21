@@ -35,7 +35,11 @@ public:
 
   // translates the VM function operation of the form
   // `function functionName nVars`.
-  std::string translateFunctionOperation(std::string function_name, int n_vars);
+  std::string translateFunctionOperation(
+    std::string function_name, int n_vars);
+
+  // translates the VM return operation of the form `return`.
+  std::string translateReturnOperation();
 
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.

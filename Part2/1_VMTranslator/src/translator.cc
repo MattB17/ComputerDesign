@@ -123,6 +123,71 @@ std::string Translator::translateFunctionOperation(
   return out_stream_.str();
 }
 
+std::string Translator::translateReturnOperation() {
+  refreshOutputStream();
+  // D = *LCL
+  out_stream_ << "@LCL\n";
+  out_stream_ << "D=M\n";
+
+  // *R13 = D (R13 = LCL representing endFrame)
+  out_stream_ << "@R13\n";
+  out_stream_ << "M=D\n";
+
+  // D = *R13 - 5
+  out_stream_ << "@5\n";
+  out_stream_ << "A=D-A\n";
+  out_stream_ << "D=M\n";
+
+  // *R14 = D
+  out_stream_ << "@R14\n";
+  out_stream_ << "M=D\n";
+
+  // *ARG = pop()
+  decrementStackPointerAndAssignToD();
+  out_stream_ << "@ARG\n";
+  out_stream_ << "M=D\n";
+
+  // *SP = D + 1 (*SP = *ARG + 1 because D = *ARG)
+  out_stream_ << "@SP\n";
+  out_stream_ << "M=D+1\n";
+
+  // *THAT = *R13 - 1 (R13 stores endFrame). Update R13 to store endFrame - 1.
+  out_stream_ << "@R13\n";
+  out_stream_ << "AM=M-1\n";
+  out_stream_ << "D=M\n";
+  out_stream_ << "@THAT\n";
+  out_stream_ << "M=D\n";
+
+  // *THIS = *R13 - 1 (R13 stores endFrame - 1).
+  // Update R13 to store endFrame - 2.
+  out_stream_ << "@R13\n";
+  out_stream_ << "AM=M-1\n";
+  out_stream_ << "D=M\n";
+  out_stream_ << "@THIS\n";
+  out_stream_ << "M=D\n";
+
+  // *ARG = *R13 - 1 (R13 stores endFrame - 2).
+  // Update R13 to store endFrame - 3.
+  out_stream_ << "@R13\n";
+  out_stream_ << "AM=M-1\n";
+  out_stream_ << "D=M\n";
+  out_stream_ << "@ARG\n";
+  out_stream_ << "M=D\n";
+
+  // *LCL = *R13 - 1 (R13 stores endFrame - 3).
+  // Update R13 to store endFrame - 4.
+  out_stream_ << "@R13\n";
+  out_stream_ << "AM=M-1\n";
+  out_stream_ << "D=M\n";
+  out_stream_ << "@LCL\n";
+  out_stream_ << "M=D\n";
+
+  // goto *R14 (R14 stores retAddr)
+  out_stream_ << "@R14\n";
+  out_stream_ << "A=M\n";
+  out_stream_ << "0;JMP\n"; 
+}
+
 std::string Translator::translateCombination(
   std::string combination_expression) {
   // D = *(SP-1) - this is the variable y
