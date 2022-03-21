@@ -33,6 +33,10 @@ public:
   // translates the VM if-goto operation of the form `if-goto label_str`.
   std::string translateIfGoToOperation(std::string label_str);
 
+  // translates the VM function operation of the form
+  // `function functionName nVars`.
+  std::string translateFunctionOperation(std::string function_name, int n_vars);
+
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
   std::string translateCombination(std::string comparison_expression);
@@ -100,6 +104,12 @@ private:
   // the assembly commands to assign the top of the stack to the A register
   // and to decrement the stack pointer.
   void decrementStackPointerAndAssignToD();
+
+  // the assembly command to add the label `label_str`.
+  void addLabel(std::string label_str);
+
+  // adds the assembly commands to execute the instruction `push constant i`.
+  void addPushConstantInstruction(int i);
 
   int label_idx_;
 

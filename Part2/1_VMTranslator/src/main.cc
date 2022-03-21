@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
         code_writer.writeGoTo(parser.getArg1());
       } else if (parser.commandType() == Operation::IF) {
         code_writer.writeIf(parser.getArg1());
+      } else if (parser.commandType() == Operation::FUNCTION) {
+        code_writer.writeFunction(parser.getArg1(), parser.getArg2());
       }
     }
     code_writer.close();

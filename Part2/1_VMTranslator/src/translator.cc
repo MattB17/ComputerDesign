@@ -94,7 +94,7 @@ std::string Translator::translatePopOperation(std::string segment, int i) {
 
 std::string Translator::translateLabelOperation(std::string label_str) {
   refreshOutputStream();
-  out_stream_ << "(" << label_str << ")" << "\n";
+  addLabel(label_str);
   return out_stream_.str();
 }
 
@@ -110,6 +110,16 @@ std::string Translator::translateIfGoToOperation(std::string label_str) {
   decrementStackPointerAndAssignToD();
   out_stream_ << "@" << label_str << "\n";
   out_stream_ << "D;JNE\n";
+  return out_stream_.str();
+}
+
+std::string Translator::translateFunctionOperation(
+  std::string function_name, int n_vars) {
+  refreshOutputStream();
+  addLabel(function_name);
+  for (int i = 0; i < n_vars; i++) {
+    addPushConstantInstruction(0);
+  }
   return out_stream_.str();
 }
 
@@ -181,15 +191,7 @@ std::string Translator::translateComparison(
 }
 
 std::string Translator::pushConstant(int i) {
-  // D = i
-  out_stream_ << "@" << i << "\n";
-  out_stream_ << "D=A\n";
-
-  // SP++; *(SP-1) = D
-  stackPointerIncrementInstruction();
-  out_stream_ << "A=M-1\n";
-  out_stream_ << "M=D\n";
-
+  addPushConstantInstruction(i);
   return out_stream_.str();
 }
 
@@ -320,4 +322,19 @@ void Translator::decrementStackPointerAndAssignToA() {
 void Translator::decrementStackPointerAndAssignToD() {
   decrementStackPointerAndAssignToA();
   out_stream_ << "D=M\n";
+}
+
+void Translator::addLabel(std::string label_str) {
+  out_stream_ << "(" << label_str << ")" << "\n";
+}
+
+void Translator::addPushConstantInstruction(int i) {
+  // D = i
+  out_stream_ << "@" << i << "\n";
+  out_stream_ << "D=A\n";
+
+  // SP++; *(SP-1) = D
+  stackPointerIncrementInstruction();
+  out_stream_ << "A=M-1\n";
+  out_stream_ << "M=D\n";
 }

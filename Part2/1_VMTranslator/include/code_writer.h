@@ -31,6 +31,8 @@ public:
 
   void writeIf(std::string label_str);
 
+  void writeFunction(std::string function_name, int n_vars);
+
   void close() { assembly_stream_.close(); }
 
 protected:

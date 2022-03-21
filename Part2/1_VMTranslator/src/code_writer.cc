@@ -35,3 +35,8 @@ void CodeWriter::writeGoTo(std::string label_str) {
 void CodeWriter::writeIf(std::string label_str) {
   assembly_stream_ << translator_->translateIfGoToOperation(label_str);
 }
+
+void CodeWriter::writeFunction(std::string function_name, int n_vars) {
+  assembly_stream_ << translator_->translateFunctionOperation(
+    function_name, n_vars);
+}
