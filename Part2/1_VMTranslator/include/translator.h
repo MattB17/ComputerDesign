@@ -68,7 +68,7 @@ private:
   // adds `offset` to the current address pointed to by the D register and
   // pushes the contents of that address to the stack, while incrementing the
   // stack pointer.
-  std::string addOffsetAndPushToStack(int offset);
+  void addOffsetAndPushToStack(int offset);
 
   // translates the VM instruction `pop segment i` where segment is
   // one of `local`, `argument`, `this`, or `that`.
@@ -86,7 +86,7 @@ private:
   // adds `offset` to the current address pointed to by the D register and
   // pops the head of the stack to that address, while decrementing the
   // stack pointer.
-  std::string addOffsetAndPopFromStack(int offset);
+  void addOffsetAndPopFromStack(int offset);
 
   // refreshes the output stream.
   void refreshOutputStream();

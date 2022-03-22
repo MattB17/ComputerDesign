@@ -142,11 +142,15 @@ std::string Translator::translateReturnOperation() {
   out_stream_ << "@R14\n";
   out_stream_ << "M=D\n";
 
-  // *ARG = pop()
-  decrementStackPointerAndAssignToD();
+  // RAM[*ARG] = pop()
   out_stream_ << "@ARG\n";
-  out_stream_ << "M=D\n";
+  out_stream_ << "D=M\n";
+  addOffsetAndPopFromStack(/*offset=*/0);
 
+  // D = *ARG
+  out_stream_ << "@ARG\n";
+  out_stream_ << "D=M\n";
+  
   // *SP = D + 1 (*SP = *ARG + 1 because D = *ARG)
   out_stream_ << "@SP\n";
   out_stream_ << "M=D+1\n";
@@ -185,7 +189,9 @@ std::string Translator::translateReturnOperation() {
   // goto *R14 (R14 stores retAddr)
   out_stream_ << "@R14\n";
   out_stream_ << "A=M\n";
-  out_stream_ << "0;JMP\n"; 
+  out_stream_ << "0;JMP\n";
+
+  return out_stream_.str();
 }
 
 std::string Translator::translateCombination(
@@ -264,14 +270,18 @@ std::string Translator::pushSegment(int i) {
   // D = RAM[@segment] (A already points to @segment)
   out_stream_ << "D=M\n";
 
-  return addOffsetAndPushToStack(/*offset=*/i);
+  addOffsetAndPushToStack(/*offset=*/i);
+
+  return out_stream_.str();
 }
 
 std::string Translator::pushTemp(int i) {
   // D = 5 (A = @temp, that is A = 5)
   out_stream_ << "D=A\n";
 
-  return addOffsetAndPushToStack(/*offset=*/i);
+  addOffsetAndPushToStack(/*offset=*/i);
+
+  return out_stream_.str();
 }
 
 std::string Translator::pushMemoryContentsToStack() {
@@ -286,7 +296,7 @@ std::string Translator::pushMemoryContentsToStack() {
   return out_stream_.str();
 }
 
-std::string Translator::addOffsetAndPushToStack(int offset) {
+void Translator::addOffsetAndPushToStack(int offset) {
   // A = D + offset (where D = RAM[@segment] so A = RAM[@segment] + offset).
   out_stream_ << "@" << offset << "\n";
   out_stream_ << "A=D+A\n";
@@ -298,22 +308,24 @@ std::string Translator::addOffsetAndPushToStack(int offset) {
   stackPointerIncrementInstruction();
   out_stream_ << "A=M-1\n";
   out_stream_ << "M=D\n";
-
-  return out_stream_.str();
 }
 
 std::string Translator::popSegment(int i) {
   // D = RAM[@segment] (A already has the value @segment)
   out_stream_ << "D=M\n";
 
-  return addOffsetAndPopFromStack(/*offset=*/i);
+  addOffsetAndPopFromStack(/*offset=*/i);
+
+  return out_stream_.str();
 }
 
 std::string Translator::popTemp(int i) {
   // D = 5 (A already stores 5, the start of the temp segment)
   out_stream_ << "D=A\n";
 
-  return addOffsetAndPopFromStack(/*offset=*/i);
+  addOffsetAndPopFromStack(/*offset=*/i);
+
+  return out_stream_.str();
 }
 
 std::string Translator::popStatic(int i) {
@@ -336,7 +348,7 @@ std::string Translator::popPointer(int i) {
   return out_stream_.str();
 }
 
-std::string Translator::addOffsetAndPopFromStack(int offset) {
+void Translator::addOffsetAndPopFromStack(int offset) {
   // D = D + i (where D = RAM[@segment], so D = RAM[@segment] + i)
   out_stream_ << "@" << offset << "\n";
   out_stream_ << "D=D+A\n";
@@ -352,8 +364,6 @@ std::string Translator::addOffsetAndPopFromStack(int offset) {
 
   // update RAM[@segment + i] to `val` which is D - A
   out_stream_ << "M=D-A\n";
-
-  return out_stream_.str();
 }
 
 void Translator::refreshOutputStream() {

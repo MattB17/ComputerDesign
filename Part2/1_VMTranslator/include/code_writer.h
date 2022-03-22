@@ -33,6 +33,8 @@ public:
 
   void writeFunction(std::string function_name, int n_vars);
 
+  void writeReturn();
+
   void close() { assembly_stream_.close(); }
 
 protected:
