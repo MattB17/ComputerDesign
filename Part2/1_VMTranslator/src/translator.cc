@@ -3,7 +3,8 @@
 #include <sstream>
 
 Translator::Translator(std::string static_segment_)
-  : label_idx_(0),  static_segment_(static_segment_) {}
+  : label_idx_(0),  static_segment_(static_segment_),
+    curr_function_(""), func_calls_(0) {}
 
 std::string Translator::translateArithmeticOperation(std::string operation) {
   refreshOutputStream();
@@ -94,13 +95,13 @@ std::string Translator::translatePopOperation(std::string segment, int i) {
 
 std::string Translator::translateLabelOperation(std::string label_str) {
   refreshOutputStream();
-  addLabel(label_str);
+  createLabel(label_str);
   return out_stream_.str();
 }
 
 std::string Translator::translateGoToOperation(std::string label_str) {
   refreshOutputStream();
-  out_stream_ << "@" << label_str << "\n";
+  atLabelCommand(label_str);
   out_stream_ << "0;JMP\n";
   return out_stream_.str();
 }
@@ -108,7 +109,7 @@ std::string Translator::translateGoToOperation(std::string label_str) {
 std::string Translator::translateIfGoToOperation(std::string label_str) {
   refreshOutputStream();
   decrementStackPointerAndAssignToD();
-  out_stream_ << "@" << label_str << "\n";
+  atLabelCommand(label_str);
   out_stream_ << "D;JNE\n";
   return out_stream_.str();
 }
@@ -116,15 +117,21 @@ std::string Translator::translateIfGoToOperation(std::string label_str) {
 std::string Translator::translateFunctionOperation(
   std::string function_name, int n_vars) {
   refreshOutputStream();
-  addLabel(function_name);
+
+  createLabel(function_name);
+
+  curr_function_ = function_name;
+
   for (int i = 0; i < n_vars; i++) {
     addPushConstantInstruction(0);
   }
+
   return out_stream_.str();
 }
 
 std::string Translator::translateReturnOperation() {
   refreshOutputStream();
+
   // D = *LCL
   out_stream_ << "@LCL\n";
   out_stream_ << "D=M\n";
@@ -150,7 +157,7 @@ std::string Translator::translateReturnOperation() {
   // D = *ARG
   out_stream_ << "@ARG\n";
   out_stream_ << "D=M\n";
-  
+
   // *SP = D + 1 (*SP = *ARG + 1 because D = *ARG)
   out_stream_ << "@SP\n";
   out_stream_ << "M=D+1\n";
@@ -190,6 +197,10 @@ std::string Translator::translateReturnOperation() {
   out_stream_ << "@R14\n";
   out_stream_ << "A=M\n";
   out_stream_ << "0;JMP\n";
+
+  // clear out state of the current function.
+  curr_function_ = "";
+  func_calls_ = 0;
 
   return out_stream_.str();
 }
@@ -399,8 +410,20 @@ void Translator::decrementStackPointerAndAssignToD() {
   out_stream_ << "D=M\n";
 }
 
-void Translator::addLabel(std::string label_str) {
-  out_stream_ << "(" << label_str << ")" << "\n";
+void Translator::createLabel(std::string label_str) {
+  out_stream_ << "(" << curr_function_;
+  if (curr_function_.compare("") != 0) {
+    out_stream_ << "$";
+  }
+  out_stream_ << label_str << ")" << "\n";
+}
+
+void Translator::atLabelCommand(std::string label_str) {
+  out_stream_ << "@" << curr_function_;
+  if (curr_function_.compare("") != 0) {
+    out_stream_ << "$";
+  }
+  out_stream_ << label_str << "\n";
 }
 
 void Translator::addPushConstantInstruction(int i) {

@@ -109,8 +109,11 @@ private:
   // and to decrement the stack pointer.
   void decrementStackPointerAndAssignToD();
 
-  // the assembly command to add the label `label_str`.
-  void addLabel(std::string label_str);
+  // the assembly command to create the label `label_str`.
+  void createLabel(std::string label_str);
+
+  // the assembly command `@label_str`
+  void atLabelCommand(std::string label_str);
 
   // adds the assembly commands to execute the instruction `push constant i`.
   void addPushConstantInstruction(int i);
@@ -118,6 +121,14 @@ private:
   int label_idx_;
 
   std::string static_segment_;
+
+  // identifies the name of the current function. An empty string indicates
+  // that the translation is currently being done outside of any functions.
+  std::string curr_function_;
+
+  // indicates the number of call commands executed inside the current
+  // function.
+  int func_calls_;
 
   std::stringstream out_stream_;
 };
