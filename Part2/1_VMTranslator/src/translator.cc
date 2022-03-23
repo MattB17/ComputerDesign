@@ -6,6 +6,22 @@ Translator::Translator(std::string static_segment_)
   : label_idx_(0),  static_segment_(static_segment_),
     curr_function_(""), func_calls_(0) {}
 
+std::string Translator::translateInitOperation() {
+  refreshOutputStream();
+  out_stream_ << "// Bootstrap code\n";
+
+  // D = 256
+  out_stream_ << "@256\n";
+  out_stream_ << "D=A\n";
+  // *SP = D (so *SP = 256 as D = 256)
+  out_stream_ << "@SP\n";
+  out_stream_ << "M=D\n";
+
+  saveCurrStateAndJumpToFunction("Sys.init", 0);
+
+  return out_stream_.str();
+}
+
 std::string Translator::translateArithmeticOperation(std::string operation) {
   refreshOutputStream();
   if (operation.compare("add") == 0) {
@@ -199,48 +215,7 @@ std::string Translator::translateCallOperation(
   std::string function_name, int n_args) {
   refreshOutputStream();
 
-  // @returnAddress
-  out_stream_ << "@";
-  addReturnAddress();
-  out_stream_ << "\n";
-
-  pushValueInRegisterA();
-
-  // push LCL
-  out_stream_ << "@LCL\n";
-  pushValueInRegisterM();
-
-  // push ARG
-  out_stream_ << "@ARG\n";
-  pushValueInRegisterM();
-
-  // push THIS
-  out_stream_ << "@THIS\n";
-  pushValueInRegisterM();
-
-  // push THAT
-  out_stream_ << "@THAT\n";
-  pushValueInRegisterM();
-
-  // D = *SP
-  out_stream_ << "@SP\n";
-  out_stream_ << "D=M\n";
-
-  // *LCL = D (*LCL = *SP as D = *SP)
-  out_stream_ << "@LCL\n";
-  out_stream_ << "M=D\n";
-
-  // D = D - (5 + n_args) (D = *SP - 5 - n_args as D = *SP)
-  out_stream_ << "@" << (5 + n_args) << "\n";
-  out_stream_ << "D=D-A\n";
-
-  // *ARG = D (*ARG = *SP - 5 - n_args as D = *SP - 5 - n_args)
-  out_stream_ << "@ARG\n";
-  out_stream_ << "M=D\n";
-
-  // goto function_name
-  out_stream_ << "@" << function_name << "\n";
-  out_stream_ << "0;JMP\n";
+  saveCurrStateAndJumpToFunction(function_name, n_args);
 
   // (returnAddress)
   out_stream_ << "(";
@@ -474,4 +449,50 @@ void Translator::pushValueInRegisterD() {
   stackPointerIncrementInstruction();
   out_stream_ << "A=M-1\n";
   out_stream_ << "M=D\n";
+}
+
+void Translator::saveCurrStateAndJumpToFunction(
+  std::string function_name, int n_args) {
+  // @returnAddress
+  out_stream_ << "@";
+  addReturnAddress();
+  out_stream_ << "\n";
+
+  pushValueInRegisterA();
+
+  // push LCL
+  out_stream_ << "@LCL\n";
+  pushValueInRegisterM();
+
+  // push ARG
+  out_stream_ << "@ARG\n";
+  pushValueInRegisterM();
+
+  // push THIS
+  out_stream_ << "@THIS\n";
+  pushValueInRegisterM();
+
+  // push THAT
+  out_stream_ << "@THAT\n";
+  pushValueInRegisterM();
+
+  // D = *SP
+  out_stream_ << "@SP\n";
+  out_stream_ << "D=M\n";
+
+  // *LCL = D (*LCL = *SP as D = *SP)
+  out_stream_ << "@LCL\n";
+  out_stream_ << "M=D\n";
+
+  // D = D - (5 + n_args) (D = *SP - 5 - n_args as D = *SP)
+  out_stream_ << "@" << (5 + n_args) << "\n";
+  out_stream_ << "D=D-A\n";
+
+  // *ARG = D (*ARG = *SP - 5 - n_args as D = *SP - 5 - n_args)
+  out_stream_ << "@ARG\n";
+  out_stream_ << "M=D\n";
+
+  // goto function_name
+  out_stream_ << "@" << function_name << "\n";
+  out_stream_ << "0;JMP\n";
 }

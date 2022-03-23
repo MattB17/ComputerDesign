@@ -15,6 +15,9 @@ public:
   Translator &operator=(Translator&&) = delete;
   ~Translator() {}
 
+  // translates the system init operation into assembly code.
+  std::string translateInitOperation();
+
   // translates the VM arithmetic command given by `operation`.
   std::string translateArithmeticOperation(std::string operation);
 
@@ -136,6 +139,10 @@ private:
   // adds the assembly commands to push the value stored in register D onto the
   // stack.
   void pushValueInRegisterD();
+
+  // adds the assembly commands to save the state of the current function and
+  // jump to the function `function_name` taking `n_args`.
+  void saveCurrStateAndJumpToFunction(std::string function_name, int n_args);
 
   int label_idx_;
   std::string static_segment_;

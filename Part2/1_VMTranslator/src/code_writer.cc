@@ -10,6 +10,10 @@ void CodeWriter::writeCommandComment(std::string command) {
   assembly_stream_ << "// " << command << "\n";
 }
 
+void CodeWriter::writeInit() {
+  assembly_stream_ << translator_->translateInitOperation();
+}
+
 void CodeWriter::writePushPop(
   Operation command, std::string segment, int val) {
   if (command == Operation::PUSH) {

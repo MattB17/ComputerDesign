@@ -21,6 +21,8 @@ public:
 
   void writeCommandComment(std::string command);
 
+  void writeInit();
+
   void writeArithmetic(std::string arithmetic_command);
 
   void writePushPop(Operation command, std::string segment, int val);
