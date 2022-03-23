@@ -34,12 +34,15 @@ public:
   std::string translateIfGoToOperation(std::string label_str);
 
   // translates the VM function operation of the form
-  // `function functionName nVars`.
+  // `function function_name n_vars`.
   std::string translateFunctionOperation(
     std::string function_name, int n_vars);
 
   // translates the VM return operation of the form `return`.
   std::string translateReturnOperation();
+
+  // translates the VM call operation of the form `call function_name n_args`.
+  std::string translateCallOperation(std::string function_name, int n_args);
 
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
@@ -112,11 +115,29 @@ private:
   // the assembly command to create the label `label_str`.
   void createLabel(std::string label_str);
 
-  // the assembly command `@label_str`
+  // the assembly command `@label_str`.
   void atLabelCommand(std::string label_str);
+
+  // adds the label string for `label_str`.
+  void addLabelString(std::string label_str);
+
+  // adds the return address
+  void addReturnAddress();
 
   // adds the assembly commands to execute the instruction `push constant i`.
   void addPushConstantInstruction(int i);
+
+  // adds the assembly commands to push the value stored in register A onto the
+  // stack.
+  void pushValueInRegisterA();
+
+  // adds the assembly commands to push the value stored in register M onto the
+  // stack.
+  void pushValueInRegisterM();
+
+  // adds the assembly commands to push the value stored in register D onto the
+  // stack.
+  void pushValueInRegisterD();
 
   int label_idx_;
 

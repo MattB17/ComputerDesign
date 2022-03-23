@@ -51,6 +51,8 @@ int main(int argc, char** argv) {
         code_writer.writeFunction(parser.getArg1(), parser.getArg2());
       } else if (parser.commandType() == Operation::RETURN) {
         code_writer.writeReturn();
+      } else if (parser.commandType() == Operation::CALL) {
+        code_writer.writeCall(parser.getArg1(), parser.getArg2());
       }
     }
     code_writer.close();

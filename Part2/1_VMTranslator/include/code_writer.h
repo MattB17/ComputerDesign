@@ -35,6 +35,8 @@ public:
 
   void writeReturn();
 
+  void writeCall(std::string function_name, int n_args);
+
   void close() { assembly_stream_.close(); }
 
 protected:

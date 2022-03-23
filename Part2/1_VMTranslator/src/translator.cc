@@ -205,6 +205,62 @@ std::string Translator::translateReturnOperation() {
   return out_stream_.str();
 }
 
+std::string Translator::translateCallOperation(
+  std::string function_name, int n_args) {
+  refreshOutputStream();
+
+  // @returnAddress
+  out_stream_ << "@";
+  addReturnAddress();
+  out_stream_ << "\n";
+
+  pushValueInRegisterA();
+
+  // push LCL
+  out_stream_ << "@LCL\n";
+  pushValueInRegisterM();
+
+  // push ARG
+  out_stream_ << "@ARG\n";
+  pushValueInRegisterM();
+
+  // push THIS
+  out_stream_ << "@THIS\n";
+  pushValueInRegisterM();
+
+  // push THAT
+  out_stream_ << "@THAT\n";
+  pushValueInRegisterM();
+
+  // D = *SP
+  out_stream_ << "@SP\n";
+  out_stream_ << "D=M\n";
+
+  // *LCL = D (*LCL = *SP as D = *SP)
+  out_stream_ << "@LCL\n";
+  out_stream_ << "M=D\n";
+
+  // D = D - (5 + n_args) (D = *SP - 5 - n_args as D = *SP)
+  out_stream_ << "@" << (5 + n_args) << "\n";
+  out_stream_ << "D=D-A\n";
+
+  // *ARG = D (*ARG = *SP - 5 - n_args as D = *SP - 5 - n_args)
+  out_stream_ << "@ARG\n";
+  out_stream_ << "M=D\n";
+
+  // goto function_name
+  out_stream_ << "@" << function_name << "\n";
+  out_stream_ << "0;JMP\n";
+
+  // (returnAddress)
+  out_stream_ << "(";
+  addReturnAddress();
+  out_stream_ << ")\n";
+
+  func_calls_++;
+  return out_stream_.str();
+}
+
 std::string Translator::translateCombination(
   std::string combination_expression) {
   // D = *(SP-1) - this is the variable y
@@ -411,28 +467,51 @@ void Translator::decrementStackPointerAndAssignToD() {
 }
 
 void Translator::createLabel(std::string label_str) {
-  out_stream_ << "(" << curr_function_;
-  if (curr_function_.compare("") != 0) {
-    out_stream_ << "$";
-  }
-  out_stream_ << label_str << ")" << "\n";
+  out_stream_ << "(";
+  addLabelString(label_str);
+  out_stream_ << ")" << "\n";
 }
 
 void Translator::atLabelCommand(std::string label_str) {
-  out_stream_ << "@" << curr_function_;
-  if (curr_function_.compare("") != 0) {
+  out_stream_ << "@";
+  addLabelString(label_str);
+  out_stream_ << "\n";
+}
+
+void Translator::addLabelString(std::string label_str) {
+  out_stream_ << curr_function_;
+  if (curr_function_.compare("") != 0)
     out_stream_ << "$";
-  }
-  out_stream_ << label_str << "\n";
+  out_stream_ << label_str;
+}
+
+void Translator::addReturnAddress() {
+  out_stream_ << curr_function_;
+  if (curr_function_.compare("") != 0)
+    out_stream_ << "$";
+  out_stream_ << "ret." << func_calls_;
 }
 
 void Translator::addPushConstantInstruction(int i) {
-  // D = i
+  // A = i
   out_stream_ << "@" << i << "\n";
-  out_stream_ << "D=A\n";
 
-  // SP++; *(SP-1) = D
+  pushValueInRegisterA();
+}
+
+void Translator::pushValueInRegisterA() {
+  out_stream_ << "D=A\n";
+  pushValueInRegisterD();
+}
+
+void Translator::pushValueInRegisterM() {
+  out_stream_ << "D=M\n";
+  pushValueInRegisterD();
+}
+
+void Translator::pushValueInRegisterD() {
+  //SP++; *(SP-1) = D
   stackPointerIncrementInstruction();
   out_stream_ << "A=M-1\n";
-  out_stream_ << "M=D\n";
+  out_stream_ << "M=D";
 }

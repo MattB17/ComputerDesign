@@ -44,3 +44,8 @@ void CodeWriter::writeFunction(std::string function_name, int n_vars) {
 void CodeWriter::writeReturn() {
   assembly_stream_ << translator_->translateReturnOperation();
 }
+
+void CodeWriter::writeCall(std::string function_name, int n_args) {
+  assembly_stream_ << translator_->translateCallOperation(
+    function_name, n_args);
+}
