@@ -46,27 +46,23 @@ public:
 
 private:
   // translates a VM combination command. One of `add`, `sub`, `and`, or `or`.
-  std::string translateCombination(std::string comparison_expression);
+  void translateCombination(std::string comparison_expression);
 
   // translates a VM negation command. One of `neg` or `not`.
-  std::string translateNegation(std::string negation_expression);
+  void translateNegation(std::string negation_expression);
 
   // translates a VM comparison command. One of `eq`, `lt`, or `gt`.
-  std::string translateComparison(std::string comparison_expression);
+  void translateComparison(std::string comparison_expression);
 
   // translates the VM instruction `push constant i`.
-  std::string pushConstant(int i);
+  void pushConstant(int i);
 
   // translates the VM instruction `push segment i` where segment is
   // one of `local`, `argument`, `this`, or `that`.
-  std::string pushSegment(int i);
+  void pushSegment(int i);
 
   // translates the VM instruction `push temp i`.
-  std::string pushTemp(int i);
-
-  // pushes the current memory contents to the stack and increments the
-  // stack pointer.
-  std::string pushMemoryContentsToStack();
+  void pushTemp(int i);
 
   // adds `offset` to the current address pointed to by the D register and
   // pushes the contents of that address to the stack, while incrementing the
@@ -75,16 +71,16 @@ private:
 
   // translates the VM instruction `pop segment i` where segment is
   // one of `local`, `argument`, `this`, or `that`.
-  std::string popSegment(int i);
+  void popSegment(int i);
 
   // translates the VM instruction `pop temp i`.
-  std::string popTemp(int i);
+  void popTemp(int i);
 
   // translates the VM instruction `pop static i`.
-  std::string popStatic(int i);
+  void popStatic(int i);
 
   // translates the VM instruction `push pointer i`
-  std::string popPointer(int i);
+  void popPointer(int i);
 
   // adds `offset` to the current address pointed to by the D register and
   // pops the head of the stack to that address, while decrementing the
@@ -112,6 +108,11 @@ private:
   // and to decrement the stack pointer.
   void decrementStackPointerAndAssignToD();
 
+  // decrements the value stored in the register `register_name` and assigns
+  // the resulting value to the memory location pointed to by `segment_name`.
+  void decrementRegisterAndAssignToSegment(
+    std::string register_name, std::string segment_name);
+
   // the assembly command to create the label `label_str`.
   void createLabel(std::string label_str);
 
@@ -123,9 +124,6 @@ private:
 
   // adds the return address
   void addReturnAddress();
-
-  // adds the assembly commands to execute the instruction `push constant i`.
-  void addPushConstantInstruction(int i);
 
   // adds the assembly commands to push the value stored in register A onto the
   // stack.
@@ -140,17 +138,13 @@ private:
   void pushValueInRegisterD();
 
   int label_idx_;
-
   std::string static_segment_;
-
   // identifies the name of the current function. An empty string indicates
   // that the translation is currently being done outside of any functions.
   std::string curr_function_;
-
   // indicates the number of call commands executed inside the current
   // function.
   int func_calls_;
-
   std::stringstream out_stream_;
 };
 

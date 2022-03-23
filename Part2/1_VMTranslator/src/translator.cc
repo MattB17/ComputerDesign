@@ -10,87 +10,93 @@ std::string Translator::translateArithmeticOperation(std::string operation) {
   refreshOutputStream();
   if (operation.compare("add") == 0) {
     // D = x + y
-    return translateCombination("D=D+M");
+    translateCombination("D=D+M");
   } else if (operation.compare("sub") == 0) {
     // D = x - y
-    return translateCombination("D=M-D");
+    translateCombination("D=M-D");
   } else if (operation.compare("and") == 0) {
     // D = x & y
-    return translateCombination("D=D&M");
+    translateCombination("D=D&M");
   } else if (operation.compare("or") == 0) {
     // D = x | y
-    return translateCombination("D=D|M");
+    translateCombination("D=D|M");
   } else if (operation.compare("neg") == 0) {
     // M = -x
-    return translateNegation("M=-M");
+    translateNegation("M=-M");
   } else if (operation.compare("not") == 0) {
     // M = !x
-    return translateNegation("M=!M");
+    translateNegation("M=!M");
   } else if (operation.compare("eq") == 0) {
     // D = x - y, jump if D == 0
-    return translateComparison("D;JEQ");
+    translateComparison("D;JEQ");
   } else if (operation.compare("lt") == 0) {
     // D = x - y, jump if D < 0
-    return translateComparison("D;JLT");
+    translateComparison("D;JLT");
   } else if (operation.compare("gt") == 0) {
     // D = x - y, jump if D > 0
-    return translateComparison("D;JGT");
+    translateComparison("D;JGT");
+  } else {
+    return "";
   }
-  return "";
+  return out_stream_.str();
 }
 
 std::string Translator::translatePushOperation(std::string segment, int i) {
   refreshOutputStream();
   if (segment.compare("constant") == 0) {
-    return pushConstant(i);
+    pushConstant(i);
   } else if (segment.compare("local") == 0) {
     out_stream_ << "@LCL\n";
-    return pushSegment(i);
+    pushSegment(i);
   } else if (segment.compare("argument") == 0) {
     out_stream_ << "@ARG\n";
-    return pushSegment(i);
+    pushSegment(i);
   } else if (segment.compare("this") == 0) {
     out_stream_ << "@THIS\n";
-    return pushSegment(i);
+    pushSegment(i);
   } else if (segment.compare("that") == 0) {
     out_stream_ << "@THAT\n";
-    return pushSegment(i);
+    pushSegment(i);
   } else if (segment.compare("temp") == 0) {
     out_stream_ << "@5\n";
-    return pushTemp(i);
+    pushTemp(i);
   } else if (segment.compare("static") == 0) {
     out_stream_ << "@" << static_segment_ << "." << i << "\n";
-    return pushMemoryContentsToStack();
+    pushValueInRegisterM();
   } else if (segment.compare("pointer") == 0) {
     setAddressFromPointer(i);
-    return pushMemoryContentsToStack();
+    pushValueInRegisterM();
+  } else {
+    return "";
   }
-  return "";
+  return out_stream_.str();
 }
 
 std::string Translator::translatePopOperation(std::string segment, int i) {
   refreshOutputStream();
   if (segment.compare("local") == 0) {
     out_stream_ << "@LCL\n";
-    return popSegment(i);
+    popSegment(i);
   } else if (segment.compare("argument") == 0) {
     out_stream_ << "@ARG\n";
-    return popSegment(i);
+    popSegment(i);
   } else if (segment.compare("this") == 0) {
     out_stream_ << "@THIS\n";
-    return popSegment(i);
+    popSegment(i);
   } else if (segment.compare("that") == 0) {
     out_stream_ << "@THAT\n";
-    return popSegment(i);
+    popSegment(i);
   } else if (segment.compare("temp") == 0) {
     out_stream_ << "@5\n";
-    return popTemp(i);
+    popTemp(i);
   } else if (segment.compare("static") == 0) {
-    return popStatic(i);
+    popStatic(i);
   } else if (segment.compare("pointer") == 0) {
-    return popPointer(i);
+    popPointer(i);
+  } else {
+    return "";
   }
-  return "";
+  return out_stream_.str();
 }
 
 std::string Translator::translateLabelOperation(std::string label_str) {
@@ -116,6 +122,10 @@ std::string Translator::translateIfGoToOperation(std::string label_str) {
 
 std::string Translator::translateFunctionOperation(
   std::string function_name, int n_vars) {
+  // clearing state when entering function
+  curr_function_ = "";
+  func_calls_ = 0;
+
   refreshOutputStream();
 
   createLabel(function_name);
@@ -123,7 +133,7 @@ std::string Translator::translateFunctionOperation(
   curr_function_ = function_name;
 
   for (int i = 0; i < n_vars; i++) {
-    addPushConstantInstruction(0);
+    pushConstant(0);
   }
 
   return out_stream_.str();
@@ -163,44 +173,24 @@ std::string Translator::translateReturnOperation() {
   out_stream_ << "M=D+1\n";
 
   // *THAT = *R13 - 1 (R13 stores endFrame). Update R13 to store endFrame - 1.
-  out_stream_ << "@R13\n";
-  out_stream_ << "AM=M-1\n";
-  out_stream_ << "D=M\n";
-  out_stream_ << "@THAT\n";
-  out_stream_ << "M=D\n";
+  decrementRegisterAndAssignToSegment("R13", "THAT");
 
   // *THIS = *R13 - 1 (R13 stores endFrame - 1).
   // Update R13 to store endFrame - 2.
-  out_stream_ << "@R13\n";
-  out_stream_ << "AM=M-1\n";
-  out_stream_ << "D=M\n";
-  out_stream_ << "@THIS\n";
-  out_stream_ << "M=D\n";
+  decrementRegisterAndAssignToSegment("R13", "THIS");
 
   // *ARG = *R13 - 1 (R13 stores endFrame - 2).
   // Update R13 to store endFrame - 3.
-  out_stream_ << "@R13\n";
-  out_stream_ << "AM=M-1\n";
-  out_stream_ << "D=M\n";
-  out_stream_ << "@ARG\n";
-  out_stream_ << "M=D\n";
+  decrementRegisterAndAssignToSegment("R13", "ARG");
 
   // *LCL = *R13 - 1 (R13 stores endFrame - 3).
   // Update R13 to store endFrame - 4.
-  out_stream_ << "@R13\n";
-  out_stream_ << "AM=M-1\n";
-  out_stream_ << "D=M\n";
-  out_stream_ << "@LCL\n";
-  out_stream_ << "M=D\n";
+  decrementRegisterAndAssignToSegment("R13", "LCL");
 
   // goto *R14 (R14 stores retAddr)
   out_stream_ << "@R14\n";
   out_stream_ << "A=M\n";
   out_stream_ << "0;JMP\n";
-
-  // clear out state of the current function.
-  curr_function_ = "";
-  func_calls_ = 0;
 
   return out_stream_.str();
 }
@@ -261,8 +251,11 @@ std::string Translator::translateCallOperation(
   return out_stream_.str();
 }
 
-std::string Translator::translateCombination(
-  std::string combination_expression) {
+/* *****************
+ * PRIVATE MEMBERS
+ * ****************/
+
+void Translator::translateCombination(std::string combination_expression) {
   // D = *(SP-1) - this is the variable y
   out_stream_ << "@SP\n";
   out_stream_ << "A=M-1\n";
@@ -278,24 +271,18 @@ std::string Translator::translateCombination(
   out_stream_ << "M=D\n";
 
   stackPointerDecrementInstruction();
-
-  return out_stream_.str();
 }
 
-std::string Translator::translateNegation(
-  std::string negation_expression) {
+void Translator::translateNegation(std::string negation_expression) {
   // *(SP-1) = -(*(SP-1)) - that is just directly access the variable
   // and negate, no need to pop it off and push it back
   out_stream_ << "@SP\n";
   out_stream_ << "A=M-1\n";
   // M stores the variable x so write out the negation expression
   out_stream_ << negation_expression << "\n";
-
-  return out_stream_.str();
 }
 
-std::string Translator::translateComparison(
-  std::string comparison_expression) {
+void Translator::translateComparison(std::string comparison_expression) {
   // D = *(SP-1) - this is the variable y
   out_stream_ << "@SP\n";
   out_stream_ << "A=M-1\n";
@@ -325,42 +312,27 @@ std::string Translator::translateComparison(
   stackPointerDecrementInstruction();
 
   label_idx_++;
-  return out_stream_.str();
 }
 
-std::string Translator::pushConstant(int i) {
-  addPushConstantInstruction(i);
-  return out_stream_.str();
+void Translator::pushConstant(int i) {
+  // A = i
+  out_stream_ << "@" << i << "\n";
+
+  pushValueInRegisterA();
 }
 
-std::string Translator::pushSegment(int i) {
+void Translator::pushSegment(int i) {
   // D = RAM[@segment] (A already points to @segment)
   out_stream_ << "D=M\n";
 
   addOffsetAndPushToStack(/*offset=*/i);
-
-  return out_stream_.str();
 }
 
-std::string Translator::pushTemp(int i) {
+void Translator::pushTemp(int i) {
   // D = 5 (A = @temp, that is A = 5)
   out_stream_ << "D=A\n";
 
   addOffsetAndPushToStack(/*offset=*/i);
-
-  return out_stream_.str();
-}
-
-std::string Translator::pushMemoryContentsToStack() {
-  // Put the current memory contents into D
-  out_stream_ << "D=M\n";
-
-  // SP++; *(SP-1) = D
-  stackPointerIncrementInstruction();
-  out_stream_ << "A=M-1\n";
-  out_stream_ << "M=D\n";
-
-  return out_stream_.str();
 }
 
 void Translator::addOffsetAndPushToStack(int offset) {
@@ -368,51 +340,37 @@ void Translator::addOffsetAndPushToStack(int offset) {
   out_stream_ << "@" << offset << "\n";
   out_stream_ << "A=D+A\n";
 
-  // D = RAM[A] (where A = @segment + i)
-  out_stream_ << "D=M\n";
-
-  // SP++; *(SP-1) = D
-  stackPointerIncrementInstruction();
-  out_stream_ << "A=M-1\n";
-  out_stream_ << "M=D\n";
+  pushValueInRegisterM();
 }
 
-std::string Translator::popSegment(int i) {
+void Translator::popSegment(int i) {
   // D = RAM[@segment] (A already has the value @segment)
   out_stream_ << "D=M\n";
 
   addOffsetAndPopFromStack(/*offset=*/i);
-
-  return out_stream_.str();
 }
 
-std::string Translator::popTemp(int i) {
+void Translator::popTemp(int i) {
   // D = 5 (A already stores 5, the start of the temp segment)
   out_stream_ << "D=A\n";
 
   addOffsetAndPopFromStack(/*offset=*/i);
-
-  return out_stream_.str();
 }
 
-std::string Translator::popStatic(int i) {
+void Translator::popStatic(int i) {
   decrementStackPointerAndAssignToD();
 
   // @Foo.i = D where `Foo` is the name of the static segment
   out_stream_ << "@" << static_segment_ << "." << i << "\n";
   out_stream_ << "M=D\n";
-
-  return out_stream_.str();
 }
 
-std::string Translator::popPointer(int i) {
+void Translator::popPointer(int i) {
   decrementStackPointerAndAssignToD();
 
   // @Ptr = D where `Ptr` is either `THIS` or `THAT` depending on `i`.
   setAddressFromPointer(i);
   out_stream_ << "M=D\n";
-
-  return out_stream_.str();
 }
 
 void Translator::addOffsetAndPopFromStack(int offset) {
@@ -466,6 +424,15 @@ void Translator::decrementStackPointerAndAssignToD() {
   out_stream_ << "D=M\n";
 }
 
+void Translator::decrementRegisterAndAssignToSegment(
+  std::string register_name, std::string segment_name) {
+  out_stream_ << "@" << register_name << "\n";
+  out_stream_ << "AM=M-1\n";
+  out_stream_ << "D=M\n";
+  out_stream_ << "@" << segment_name << "\n";
+  out_stream_ << "M=D\n";
+}
+
 void Translator::createLabel(std::string label_str) {
   out_stream_ << "(";
   addLabelString(label_str);
@@ -492,13 +459,6 @@ void Translator::addReturnAddress() {
   out_stream_ << "ret." << func_calls_;
 }
 
-void Translator::addPushConstantInstruction(int i) {
-  // A = i
-  out_stream_ << "@" << i << "\n";
-
-  pushValueInRegisterA();
-}
-
 void Translator::pushValueInRegisterA() {
   out_stream_ << "D=A\n";
   pushValueInRegisterD();
@@ -513,5 +473,5 @@ void Translator::pushValueInRegisterD() {
   //SP++; *(SP-1) = D
   stackPointerIncrementInstruction();
   out_stream_ << "A=M-1\n";
-  out_stream_ << "M=D";
+  out_stream_ << "M=D\n";
 }
