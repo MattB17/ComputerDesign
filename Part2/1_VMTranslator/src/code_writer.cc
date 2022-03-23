@@ -1,9 +1,13 @@
 #include "code_writer.h"
 
-CodeWriter::CodeWriter(std::string assembly_file, std::string file_name)
-  : translator_(std::make_unique<Translator>(file_name))
+CodeWriter::CodeWriter(std::string assembly_file)
+  : translator_(std::make_unique<Translator>())
 {
   assembly_stream_.open(assembly_file);
+}
+
+void CodeWriter::setFileName(std::string file_name) {
+  translator_->setStaticSegmentName(file_name);
 }
 
 void CodeWriter::writeCommandComment(std::string command) {

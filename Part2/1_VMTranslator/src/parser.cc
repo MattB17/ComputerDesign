@@ -2,15 +2,18 @@
 
 #include <sstream>
 
-Parser::Parser(std::string vm_file) : curr_command_(""),
-                                      command_type_(Operation::UNKNOWN),
-                                      arg1_(""),
-                                      arg2_(-1)
-{
+Parser::Parser()
+  : curr_command_(""), command_type_(Operation::UNKNOWN), arg1_(""), arg2_(-1)
+{}
+
+void Parser::openFile(std::string vm_file) {
   vm_stream_.open(vm_file);
 }
 
-Parser::~Parser() { vm_stream_.close(); }
+void Parser::closeFile() {
+  vm_stream_.close();
+  vm_stream_.clear();
+}
 
 bool Parser::hasMoreCommands() {
   while (!vm_stream_.eof()) {

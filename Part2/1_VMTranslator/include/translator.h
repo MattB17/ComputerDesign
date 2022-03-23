@@ -8,12 +8,16 @@
 
 class Translator {
 public:
-  Translator(std::string static_segment);
+  Translator();
   Translator(const Translator&) = delete;
   Translator &operator=(const Translator&) = delete;
   Translator(Translator&&) = delete;
   Translator &operator=(Translator&&) = delete;
   ~Translator() {}
+
+  void setStaticSegmentName(std::string static_segment) {
+    static_segment_ = static_segment;
+  }
 
   // translates the system init operation into assembly code.
   std::string translateInitOperation();

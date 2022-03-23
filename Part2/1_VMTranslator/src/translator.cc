@@ -2,9 +2,8 @@
 
 #include <sstream>
 
-Translator::Translator(std::string static_segment_)
-  : label_idx_(0),  static_segment_(static_segment_),
-    curr_function_(""), func_calls_(0) {}
+Translator::Translator()
+  : label_idx_(0),  static_segment_(""), curr_function_(""), func_calls_(0) {}
 
 std::string Translator::translateInitOperation() {
   refreshOutputStream();

@@ -12,12 +12,18 @@
 
 class Parser {
 public:
-  Parser(std::string vm_file);
+  Parser();
   Parser(const Parser&) = delete;
   Parser &operator=(const Parser&) = delete;
   Parser(Parser&&) = delete;
   Parser &operator=(Parser&&) = delete;
-  ~Parser();
+  ~Parser() {}
+
+  // opens the file `vm_file` for parsing.
+  void openFile(std::string vm_file);
+
+  // closes the vm file that is currently being parsed.
+  void closeFile();
 
   // determines if the parser has more commands
   bool hasMoreCommands();
