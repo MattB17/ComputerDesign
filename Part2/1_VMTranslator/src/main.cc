@@ -9,10 +9,7 @@
 #include "parser.h"
 #include "code_writer.h"
 
-std::string getFilePathFromFullFileName(std::string full_file_name) {
-  size_t extension_pos = full_file_name.find_last_of(".");
-  return full_file_name.substr(0, extension_pos);
-}
+namespace fs = std::filesystem;
 
 std::string getFileNameFromPathWithoutExtension(std::string file_path) {
   size_t name_pos = file_path.find_last_of("/\\");
@@ -33,6 +30,8 @@ int main(int argc, char** argv) {
 
     std::vector<std::pair<std::string, std::string>> vm_name_path_pairs;
     std::string file_path = vm_file;
+    bool is_directory = false;
+    std::string ext = ".vm";
     size_t extension_pos = vm_file.find_last_of(".vm");
     if (extension_pos == vm_file.size() - 1) {
       // is single_file
@@ -40,12 +39,29 @@ int main(int argc, char** argv) {
       vm_name_path_pairs.push_back(std::make_pair(
         getFileNameFromPathWithoutExtension(file_path), vm_file));
     } else {
-      // is directory
+      is_directory = true;
+
+      for (auto const &p : fs::recursive_directory_iterator(file_path)) {
+        auto vm_path = p.path();
+        if (vm_path.extension().compare(ext) == 0) {
+          vm_name_path_pairs.push_back(
+            std::make_pair(vm_path.stem().string(), vm_path.string()));
+        }
+      }
+
+      std::string file_name = getFileNameFromPathWithoutExtension(file_path);
+      std::stringstream ss;
+      ss << file_path << "/" << file_name;
+      file_path = ss.str();
     }
 
     std::string assembly_path = constructAssemblyFile(file_path);
     CodeWriter code_writer(assembly_path);
     Parser parser;
+
+    if (is_directory) {
+      code_writer.writeInit();
+    }
 
     for (size_t i = 0; i < vm_name_path_pairs.size(); i++) {
       parser.openFile(vm_name_path_pairs[i].second);
