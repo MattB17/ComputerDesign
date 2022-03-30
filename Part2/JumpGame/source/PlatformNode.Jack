@@ -1,0 +1,43 @@
+// A node in the the PlatformList class.
+// The node is used to store a Platform object as well as next and previous
+// pointers so that the node can be stored in a DoublyLinkedList
+
+class ListNode {
+    field Platform platform_;
+    field ListNode prev_;
+    field ListNode next_;
+
+    constructor ListNode new(Platform platform) {
+        let platform_ = platform;
+        let prev_ = null;
+        let next_ = null;
+        return this;
+    }
+
+    method void dispose() {
+      do platform_.erase();
+      do platform_.dispose();
+      do Memory.deAlloc(this);
+      return;
+    }
+
+    method Platform getPlatform() {
+        return platform_;
+    }
+
+    method ListNode getPrev() {
+        return prev_;
+    }
+
+    method ListNode getNext() {
+        return next_;
+    }
+
+    method void setPrev(ListNode prev_node) {
+        let prev_ = prev_node;
+    }
+
+    method void setNext(ListNode next_node) {
+        let next_ = next_node;
+    }
+}
