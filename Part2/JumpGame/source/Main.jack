@@ -1,0 +1,19 @@
+class Main {
+    function void main() {
+        var Platform platform1, platform2;
+        let platform1 = Platform.new(64, 0, 64, 16);
+        let platform2 = Platform.new(384, 0, 64, 16);
+        do platform1.draw();
+        do platform2.draw();
+
+        do Sys.wait(5000);
+
+        do platform1.erase();
+        do platform1.dispose();
+
+        do platform2.erase();
+        do platform2.dispose();
+
+        return;
+    }
+}

@@ -1,0 +1,38 @@
+// A representation of the platform on which the avatar lands
+
+class Platform {
+    field int x_, y_;  // screen location of the platform's top-left corner
+    field int width_, height_; // the width and height of the platform
+
+    /**
+      Constructs a new platform at a given location with a specific
+      width and size
+    */
+    constructor Platform new(int x, int y, int width, int height) {
+        let x_ = x;
+        let y_ = y;
+        let width_ = width;
+        let height_ = height;
+        return this;
+    }
+
+    /** Disposes this platform. */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    /** Draws the platform on the screen */
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
+        return;
+    }
+
+    /** Erases the platform from the screen */
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
+        return;
+    }
+}
