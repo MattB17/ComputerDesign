@@ -22,6 +22,10 @@ class Platform {
         return;
     }
 
+    method int getY() {
+        return y_;
+    }
+
     /** Draws the platform on the screen */
     method void draw() {
         do Screen.setColor(true);
@@ -53,9 +57,7 @@ class Platform {
     }
 
     method void shiftDown(int num_rows) {
-        do erase();
         let y_ = y_ + num_rows;
-        do draw();
         return;
     }
 

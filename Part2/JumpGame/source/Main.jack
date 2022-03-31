@@ -7,8 +7,8 @@ class Main {
         do platform_controller.drawPlatforms();
 
         do Sys.wait(500);
-        while (count < 100) {
-            do platform_controller.shiftPlatformsDown();
+        while (count < 50) {
+            do platform_controller.runControlLoop();
             do Sys.wait(500);
             let count = count + 1;
         }

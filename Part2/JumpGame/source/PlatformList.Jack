@@ -73,7 +73,7 @@ class PlatformList {
         var PlatformNode curr_node;
         let curr_node = head_;
         while (~(curr_node = null)) {
-            do curr_node.drawPlatform();
+            do curr_node.erasePlatform();
             let curr_node = curr_node.getNext();
         }
         return;
@@ -94,5 +94,12 @@ class PlatformList {
             return false;
         }
         return tail_.isPlatformBelowBoard();
+    }
+
+    method int getGapSizeFromTop() {
+        if (head_ = null) {
+            return 256;
+        }
+        return head_.getPlatformTop();
     }
 }

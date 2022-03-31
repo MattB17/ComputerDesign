@@ -45,10 +45,27 @@ class PlatformController {
     }
 
     method void runControlLoop() {
+        var int gap_from_top;
+        var Platform new_platform;
+
+        do erasePlatforms();
+
+        do Sys.wait(500);
+
         do shiftPlatformsDown();
+
         if (isLastPlatformBelowBoard()) {
             do removeLastPlatform();
         }
+
+        let gap_from_top = getGapSizeFromTop();
+        if (gap_from_top > 44) {
+            let new_platform = Platform.new(64, gap_from_top - 60, 64, 16);
+            do platforms_.addNewPlatform(new_platform);
+        }
+
+        do drawPlatforms();
+
         return;
     }
 
@@ -64,5 +81,9 @@ class PlatformController {
     method void removeLastPlatform() {
          do platforms_.removeLastPlatform();
          return;
+    }
+
+    method int getGapSizeFromTop() {
+        return platforms_.getGapSizeFromTop();
     }
 }
