@@ -25,13 +25,29 @@ class Platform {
     /** Draws the platform on the screen */
     method void draw() {
         do Screen.setColor(true);
-        do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
+        do drawInternal();
         return;
     }
 
     /** Erases the platform from the screen */
     method void erase() {
         do Screen.setColor(false);
+        do drawInternal();
+        return;
+    }
+
+    method void drawInternal() {
+        if (y_ > 255) {
+            return;
+        }
+        if (y_ + height_ > 255) {
+            do Screen.drawRectangle(x_, y_, x_ + width_, 255);
+            return;
+        }
+        if (y_ < 0) {
+            do Screen.drawRectangle(x_, 0, x_ + width_, y_ + height_);
+            return;
+        }
         do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
         return;
     }
@@ -41,5 +57,9 @@ class Platform {
         let y_ = y_ + num_rows;
         do draw();
         return;
+    }
+
+    method bool isBelowBoard() {
+        return (y_ > 255);
     }
 }

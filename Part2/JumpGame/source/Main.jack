@@ -1,18 +1,17 @@
 class Main {
     function void main() {
         var PlatformController platform_controller;
+        var int count;
         let platform_controller = PlatformController.new();
+        let count = 0;
         do platform_controller.drawPlatforms();
 
         do Sys.wait(500);
-        do platform_controller.shiftPlatformsDown();
-        do Sys.wait(500);
-        do platform_controller.shiftPlatformsDown();
-        do Sys.wait(500);
-        do platform_controller.shiftPlatformsDown();
-        do Sys.wait(500);
-        do platform_controller.shiftPlatformsDown();
-        do Sys.wait(500);
+        while (count < 100) {
+            do platform_controller.shiftPlatformsDown();
+            do Sys.wait(500);
+            let count = count + 1;
+        }
 
         do platform_controller.erasePlatforms();
         do platform_controller.dispose();

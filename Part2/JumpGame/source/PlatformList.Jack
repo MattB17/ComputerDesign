@@ -88,4 +88,11 @@ class PlatformList {
         }
         return;
     }
+
+    method bool isOffBoard() {
+        if (tail_ = null) {
+            return false;
+        }
+        return tail_.isPlatformBelowBoard();
+    }
 }

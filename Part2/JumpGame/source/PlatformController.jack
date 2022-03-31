@@ -44,8 +44,25 @@ class PlatformController {
         return;
     }
 
+    method void runControlLoop() {
+        do shiftPlatformsDown();
+        if (isLastPlatformBelowBoard()) {
+            do removeLastPlatform();
+        }
+        return;
+    }
+
     method void shiftPlatformsDown() {
         do platforms_.shiftAllDown(shift_size_);
         return;
+    }
+
+    method bool isLastPlatformBelowBoard() {
+        return platforms_.isOffBoard();
+    }
+
+    method void removeLastPlatform() {
+         do platforms_.removeLastPlatform();
+         return;
     }
 }
