@@ -1,0 +1,43 @@
+// A controller object used to manage the platforms on the screen.
+
+class PlatformController {
+    field PlatformList platforms_; // the list of platforms on screen.
+    // controls whether the next platform is on the left or right.
+    field bool nextPlatformOnLeft_;
+
+    constructor PlatformController new() {
+        var Platform curr_platform;
+        let platforms_ = PlatformList.new();
+
+        let curr_platform = Platform.new(384, 35, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(64, 80, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(384, 125, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(64, 170, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(384, 215, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+
+        let nextPlatformOnLeft_ = true;
+
+        return this;
+    }
+
+    method void dispose() {
+        do platforms_.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void drawPlatforms() {
+        do platforms_.drawAll();
+        return;
+    }
+
+    method void erasePlatforms() {
+        do platforms_.eraseAll();
+        return;
+    }
+}

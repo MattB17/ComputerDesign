@@ -12,8 +12,9 @@ class PlatformList {
     field PlatformNode head_, tail_; // the head and tail of the list
 
     constructor PlatformList new() {
-        head_ = null;
-        tail_ = null;
+        let head_ = null;
+        let tail_ = null;
+        return this;
     }
 
     method void dispose() {
@@ -29,7 +30,7 @@ class PlatformList {
     }
 
     // add a new Platform to the head of the list.
-    method AddNewPlatform(Platform new_platform) {
+    method void addNewPlatform(Platform new_platform) {
         var PlatformNode new_node;
         let new_node = PlatformNode.new(new_platform);
         if (head_ = null) {
@@ -42,11 +43,12 @@ class PlatformList {
         // node. Then put the new node in the first slot.
         do new_node.setNext(head_);
         do head_.setPrev(new_node);
-        head_ = new_node;
+        let head_ = new_node;
+        return;
     }
 
     // removes the last Platform from the list.
-    method RemoveLastPlatform() {
+    method void removeLastPlatform() {
         var PlatformNode removed_node;
         let removed_node = tail_;
 
@@ -54,5 +56,26 @@ class PlatformList {
         // pointers of removed_node are null so this will set tail_ = null.
         let tail_ = removed_node.getPrev();
         do removed_node.dispose();
+        return;
+    }
+
+    method void drawAll() {
+        var PlatformNode curr_node;
+        let curr_node = head_;
+        while (~(curr_node = null)) {
+            do curr_node.drawPlatform();
+            let curr_node = curr_node.getNext();
+        }
+        return;
+    }
+
+    method void eraseAll() {
+        var PlatformNode curr_node;
+        let curr_node = head_;
+        while (~(curr_node = null)) {
+            do curr_node.drawPlatform();
+            let curr_node = curr_node.getNext();
+        }
+        return;
     }
 }
