@@ -48,4 +48,9 @@ class PlatformNode {
         do platform_.erase();
         return;
     }
+
+    method void shiftPlatformDown(int num_rows) {
+        do platform_.shiftDown(num_rows);
+        return;
+    }
 }

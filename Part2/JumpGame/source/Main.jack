@@ -4,7 +4,15 @@ class Main {
         let platform_controller = PlatformController.new();
         do platform_controller.drawPlatforms();
 
-        do Sys.wait(5000);
+        do Sys.wait(500);
+        do platform_controller.shiftPlatformsDown();
+        do Sys.wait(500);
+        do platform_controller.shiftPlatformsDown();
+        do Sys.wait(500);
+        do platform_controller.shiftPlatformsDown();
+        do Sys.wait(500);
+        do platform_controller.shiftPlatformsDown();
+        do Sys.wait(500);
 
         do platform_controller.erasePlatforms();
         do platform_controller.dispose();

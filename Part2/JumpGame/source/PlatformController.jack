@@ -3,7 +3,9 @@
 class PlatformController {
     field PlatformList platforms_; // the list of platforms on screen.
     // controls whether the next platform is on the left or right.
-    field bool nextPlatformOnLeft_;
+    field bool next_platform_on_left_;
+    // the number of rows to shift the platform on each loop.
+    field int shift_size_;
 
     constructor PlatformController new() {
         var Platform curr_platform;
@@ -20,7 +22,8 @@ class PlatformController {
         let curr_platform = Platform.new(384, 215, 64, 16);
         do platforms_.addNewPlatform(curr_platform);
 
-        let nextPlatformOnLeft_ = true;
+        let next_platform_on_left_ = true;
+        let shift_size_ = 2;
 
         return this;
     }
@@ -38,6 +41,11 @@ class PlatformController {
 
     method void erasePlatforms() {
         do platforms_.eraseAll();
+        return;
+    }
+
+    method void shiftPlatformsDown() {
+        do platforms_.shiftAllDown(shift_size_);
         return;
     }
 }

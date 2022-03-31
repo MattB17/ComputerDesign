@@ -78,4 +78,14 @@ class PlatformList {
         }
         return;
     }
+
+    method void shiftAllDown(int num_rows) {
+        var PlatformNode curr_node;
+        let curr_node = head_;
+        while (~(curr_node = null)) {
+            do curr_node.shiftPlatformDown(num_rows);
+            let curr_node = curr_node.getNext();
+        }
+        return;
+    }
 }

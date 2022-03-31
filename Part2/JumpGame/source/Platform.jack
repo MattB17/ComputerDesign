@@ -35,4 +35,11 @@ class Platform {
         do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
         return;
     }
+
+    method void shiftDown(int num_rows) {
+        do erase();
+        let y_ = y_ + num_rows;
+        do draw();
+        return;
+    }
 }
