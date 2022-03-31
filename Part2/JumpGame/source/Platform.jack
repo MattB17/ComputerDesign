@@ -41,7 +41,7 @@ class Platform {
     }
 
     method void drawInternal() {
-        if (y_ > 255) {
+        if ((y_ > 255) | (y_ + height_ < 0)) {
             return;
         }
         if (y_ + height_ > 255) {

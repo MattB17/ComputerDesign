@@ -11,15 +11,17 @@ class PlatformController {
         var Platform curr_platform;
         let platforms_ = PlatformList.new();
 
-        let curr_platform = Platform.new(384, 35, 64, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(64, 80, 64, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(384, 125, 64, 16);
+        // add platforms from the bottom of the board to the top so that
+        // platforms at the bottom of the board appear at the back of the list.
+        let curr_platform = Platform.new(384, 215, 64, 16);
         do platforms_.addNewPlatform(curr_platform);
         let curr_platform = Platform.new(64, 170, 64, 16);
         do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(384, 215, 64, 16);
+        let curr_platform = Platform.new(384, 125, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(64, 80, 64, 16);
+        do platforms_.addNewPlatform(curr_platform);
+        let curr_platform = Platform.new(384, 35, 64, 16);
         do platforms_.addNewPlatform(curr_platform);
 
         let next_platform_on_left_ = true;
@@ -50,8 +52,6 @@ class PlatformController {
 
         do erasePlatforms();
 
-        do Sys.wait(500);
-
         do shiftPlatformsDown();
 
         if (isLastPlatformBelowBoard()) {
@@ -59,8 +59,15 @@ class PlatformController {
         }
 
         let gap_from_top = getGapSizeFromTop();
-        if (gap_from_top > 44) {
-            let new_platform = Platform.new(64, gap_from_top - 60, 64, 16);
+        if (gap_from_top > 39) {
+            if (next_platform_on_left_) {
+                let new_platform = Platform.new(64, gap_from_top - 55, 64, 16);
+                let next_platform_on_left_ = false;
+            }
+            else {
+                let new_platform = Platform.new(384, gap_from_top - 60, 64, 16);
+                let next_platform_on_left_ = true;
+            }
             do platforms_.addNewPlatform(new_platform);
         }
 
