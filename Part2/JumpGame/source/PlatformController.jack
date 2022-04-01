@@ -61,14 +61,15 @@ class PlatformController {
         let gap_from_top = getGapSizeFromTop();
         if (gap_from_top > 39) {
             if (next_platform_on_left_) {
-                let new_platform = Platform.new(64, gap_from_top - 55, 64, 16);
+                let new_platform = Platform.new(64, gap_from_top - 54, 64, 16);
+                do platforms_.addNewPlatform(new_platform);
                 let next_platform_on_left_ = false;
             }
             else {
-                let new_platform = Platform.new(384, gap_from_top - 60, 64, 16);
+                let new_platform = Platform.new(384, gap_from_top - 54, 64, 16);
+                do platforms_.addNewPlatform(new_platform);
                 let next_platform_on_left_ = true;
             }
-            do platforms_.addNewPlatform(new_platform);
         }
 
         do drawPlatforms();

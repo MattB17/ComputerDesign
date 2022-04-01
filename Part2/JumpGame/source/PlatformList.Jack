@@ -55,6 +55,7 @@ class PlatformList {
         // Note if there is only one node in the list then the prev and next
         // pointers of removed_node are null so this will set tail_ = null.
         let tail_ = removed_node.getPrev();
+        do tail_.setNext(null);
         do removed_node.dispose();
         return;
     }
