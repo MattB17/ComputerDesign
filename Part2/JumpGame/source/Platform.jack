@@ -41,12 +41,14 @@ class Platform {
     }
 
     method void drawInternal() {
-        if ((y_ > Constants.boardHeight() - 1) | (y_ + height_ < 0)) {
+        var int last_row;
+        let last_row = Constants.boardHeight() - 1;
+        if ((y_ > last_row) | (y_ + height_ < 0)) {
             return;
         }
-        if (y_ + height_ > Constants.boardHeight() - 1) {
+        if (y_ + height_ > last_row) {
             do Screen.drawRectangle(
-                x_, y_, x_ + width_, Constants.boardHeight() - 1);
+                x_, y_, x_ + width_, last_row);
             return;
         }
         if (y_ < 0) {
@@ -63,6 +65,8 @@ class Platform {
     }
 
     method bool isBelowBoard() {
-        return (y_ > Constants.boardHeight() - 1);
+        var int gap_from_bottom;
+        let gap_from_bottom = Constants.boardHeight() - 1 - y_;
+        return (gap_from_bottom < 0);
     }
 }
