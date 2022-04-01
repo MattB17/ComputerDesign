@@ -1,6 +1,14 @@
 // A set of constant used throughout the game.
 
 class Constants {
+    function int boardStart() {
+        return 16384;
+    }
+
+    function int blocksPerRow() {
+        return 32;
+    }
+
     function int boardHeight() {
         return 256;
     }

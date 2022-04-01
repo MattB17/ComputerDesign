@@ -2,16 +2,21 @@
 
 class Platform {
     field int x_, y_;  // screen location of the platform's top-left corner
-    field int width_, height_; // the width and height of the platform
+
+    // represents the number of 16-bit segments wide the platform is.
+    // that is, a value of 4 means the platform is 16 * 4 = 64 bits wide.
+    field int width_blocks_;
+
+    field int height_; // the height of the platform
 
     /**
       Constructs a new platform at a given location with a specific
       width and size
     */
-    constructor Platform new(int x, int y, int width, int height) {
+    constructor Platform new(int x, int y, int width_blocks, int height) {
         let x_ = x;
         let y_ = y;
-        let width_ = width;
+        let width_blocks_ = width_blocks;
         let height_ = height;
         return this;
     }
@@ -28,34 +33,41 @@ class Platform {
 
     /** Draws the platform on the screen */
     method void draw() {
-        do Screen.setColor(true);
-        do drawInternal();
+        do drawInternal(-1);
         return;
     }
 
     /** Erases the platform from the screen */
     method void erase() {
-        do Screen.setColor(false);
-        do drawInternal();
+        do drawInternal(0);
         return;
     }
 
-    method void drawInternal() {
-        var int last_row;
-        let last_row = Constants.boardHeight() - 1;
-        if ((y_ > last_row) | (y_ + height_ < 0)) {
-            return;
+    method void drawInternal(int color) {
+        var int row_count, block_count;
+        var int curr_row, board_end;
+        var int offset;
+
+        let board_end = Constants.boardHeight() - 1;
+        let curr_row = y_;
+        let offset = (Constants.boardStart() +
+                      (curr_row * Constants.blocksPerRow()) +
+                      (x_ / 16));
+        let row_count = 0;
+
+        while (row_count < height_) {
+            if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+                let block_count = 0;
+                while (block_count < width_blocks_) {
+                    do Memory.poke((offset + block_count), color);
+                    let block_count = block_count + 1;
+                }
+            }
+            let offset = offset + Constants.blocksPerRow();
+            let row_count = row_count + 1;
+            let curr_row  = curr_row + 1;
         }
-        if (y_ + height_ > last_row) {
-            do Screen.drawRectangle(
-                x_, y_, x_ + width_, last_row);
-            return;
-        }
-        if (y_ < 0) {
-            do Screen.drawRectangle(x_, 0, x_ + width_, y_ + height_);
-            return;
-        }
-        do Screen.drawRectangle(x_, y_, x_ + width_, y_ + height_);
+
         return;
     }
 
