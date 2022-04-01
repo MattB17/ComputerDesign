@@ -30,7 +30,7 @@ class GameController {
                 do Sys.wait(100);
             }
             // if escape key is pressed the game is over
-            if (key = 140) {
+            if (key = Constants.escKey()) {
                 let game_over = true;
             }
             while ((~(key = 0)) & (~game_over)) {

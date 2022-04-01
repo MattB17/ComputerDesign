@@ -1,0 +1,19 @@
+// A set of constant used throughout the game.
+
+class Constants {
+    function int boardHeight() {
+        return 256;
+    }
+
+    function int boardWidth() {
+        return 512;
+    }
+
+    function int escKey() {
+        return 140;
+    }
+
+    function int gapBetweenPlatforms() {
+        return 55;
+    }
+}

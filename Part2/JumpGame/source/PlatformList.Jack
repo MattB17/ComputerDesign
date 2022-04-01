@@ -99,7 +99,7 @@ class PlatformList {
 
     method int getGapSizeFromTop() {
         if (head_ = null) {
-            return 256;
+            return Constants.boardHeight();
         }
         return head_.getPlatformTop();
     }

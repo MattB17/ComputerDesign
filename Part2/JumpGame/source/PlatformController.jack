@@ -47,7 +47,7 @@ class PlatformController {
     }
 
     method void runControlLoop() {
-        var int gap_from_top;
+        var int gap_from_top, platform_top;
         var Platform new_platform;
 
         do erasePlatforms();
@@ -59,14 +59,15 @@ class PlatformController {
         }
 
         let gap_from_top = getGapSizeFromTop();
-        if (gap_from_top > 39) {
+        let platform_top = gap_from_top - Constant.gapBetweenPlatforms() + 1;
+        if (gap_from_top > 34) {
             if (next_platform_on_left_) {
-                let new_platform = Platform.new(64, gap_from_top - 54, 64, 16);
+                let new_platform = Platform.new(64, platform_top, 64, 16);
                 do platforms_.addNewPlatform(new_platform);
                 let next_platform_on_left_ = false;
             }
             else {
-                let new_platform = Platform.new(384, gap_from_top - 54, 64, 16);
+                let new_platform = Platform.new(384, platform_top, 64, 16);
                 do platforms_.addNewPlatform(new_platform);
                 let next_platform_on_left_ = true;
             }
