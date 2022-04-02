@@ -1,98 +1,98 @@
 // A controller object used to manage the platforms on the screen.
 
 class PlatformController {
-    field PlatformList platforms_; // the list of platforms on screen.
-    // controls whether the next platform is on the left or right.
-    field bool next_platform_on_left_;
-    // the number of rows to shift the platform on each loop.
-    field int shift_size_;
+  field PlatformList platforms_; // the list of platforms on screen.
+  // controls whether the next platform is on the left or right.
+  field bool next_platform_on_left_;
+  // the number of rows to shift the platform on each loop.
+  field int shift_size_;
 
-    constructor PlatformController new() {
-        var Platform curr_platform;
-        let platforms_ = PlatformList.new();
+  constructor PlatformController new() {
+    var Platform curr_platform;
+    let platforms_ = PlatformList.new();
 
-        // add platforms from the bottom of the board to the top so that
-        // platforms at the bottom of the board appear at the back of the list.
-        let curr_platform = Platform.new(384, 215, 4, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(64, 170, 4, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(384, 125, 4, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(64, 80, 4, 16);
-        do platforms_.addNewPlatform(curr_platform);
-        let curr_platform = Platform.new(384, 35, 4, 16);
-        do platforms_.addNewPlatform(curr_platform);
+    // add platforms from the bottom of the board to the top so that
+    // platforms at the bottom of the board appear at the back of the list.
+    let curr_platform = Platform.new(384, 215, 4, 16);
+    do platforms_.addNewPlatform(curr_platform);
+    let curr_platform = Platform.new(64, 170, 4, 16);
+    do platforms_.addNewPlatform(curr_platform);
+    let curr_platform = Platform.new(384, 125, 4, 16);
+    do platforms_.addNewPlatform(curr_platform);
+    let curr_platform = Platform.new(64, 80, 4, 16);
+    do platforms_.addNewPlatform(curr_platform);
+    let curr_platform = Platform.new(384, 35, 4, 16);
+    do platforms_.addNewPlatform(curr_platform);
 
+    let next_platform_on_left_ = true;
+    let shift_size_ = 2;
+
+    return this;
+  }
+
+  method void dispose() {
+    do platforms_.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  method void drawPlatforms() {
+    do platforms_.drawAll();
+    return;
+  }
+
+  method void erasePlatforms() {
+    do platforms_.eraseAll();
+    return;
+  }
+
+  method void runControlLoop() {
+    var int gap_from_top;
+    var Platform new_platform;
+
+    do erasePlatforms();
+
+    do shiftPlatformsDown();
+
+    if (isLastPlatformBelowBoard()) {
+      do removeLastPlatform();
+    }
+
+    let gap_from_top = (
+      getGapSizeFromTop() - Constants.gapBetweenPlatforms() + 16);
+    if (gap_from_top > 0) {
+      if (next_platform_on_left_) {
+        let new_platform = Platform.new(64, gap_from_top - 15, 4, 16);
+        do platforms_.addNewPlatform(new_platform);
+        let next_platform_on_left_ = false;
+      }
+      else {
+        let new_platform = Platform.new(384, gap_from_top - 15, 4, 16);
+        do platforms_.addNewPlatform(new_platform);
         let next_platform_on_left_ = true;
-        let shift_size_ = 2;
-
-        return this;
+      }
     }
 
-    method void dispose() {
-        do platforms_.dispose();
-        do Memory.deAlloc(this);
-        return;
-    }
+    do drawPlatforms();
 
-    method void drawPlatforms() {
-        do platforms_.drawAll();
-        return;
-    }
+    return;
+  }
 
-    method void erasePlatforms() {
-        do platforms_.eraseAll();
-        return;
-    }
+  method void shiftPlatformsDown() {
+    do platforms_.shiftAllDown(shift_size_);
+    return;
+  }
 
-    method void runControlLoop() {
-        var int gap_from_top;
-        var Platform new_platform;
+  method bool isLastPlatformBelowBoard() {
+    return platforms_.isOffBoard();
+  }
 
-        do erasePlatforms();
+  method void removeLastPlatform() {
+    do platforms_.removeLastPlatform();
+    return;
+  }
 
-        do shiftPlatformsDown();
-
-        if (isLastPlatformBelowBoard()) {
-            do removeLastPlatform();
-        }
-
-        let gap_from_top = (
-            getGapSizeFromTop() - Constants.gapBetweenPlatforms() + 16);
-        if (gap_from_top > 0) {
-            if (next_platform_on_left_) {
-                let new_platform = Platform.new(64, gap_from_top - 15, 4, 16);
-                do platforms_.addNewPlatform(new_platform);
-                let next_platform_on_left_ = false;
-            }
-            else {
-                let new_platform = Platform.new(384, gap_from_top - 15, 4, 16);
-                do platforms_.addNewPlatform(new_platform);
-                let next_platform_on_left_ = true;
-            }
-        }
-
-        do drawPlatforms();
-
-        return;
-    }
-
-    method void shiftPlatformsDown() {
-        do platforms_.shiftAllDown(shift_size_);
-        return;
-    }
-
-    method bool isLastPlatformBelowBoard() {
-        return platforms_.isOffBoard();
-    }
-
-    method void removeLastPlatform() {
-         do platforms_.removeLastPlatform();
-         return;
-    }
-
-    method int getGapSizeFromTop() {
-        return platforms_.getGapSizeFromTop();
-    }
+  method int getGapSizeFromTop() {
+    return platforms_.getGapSizeFromTop();
+  }
 }

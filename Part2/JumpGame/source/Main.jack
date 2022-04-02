@@ -1,8 +1,8 @@
 class Main {
-    function void main() {
-        var GameController game_controller;
-        let game_controller = GameController.new();
-        do game_controller.run();
-        return;
-    }
+  function void main() {
+    var GameController game_controller;
+    let game_controller = GameController.new();
+    do game_controller.run();
+    return;
+  }
 }

@@ -9,98 +9,99 @@
 // of the list, that is, no inserting or deleting from the middle of the list.
 
 class PlatformList {
-    field PlatformNode head_, tail_; // the head and tail of the list
+  field PlatformNode head_, tail_; // the head and tail of the list
 
-    constructor PlatformList new() {
-        let head_ = null;
-        let tail_ = null;
-        return this;
-    }
+  constructor PlatformList new() {
+    let head_ = null;
+    let tail_ = null;
+    return this;
+  }
 
-    method void dispose() {
-        var PlatformNode curr_node;
+  method void dispose() {
+    var PlatformNode curr_node;
+    let curr_node = head_;
+    while (~(curr_node = null)) {
+      let head_ = curr_node.getNext();
+        do curr_node.dispose();
         let curr_node = head_;
-        while (~(curr_node = null)) {
-            let head_ = curr_node.getNext();
-            do curr_node.dispose();
-            let curr_node = head_;
-        }
-        do Memory.deAlloc(this);
-        return;
+      }
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  // add a new Platform to the head of the list.
+  method void addNewPlatform(Platform new_platform) {
+    var PlatformNode new_node;
+    let new_node = PlatformNode.new(new_platform);
+    if (head_ = null) {
+      let head_ = new_node;
+      let tail_ = new_node;
+      return;
     }
 
-    // add a new Platform to the head of the list.
-    method void addNewPlatform(Platform new_platform) {
-        var PlatformNode new_node;
-        let new_node = PlatformNode.new(new_platform);
-        if (head_ = null) {
-            let head_ = new_node;
-            let tail_ = new_node;
-            return;
-        }
-        // the current first node (head_) now is the second. So it should
-        // be the next of the new node and it's previous should be the new
-        // node. Then put the new node in the first slot.
-        do new_node.setNext(head_);
-        do head_.setPrev(new_node);
-        let head_ = new_node;
-        return;
-    }
+    // the current first node (head_) now is the second. So it should
+    // be the next of the new node and it's previous should be the new
+    // node. Then put the new node in the first slot.
+    do new_node.setNext(head_);
+    do head_.setPrev(new_node);
+    let head_ = new_node;
+    return;
+  }
 
-    // removes the last Platform from the list.
-    method void removeLastPlatform() {
-        var PlatformNode removed_node;
-        let removed_node = tail_;
+  // removes the last Platform from the list.
+  method void removeLastPlatform() {
+    var PlatformNode removed_node;
+    let removed_node = tail_;
 
-        // Note if there is only one node in the list then the prev and next
-        // pointers of removed_node are null so this will set tail_ = null.
-        let tail_ = removed_node.getPrev();
-        do tail_.setNext(null);
-        do removed_node.dispose();
-        return;
-    }
+    // Note if there is only one node in the list then the prev and next
+    // pointers of removed_node are null so this will set tail_ = null.
+    let tail_ = removed_node.getPrev();
+    do tail_.setNext(null);
+    do removed_node.dispose();
+    return;
+  }
 
-    method void drawAll() {
-        var PlatformNode curr_node;
-        let curr_node = head_;
-        while (~(curr_node = null)) {
-            do curr_node.drawPlatform();
-            let curr_node = curr_node.getNext();
-        }
-        return;
+  method void drawAll() {
+    var PlatformNode curr_node;
+    let curr_node = head_;
+    while (~(curr_node = null)) {
+      do curr_node.drawPlatform();
+      let curr_node = curr_node.getNext();
     }
+    return;
+  }
 
-    method void eraseAll() {
-        var PlatformNode curr_node;
-        let curr_node = head_;
-        while (~(curr_node = null)) {
-            do curr_node.erasePlatform();
-            let curr_node = curr_node.getNext();
-        }
-        return;
+  method void eraseAll() {
+    var PlatformNode curr_node;
+    let curr_node = head_;
+    while (~(curr_node = null)) {
+      do curr_node.erasePlatform();
+      let curr_node = curr_node.getNext();
     }
+    return;
+  }
 
-    method void shiftAllDown(int num_rows) {
-        var PlatformNode curr_node;
-        let curr_node = head_;
-        while (~(curr_node = null)) {
-            do curr_node.shiftPlatformDown(num_rows);
-            let curr_node = curr_node.getNext();
-        }
-        return;
+  method void shiftAllDown(int num_rows) {
+    var PlatformNode curr_node;
+    let curr_node = head_;
+    while (~(curr_node = null)) {
+      do curr_node.shiftPlatformDown(num_rows);
+      let curr_node = curr_node.getNext();
     }
+    return;
+  }
 
-    method bool isOffBoard() {
-        if (tail_ = null) {
-            return false;
-        }
-        return tail_.isPlatformBelowBoard();
+  method bool isOffBoard() {
+    if (tail_ = null) {
+      return false;
     }
+    return tail_.isPlatformBelowBoard();
+  }
 
-    method int getGapSizeFromTop() {
-        if (head_ = null) {
-            return Constants.boardHeight();
-        }
-        return head_.getPlatformTop();
+  method int getGapSizeFromTop() {
+    if (head_ = null) {
+      return Constants.boardHeight();
     }
+    return head_.getPlatformTop();
+  }
 }

@@ -1,84 +1,84 @@
 // A representation of the platform on which the avatar lands
 
 class Platform {
-    field int x_, y_;  // screen location of the platform's top-left corner
+  field int x_, y_;  // screen location of the platform's top-left corner
 
-    // represents the number of 16-bit segments wide the platform is.
-    // that is, a value of 4 means the platform is 16 * 4 = 64 bits wide.
-    field int width_blocks_;
+  // represents the number of 16-bit segments wide the platform is.
+  // that is, a value of 4 means the platform is 16 * 4 = 64 bits wide.
+  field int width_blocks_;
 
-    field int height_; // the height of the platform
+  field int height_; // the height of the platform
 
-    /**
-      Constructs a new platform at a given location with a specific
-      width and size
-    */
-    constructor Platform new(int x, int y, int width_blocks, int height) {
-        let x_ = x;
-        let y_ = y;
-        let width_blocks_ = width_blocks;
-        let height_ = height;
-        return this;
-    }
+  /**
+    Constructs a new platform at a given location with a specific
+    width and size
+  */
+  constructor Platform new(int x, int y, int width_blocks, int height) {
+    let x_ = x;
+    let y_ = y;
+    let width_blocks_ = width_blocks;
+    let height_ = height;
+    return this;
+  }
 
-    /** Disposes this platform. */
-    method void dispose() {
-        do Memory.deAlloc(this);
-        return;
-    }
+  /** Disposes this platform. */
+  method void dispose() {
+    do Memory.deAlloc(this);
+    return;
+  }
 
-    method int getY() {
-        return y_;
-    }
+  method int getY() {
+    return y_;
+  }
 
-    /** Draws the platform on the screen */
-    method void draw() {
-        do drawInternal(-1);
-        return;
-    }
+  /** Draws the platform on the screen */
+  method void draw() {
+    do drawInternal(-1);
+    return;
+  }
 
-    /** Erases the platform from the screen */
-    method void erase() {
-        do drawInternal(0);
-        return;
-    }
+  /** Erases the platform from the screen */
+  method void erase() {
+    do drawInternal(0);
+    return;
+  }
 
-    method void drawInternal(int color) {
-        var int row_count, block_count;
-        var int curr_row, board_end;
-        var int offset;
+  method void drawInternal(int color) {
+    var int row_count, block_count;
+    var int curr_row, board_end;
+    var int offset;
 
-        let board_end = Constants.boardHeight() - 1;
-        let curr_row = y_;
-        let offset = (Constants.boardStart() +
-                      (curr_row * Constants.blocksPerRow()) +
-                      (x_ / 16));
-        let row_count = 0;
+    let board_end = Constants.boardHeight() - 1;
+    let curr_row = y_;
+    let offset = (Constants.boardStart() +
+                  (curr_row * Constants.blocksPerRow()) +
+                  (x_ / 16));
+    let row_count = 0;
 
-        while (row_count < height_) {
-            if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
-                let block_count = 0;
-                while (block_count < width_blocks_) {
-                    do Memory.poke((offset + block_count), color);
-                    let block_count = block_count + 1;
-                }
-            }
-            let offset = offset + Constants.blocksPerRow();
-            let row_count = row_count + 1;
-            let curr_row  = curr_row + 1;
+    while (row_count < height_) {
+      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+        let block_count = 0;
+        while (block_count < width_blocks_) {
+          do Memory.poke((offset + block_count), color);
+          let block_count = block_count + 1;
         }
-
-        return;
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let row_count = row_count + 1;
+      let curr_row  = curr_row + 1;
     }
 
-    method void shiftDown(int num_rows) {
-        let y_ = y_ + num_rows;
-        return;
-    }
+    return;
+  }
 
-    method bool isBelowBoard() {
-        var int gap_from_bottom;
-        let gap_from_bottom = Constants.boardHeight() - 1 - y_;
-        return (gap_from_bottom < 0);
-    }
+  method void shiftDown(int num_rows) {
+    let y_ = y_ + num_rows;
+    return;
+  }
+
+  method bool isBelowBoard() {
+    var int gap_from_bottom;
+    let gap_from_bottom = Constants.boardHeight() - 1 - y_;
+    return (gap_from_bottom < 0);
+  }
 }

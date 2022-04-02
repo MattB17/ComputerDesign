@@ -3,62 +3,62 @@
 // pointers so that the node can be stored in a DoublyLinkedList
 
 class PlatformNode {
-    field Platform platform_;
-    field PlatformNode prev_;
-    field PlatformNode next_;
+  field Platform platform_;
+  field PlatformNode prev_;
+  field PlatformNode next_;
 
-    constructor PlatformNode new(Platform platform) {
-        let platform_ = platform;
-        let prev_ = null;
-        let next_ = null;
-        return this;
-    }
+  constructor PlatformNode new(Platform platform) {
+    let platform_ = platform;
+    let prev_ = null;
+    let next_ = null;
+    return this;
+  }
 
-    method void dispose() {
-      do platform_.erase();
-      do platform_.dispose();
-      do Memory.deAlloc(this);
-      return;
-    }
+  method void dispose() {
+    do platform_.erase();
+    do platform_.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
 
-    method PlatformNode getPrev() {
-        return prev_;
-    }
+  method PlatformNode getPrev() {
+    return prev_;
+  }
 
-    method PlatformNode getNext() {
-        return next_;
-    }
+  method PlatformNode getNext() {
+    return next_;
+  }
 
-    method void setPrev(ListNode prev_node) {
-        let prev_ = prev_node;
-        return;
-    }
+  method void setPrev(ListNode prev_node) {
+    let prev_ = prev_node;
+    return;
+  }
 
-    method void setNext(ListNode next_node) {
-        let next_ = next_node;
-        return;
-    }
+  method void setNext(ListNode next_node) {
+    let next_ = next_node;
+    return;
+  }
 
-    method void drawPlatform() {
-        do platform_.draw();
-        return;
-    }
+  method void drawPlatform() {
+    do platform_.draw();
+    return;
+  }
 
-    method void erasePlatform() {
-        do platform_.erase();
-        return;
-    }
+  method void erasePlatform() {
+    do platform_.erase();
+    return;
+  }
 
-    method void shiftPlatformDown(int num_rows) {
-        do platform_.shiftDown(num_rows);
-        return;
-    }
+  method void shiftPlatformDown(int num_rows) {
+    do platform_.shiftDown(num_rows);
+    return;
+  }
 
-    method bool isPlatformBelowBoard() {
-        return platform_.isBelowBoard();
-    }
+  method bool isPlatformBelowBoard() {
+    return platform_.isBelowBoard();
+  }
 
-    method int getPlatformTop() {
-        return platform_.getY();
-    }
+  method int getPlatformTop() {
+    return platform_.getY();
+  }
 }

@@ -1,27 +1,27 @@
 // A set of constant used throughout the game.
 
 class Constants {
-    function int boardStart() {
-        return 16384;
-    }
+  function int boardStart() {
+    return 16384;
+  }
 
-    function int blocksPerRow() {
-        return 32;
-    }
+  function int blocksPerRow() {
+    return 32;
+  }
 
-    function int boardHeight() {
-        return 256;
-    }
+  function int boardHeight() {
+    return 256;
+  }
 
-    function int boardWidth() {
-        return 512;
-    }
+  function int boardWidth() {
+    return 512;
+  }
 
-    function int escKey() {
-        return 140;
-    }
+  function int escKey() {
+    return 140;
+  }
 
-    function int gapBetweenPlatforms() {
-        return 55;
-    }
+  function int gapBetweenPlatforms() {
+    return 55;
+  }
 }
