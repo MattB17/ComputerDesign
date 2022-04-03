@@ -1,9 +1,15 @@
 // Holds a set of utility (helper) functions used throughout the project.
 
 class Utils {
-  function getOffset(int x, int y) {
+  function int getOffset(int x, int y) {
     return (Constants.boardStart() +
             (y * Constants.blocksPerRow()) +
-            (x / Constants.blockSize()))
+            (x / Constants.blockSize()));
+  }
+
+  function bool isBelowBoard(int y) {
+    var int gap_from_bottom;
+    let gap_from_bottom = Constants.boardHeight() - 1 - y;
+    return (gap_from_bottom < 0);
   }
 }

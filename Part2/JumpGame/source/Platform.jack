@@ -75,8 +75,6 @@ class Platform {
   }
 
   method bool isBelowBoard() {
-    var int gap_from_bottom;
-    let gap_from_bottom = Constants.boardHeight() - 1 - y_;
-    return (gap_from_bottom < 0);
+    return Utils.isBelowBoard(y_);
   }
 }

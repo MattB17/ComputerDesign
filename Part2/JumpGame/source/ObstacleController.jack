@@ -1,0 +1,44 @@
+// A controller object used to manage the obstacles on the screen.
+
+class ObstacleController {
+  field Obstacle obstacle_; // the obstacle being controlled.
+
+  // the number of rows to shift the platform on each loop
+  field int shift_size_;
+
+  constructor ObstacleController new() {
+    let obstacle_ = Obstacle.new(256, -5, 6, Constants.obstacleBitMap());
+    let shift_size_ = 4;
+    return this;
+  }
+
+  method void dispose() {
+    do obstacle_.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  method void drawObstacle() {
+    do obstacle_.draw();
+    return;
+  }
+
+  method void eraseObstacle() {
+    do obstacle_.erase();
+    return;
+  }
+
+  method void runControlLoop() {
+    do obstacle_.erase();
+
+    do obstacle_.shiftDown(shift_size_);
+
+    if (obstacle_.isBelowBoard()) {
+      let obstacle_ = Obstacle.new(256, -5, 6, Constants.obstacleBitMap());
+    }
+
+    do obstacle_.draw();
+
+    return;
+  }
+}

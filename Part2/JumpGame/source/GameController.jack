@@ -4,14 +4,17 @@
 
 class GameController {
   field PlatformController platform_controller_;
+  field ObstacleController obstacle_controller_;
 
   constructor GameController new() {
     let platform_controller_ = PlatformController.new();
+    let obstacle_controller_ = ObstacleController.new();
     return this;
   }
 
   method void dispose() {
     do platform_controller_.dispose();
+    do obstacle_controller_.dispose();
     do Memory.deAlloc(this);
     return;
   }
@@ -21,12 +24,14 @@ class GameController {
     var char key;
 
     do platform_controller_.drawPlatforms();
+    do obstacle_controller_.drawObstacle();
 
     let game_over = false;
     while (~game_over) {
       while ((key = 0) & (~game_over)) {
         let key = Keyboard.keyPressed();
         do platform_controller_.runControlLoop();
+        do obstacle_controller_.runControlLoop();
         do Sys.wait(100);
       }
 
@@ -37,12 +42,14 @@ class GameController {
       while ((~(key = 0)) & (~game_over)) {
         let key = Keyboard.keyPressed();
         do platform_controller_.runControlLoop();
+        do obstacle_controller_.runControlLoop();
         do Sys.wait(100);
       }
     }
 
     if (game_over) {
       do platform_controller_.erasePlatforms();
+      do obstacle_controller_.eraseObstacle();
     }
     return;
   }

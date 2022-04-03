@@ -28,4 +28,16 @@ class Constants {
   function int gapBetweenPlatforms() {
     return 55;
   }
+
+  function Array obstacleBitMap() {
+    var Array bit_map;
+    let bit_map = Array.new(6);
+    let bit_map[0] = 384;
+    let bit_map[1] = 960;
+    let bit_map[2] = 2016;
+    let bit_map[3] = 2016;
+    let bit_map[4] = 960;
+    let bit_map[5] = 384;
+    return bit_map;
+  }
 }
