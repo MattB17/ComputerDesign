@@ -1,0 +1,63 @@
+// Represents a game obstacle that drops down the board.
+
+class Obstacle {
+  field int x_, y_; // screen location of the obstacle's top left corner.
+
+  // the height of the obstacle (number of rows), this is also the length of
+  // the row-wise bitmap Array.
+  field int height_;
+
+  field Array bitmap_vals_; // the row-wise bitmap values of the obstacle.
+
+  constructor Obstacle new(int x, int y, int height, Array bitmap_vals) {
+    let x_ = x;
+    let y_ = y;
+    let height_ = height;
+    let bitmap_vals_ = bitmap_vals;
+    return;
+  }
+
+  method void dispose() {
+    do bitmap_vals_.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  method void draw() {
+    var int obstacle_row, curr_row, board_end, offset;
+    let obstacle_row = 0;
+    let curr_row = y_;
+    let board_end = Constants.boardHeight() - 1;
+    let offset = getOffset(x_, curr_row);
+
+    while (obstacle_row < height_) {
+      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+        do Memory.poke(offset, bitmap_vals_[obstacle_row]);
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let obstacle_row = obstacle_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return;
+  }
+
+  method void erase() {
+    var int obstacle_row, curr_row, board_end, offset;
+    let obstacle_row = 0;
+    let curr_row = y_;
+    let board_end = Constants.boardHeight() - 1;
+    let offset = getOffset(x_, curr_row);
+
+    while (obstacle_row < height_) {
+      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+        do Memory.poke(offset, 0);
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let obstacle_row = obstacle_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return;
+  }
+}

@@ -9,6 +9,10 @@ class Constants {
     return 32;
   }
 
+  function int blockSize() {
+    return 16;
+  }
+
   function int boardHeight() {
     return 256;
   }

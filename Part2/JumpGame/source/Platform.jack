@@ -50,9 +50,7 @@ class Platform {
 
     let board_end = Constants.boardHeight() - 1;
     let curr_row = y_;
-    let offset = (Constants.boardStart() +
-                  (curr_row * Constants.blocksPerRow()) +
-                  (x_ / 16));
+    let offset = Utils.getOffset(x_, curr_row);
     let row_count = 0;
 
     while (row_count < height_) {

@@ -1,0 +1,9 @@
+// Holds a set of utility (helper) functions used throughout the project.
+
+class Utils {
+  function getOffset(int x, int y) {
+    return (Constants.boardStart() +
+            (y * Constants.blocksPerRow()) +
+            (x / Constants.blockSize()))
+  }
+}
