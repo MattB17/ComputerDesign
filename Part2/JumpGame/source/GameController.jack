@@ -3,10 +3,13 @@
 // is delegated to the JumperController. GameController controls both of these.
 
 class GameController {
-  field PlatformController platform_controller_;
-  field ObstacleController obstacle_controller_;
+  field int score;
+
+  field PlatformController platform_controller_; // controls the platforms.
+  field ObstacleController obstacle_controller_; // controls the obstacles.
 
   constructor GameController new() {
+    let score = 0;
     let platform_controller_ = PlatformController.new();
     let obstacle_controller_ = ObstacleController.new();
     return this;
@@ -24,14 +27,16 @@ class GameController {
     var char key;
 
     do platform_controller_.drawPlatforms();
-    do obstacle_controller_.drawObstacle();
 
     let game_over = false;
     while (~game_over) {
       while ((key = 0) & (~game_over)) {
         let key = Keyboard.keyPressed();
+        let score = score + 1;
         do platform_controller_.runControlLoop();
-        do obstacle_controller_.runControlLoop();
+        if (score > 200) {
+          do obstacle_controller_.runControlLoop();
+        }
         do Sys.wait(100);
       }
 
@@ -41,15 +46,20 @@ class GameController {
       }
       while ((~(key = 0)) & (~game_over)) {
         let key = Keyboard.keyPressed();
+        let score = score + 1;
         do platform_controller_.runControlLoop();
-        do obstacle_controller_.runControlLoop();
+        if (score > 200) {
+          do obstacle_controller_.runControlLoop();
+        }
         do Sys.wait(100);
       }
     }
 
     if (game_over) {
       do platform_controller_.erasePlatforms();
-      do obstacle_controller_.eraseObstacle();
+      if (score > 200) {
+        do obstacle_controller_.eraseObstacle();
+      }
     }
     return;
   }

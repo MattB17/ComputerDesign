@@ -31,13 +31,23 @@ class Constants {
 
   function Array obstacleBitMap() {
     var Array bit_map;
-    let bit_map = Array.new(6);
+    let bit_map = Array.new(16);
     let bit_map[0] = 384;
     let bit_map[1] = 960;
     let bit_map[2] = 2016;
-    let bit_map[3] = 2016;
-    let bit_map[4] = 960;
-    let bit_map[5] = 384;
+    let bit_map[3] = 4080;
+    let bit_map[4] = 8184;
+    let bit_map[5] = 16380;
+    let bit_map[6] = 32766;
+    let bit_map[7] = -1;
+    let bit_map[8] = -1;
+    let bit_map[9] = 32766;
+    let bit_map[10] = 16380;
+    let bit_map[11] = 8184;
+    let bit_map[12] = 4080;
+    let bit_map[13] = 2016;
+    let bit_map[14] = 960;
+    let bit_map[15] = 384;
     return bit_map;
   }
 }
