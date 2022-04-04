@@ -1,7 +1,7 @@
 // A controller used to manage the Jumper throughout the game.
 
 class JumperController {
-  field Obstacle jumper_; // the Jumper that is controlled by the user.
+  field Jumper jumper_; // the Jumper that is controlled by the user.
 
   // the shift size when the Jumper is stationary. If the Jumper is stationary
   // it is standing on a platform and so should shift down at the same speed
@@ -9,7 +9,7 @@ class JumperController {
   field int stationary_shift_size_;
 
   constructor JumperController new() {
-    let jumper_ = Obstacle.new(400, 199, 16, Constants.obstacleBitMap());
+    let jumper_ = Jumper.new(400, 199, 16, Constants.jumperBitMap());
     let stationary_shift_size_ = 2;
     return this;
   }

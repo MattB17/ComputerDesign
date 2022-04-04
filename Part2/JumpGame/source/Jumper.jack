@@ -1,18 +1,18 @@
 // Represents the user-controlled jumper in the game.
 
 class Jumper {
-  field int x_, y_; // screen position of the Jumper's top right corner.
+  field int x_, y_; // screen location of the jumper's top left corner.
 
   // the height of the jumper (number of rows), this is also the length of
-  // the row-wise bitmap array.
+  // the row-wise bitmap Array.
   field int height_;
 
-  field Array bitmap_vals_; // the row-wise bitmap values of the obstacle.
+  field Array bitmap_vals_; // the row-wise bitmap values of the jumper.
 
   constructor Jumper new(int x, int y, int height, Array bitmap_vals) {
     let x_ = x;
     let y_ = y;
-    let height_ = height_;
+    let height_ = height;
     let bitmap_vals_ = bitmap_vals;
     return this;
   }
