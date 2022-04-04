@@ -32,4 +32,28 @@ class Jumper {
     do Utils.eraseBitMap(x_, y_, height_);
     return;
   }
+
+  method void shiftDown(int num_rows) {
+    let y_ = y_ + num_rows;
+    return;
+  }
+
+  method void shiftUp(int num_rows) {
+    let y_ = y_ - num_rows;
+    return;
+  }
+
+  method void shiftRight(int num_cols) {
+    let x_ = x_ + num_cols;
+    return;
+  }
+
+  method void shiftLeft(int num_cols) {
+    let x_ = x_ - num_cols;
+    return;
+  }
+
+  method bool isBelowBoard() {
+    return Utils.isBelowBoard(y_);
+  }
 }

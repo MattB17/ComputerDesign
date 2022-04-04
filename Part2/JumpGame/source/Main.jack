@@ -3,6 +3,7 @@ class Main {
     var GameController game_controller;
     let game_controller = GameController.new();
     do game_controller.run();
+    do game_controller.dispose();
     return;
   }
 }

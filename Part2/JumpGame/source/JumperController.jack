@@ -1,0 +1,43 @@
+// A controller used to manage the Jumper throughout the game.
+
+class JumperController {
+  field Obstacle jumper_; // the Jumper that is controlled by the user.
+
+  // the shift size when the Jumper is stationary. If the Jumper is stationary
+  // it is standing on a platform and so should shift down at the same speed
+  // as the platform.
+  field int stationary_shift_size_;
+
+  constructor JumperController new() {
+    let jumper_ = Obstacle.new(400, 199, 16, Constants.obstacleBitMap());
+    let stationary_shift_size_ = 2;
+    return this;
+  }
+
+  method void dispose() {
+    do jumper_.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  method void drawJumper() {
+    do jumper_.draw();
+    return;
+  }
+
+  method void eraseJumper() {
+    do jumper_.erase();
+    return;
+  }
+
+  method void runControlLoop() {
+    do jumper_.erase();
+
+    if (~(jumper_.isBelowBoard())) {
+      do jumper_.shiftDown(stationary_shift_size_);
+      do jumper_.draw();
+    }
+
+    return;
+  }
+}

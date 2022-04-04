@@ -7,17 +7,20 @@ class GameController {
 
   field PlatformController platform_controller_; // controls the platforms.
   field ObstacleController obstacle_controller_; // controls the obstacles.
+  field JumperController jumper_controller_; // controls the jumper.
 
   constructor GameController new() {
     let score = 0;
     let platform_controller_ = PlatformController.new();
     let obstacle_controller_ = ObstacleController.new();
+    let jumper_controller_ = JumperController.new();
     return this;
   }
 
   method void dispose() {
     do platform_controller_.dispose();
     do obstacle_controller_.dispose();
+    do jumper_controller_.dispose();
     do Memory.deAlloc(this);
     return;
   }
@@ -27,6 +30,7 @@ class GameController {
     var char key;
 
     do platform_controller_.drawPlatforms();
+    do jumper_controller_.drawJumper();
 
     let game_over = false;
     while (~game_over) {
@@ -34,6 +38,7 @@ class GameController {
         let key = Keyboard.keyPressed();
         let score = score + 1;
         do platform_controller_.runControlLoop();
+        do jumper_controller_.runControlLoop();
         if (score > 200) {
           do obstacle_controller_.runControlLoop();
         }
@@ -48,6 +53,7 @@ class GameController {
         let key = Keyboard.keyPressed();
         let score = score + 1;
         do platform_controller_.runControlLoop();
+        do jumper_controller_.runControlLoop();
         if (score > 200) {
           do obstacle_controller_.runControlLoop();
         }
@@ -57,6 +63,7 @@ class GameController {
 
     if (game_over) {
       do platform_controller_.erasePlatforms();
+      do jumper_controller_.eraseJumper();
       if (score > 200) {
         do obstacle_controller_.eraseObstacle();
       }
