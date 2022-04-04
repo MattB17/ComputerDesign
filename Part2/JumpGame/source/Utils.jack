@@ -12,4 +12,42 @@ class Utils {
     let gap_from_bottom = Constants.boardHeight() - 1 - y;
     return (gap_from_bottom < 0);
   }
+
+  function void drawBitMapArray(int x, int y, int height, Array bitmap_vals) {
+    var int obj_row, curr_row, board_end, offset;
+    let obj_row = 0;
+    let curr_row = y;
+    let board_end = Constants.boardHeight() - 1;
+    let offset = Utils.getOffset(x, curr_row);
+
+    while (obj_row < height) {
+      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+        do Memory.poke(offset, bitmap_vals[obj_row]);
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let obj_row = obj_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return;
+  }
+
+  function void eraseBitMap(int x, int y, int height) {
+    var int obj_row, curr_row, board_end, offset;
+    let obj_row = 0;
+    let curr_row = y;
+    let board_end = Constants.boardHeight() - 1;
+    let offset = Utils.getOffset(x, curr_row);
+
+    while (obj_row < height) {
+      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
+        do Memory.poke(offset, 0);
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let obj_row = obj_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return;
+  }
 }

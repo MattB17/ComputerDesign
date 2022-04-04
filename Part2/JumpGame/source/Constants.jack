@@ -50,4 +50,26 @@ class Constants {
     let bit_map[15] = 384;
     return bit_map;
   }
+
+  function Array jumperBitMap() {
+    var Array bit_map;
+    let bit_map = Array.new(16);
+    let bit_map[0] = 4064;
+    let bit_map[1] = 6192;
+    let bit_map[2] = 4752;
+    let bit_map[3] = 4112;
+    let bit_map[4] = 5008;
+    let bit_map[5] = 2080;
+    let bit_map[6] = 1088;
+    let bit_map[7] = 14392;
+    let bit_map[8] = 8200;
+    let bit_map[9] = 11368;
+    let bit_map[10] = 10280;
+    let bit_map[11] = 14392;
+    let bit_map[12] = 2336;
+    let bit_map[13] = 2720;
+    let bit_map[14] = 7920;
+    let bit_map[15] = 7920;
+    return bit_map;
+  }
 }

@@ -24,40 +24,12 @@ class Obstacle {
   }
 
   method void draw() {
-    var int obstacle_row, curr_row, board_end, offset;
-    let obstacle_row = 0;
-    let curr_row = y_;
-    let board_end = Constants.boardHeight() - 1;
-    let offset = Utils.getOffset(x_, curr_row);
-
-    while (obstacle_row < height_) {
-      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
-        do Memory.poke(offset, bitmap_vals_[obstacle_row]);
-      }
-      let offset = offset + Constants.blocksPerRow();
-      let obstacle_row = obstacle_row + 1;
-      let curr_row = curr_row + 1;
-    }
-
+    do Utils.drawBitMapArray(x_, y_, height_, bitmap_vals_);
     return;
   }
 
   method void erase() {
-    var int obstacle_row, curr_row, board_end, offset;
-    let obstacle_row = 0;
-    let curr_row = y_;
-    let board_end = Constants.boardHeight() - 1;
-    let offset = Utils.getOffset(x_, curr_row);
-
-    while (obstacle_row < height_) {
-      if ((~(curr_row < 0)) & (~(curr_row > board_end))) {
-        do Memory.poke(offset, 0);
-      }
-      let offset = offset + Constants.blocksPerRow();
-      let obstacle_row = obstacle_row + 1;
-      let curr_row = curr_row + 1;
-    }
-
+    do Utils.eraseBitMap(x_, y_, height_);
     return;
   }
 
