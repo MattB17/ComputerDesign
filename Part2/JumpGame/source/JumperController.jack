@@ -8,9 +8,14 @@ class JumperController {
   // as the platform.
   field int stationary_shift_size_;
 
-  constructor JumperController new() {
+  // the shift size when the Jumper is in a jump.
+  field int jump_shift_size_;
+
+  constructor JumperController new(
+    int stationary_shift_size, int jump_shift_size) {
     let jumper_ = Jumper.new(400, 199, 16, Constants.jumperBitMap());
-    let stationary_shift_size_ = 2;
+    let stationary_shift_size_ = stationary_shift_size;
+    let jump_shift_size_ = jump_shift_size;
     return this;
   }
 
@@ -30,14 +35,18 @@ class JumperController {
     return;
   }
 
-  method void runControlLoop() {
+  // returns a bool to signal whether the control loop was successful and the
+  // jumper is still alive
+  method bool runControlLoop() {
     do jumper_.erase();
 
+    do jumper_.shiftDown(stationary_shift_size_);
+
     if (~(jumper_.isBelowBoard())) {
-      do jumper_.shiftDown(stationary_shift_size_);
       do jumper_.draw();
+      return true;
     }
 
-    return;
+    return false;
   }
 }

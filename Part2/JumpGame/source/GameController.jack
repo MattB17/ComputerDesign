@@ -3,17 +3,17 @@
 // is delegated to the JumperController. GameController controls both of these.
 
 class GameController {
-  field int score;
+  field int score_;
 
   field PlatformController platform_controller_; // controls the platforms.
   field ObstacleController obstacle_controller_; // controls the obstacles.
   field JumperController jumper_controller_; // controls the jumper.
 
-  constructor GameController new() {
-    let score = 0;
-    let platform_controller_ = PlatformController.new();
+  constructor GameController new(int platform_shift_size) {
+    let score_ = 0;
+    let platform_controller_ = PlatformController.new(platform_shift_size);
     let obstacle_controller_ = ObstacleController.new();
-    let jumper_controller_ = JumperController.new();
+    let jumper_controller_ = JumperController.new(platform_shift_size, 16);
     return this;
   }
 
@@ -36,10 +36,10 @@ class GameController {
     while (~game_over) {
       while ((key = 0) & (~game_over)) {
         let key = Keyboard.keyPressed();
-        let score = score + 1;
+        let score_ = score_ + 1;
         do platform_controller_.runControlLoop();
-        do jumper_controller_.runControlLoop();
-        if (score > 200) {
+        let game_over = (~(jumper_controller_.runControlLoop()));
+        if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
         do Sys.wait(100);
@@ -49,12 +49,13 @@ class GameController {
       if (key = Constants.escKey()) {
         let game_over = true;
       }
+
       while ((~(key = 0)) & (~game_over)) {
         let key = Keyboard.keyPressed();
-        let score = score + 1;
+        let score_ = score_ + 1;
         do platform_controller_.runControlLoop();
-        do jumper_controller_.runControlLoop();
-        if (score > 200) {
+        let game_over = (~(jumper_controller_.runControlLoop()));
+        if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
         do Sys.wait(100);
@@ -64,9 +65,13 @@ class GameController {
     if (game_over) {
       do platform_controller_.erasePlatforms();
       do jumper_controller_.eraseJumper();
-      if (score > 200) {
+      if (score_ > 200) {
         do obstacle_controller_.eraseObstacle();
       }
+      do Output.printString("Game Over");
+      do Output.println();
+      do Output.printString("Your score was: ");
+      do Output.printInt(score_);
     }
     return;
   }

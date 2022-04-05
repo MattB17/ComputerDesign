@@ -7,7 +7,7 @@ class PlatformController {
   // the number of rows to shift the platform on each loop.
   field int shift_size_;
 
-  constructor PlatformController new() {
+  constructor PlatformController new(int shift_size) {
     var Platform curr_platform;
     let platforms_ = PlatformList.new();
 
@@ -25,7 +25,7 @@ class PlatformController {
     do platforms_.addNewPlatform(curr_platform);
 
     let next_platform_on_left_ = true;
-    let shift_size_ = 2;
+    let shift_size_ = shift_size;
 
     return this;
   }

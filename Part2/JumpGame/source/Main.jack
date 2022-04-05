@@ -1,7 +1,7 @@
 class Main {
   function void main() {
     var GameController game_controller;
-    let game_controller = GameController.new();
+    let game_controller = GameController.new(2);
     do game_controller.run();
     do game_controller.dispose();
     return;
