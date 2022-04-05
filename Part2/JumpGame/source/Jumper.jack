@@ -53,6 +53,18 @@ class Jumper {
     return;
   }
 
+  method bool onPlatformAfterLeftStep() {
+    var int offset;
+    let offset = Utils.getOffset(x_ - Constants.blockSize(), y_ + height_);
+    return (~(Memory.peek(offset) = 0));
+  }
+
+  method bool onPlatformAfterRightStep() {
+    var int offset;
+    let offset = Utils.getOffset(x_ + Constants.blockSize(), y_ + height_);
+    return (~(Memory.peek(offset) = 0));
+  }
+
   method bool isBelowBoard() {
     return Utils.isBelowBoard(y_);
   }

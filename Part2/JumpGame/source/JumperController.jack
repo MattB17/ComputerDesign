@@ -23,6 +23,11 @@ class JumperController {
   // a jump or moving down while standing on a platform.
   field bool moving_up_;
 
+  // used to track how high the jumper has jumped. This measures the upward
+  // motion of the jumper (in units of 16-bit blocks) to signal when the jumper
+  // will start to fall.
+  field int jump_height_;
+
   constructor JumperController new(int stationary_shift_size) {
     let jumper_ = Jumper.new(
       400, 199, Constants.blockSize(), Constants.jumperBitMap());
@@ -31,6 +36,7 @@ class JumperController {
     let in_jump_ = false;
     let horizontal_direction_ = 0;
     let moving_up_ = false;
+    let jump_height_ = 0;
     return this;
   }
 
@@ -57,6 +63,7 @@ class JumperController {
   method void startJump() {
     let in_jump_ = true;
     let moving_up_ = true;
+    let jump_height_ = 0;
     return;
   }
 
@@ -78,6 +85,8 @@ class JumperController {
     if (in_jump_) {
       if (moving_up_) {
         do jumper_.shiftUp(moving_shift_size_);
+        // the jumper has moved up another 16-bit block.
+        let jump_height_ = jump_height_ + 1;
       } else {
         do jumper_.shiftDown(moving_shift_size_);
       }
@@ -86,10 +95,24 @@ class JumperController {
     }
 
     if (horizontal_direction_ = 1) {
-      do jumper_.shiftLeft(moving_shift_size_);
+      if (in_jump_ | jumper_.onPlatformAfterLeftStep()) {
+        do jumper_.shiftLeft(moving_shift_size_);
+      } else {
+        let horizontal_direction_ = 0;
+      }
     }
     if (horizontal_direction_ = 2) {
-      do jumper_.shiftRight(moving_shift_size_);
+      if (in_jump_ | jumper_.onPlatformAfterRightStep()) {
+        do jumper_.shiftRight(moving_shift_size_);
+      } else {
+        let horizontal_direction_ = 0;
+      }
+    }
+
+    // signals that the jumper has moved up 8 16-bit blocks and will start to
+    // fall.
+    if (jump_height_ > 7) {
+      let moving_up_ = false;
     }
 
     if (~(jumper_.isBelowBoard())) {

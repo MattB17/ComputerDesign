@@ -42,7 +42,7 @@ class GameController {
         if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
-        do Sys.wait(100);
+        do Sys.wait(200);
       }
 
       // if escape key is pressed the game is over
@@ -68,7 +68,7 @@ class GameController {
         if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
-        do Sys.wait(100);
+        do Sys.wait(200);
       }
     }
 
