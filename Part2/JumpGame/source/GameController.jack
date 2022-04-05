@@ -13,7 +13,7 @@ class GameController {
     let score_ = 0;
     let platform_controller_ = PlatformController.new(platform_shift_size);
     let obstacle_controller_ = ObstacleController.new();
-    let jumper_controller_ = JumperController.new(platform_shift_size, 16);
+    let jumper_controller_ = JumperController.new(platform_shift_size);
     return this;
   }
 
@@ -48,6 +48,16 @@ class GameController {
       // if escape key is pressed the game is over
       if (key = Constants.escKey()) {
         let game_over = true;
+      }
+      if ((key = Constants.upArrowKey()) &
+          (~(jumper_controller_.isJumping()))) {
+        do jumper_controller_.startJump();
+      }
+      if (key = Constants.leftArrowKey()) {
+        do jumper_controller_.setLeftMovement();
+      }
+      if (key = Constants.rightArrowKey()) {
+        do jumper_controller_.setRightMovement();
       }
 
       while ((~(key = 0)) & (~game_over)) {

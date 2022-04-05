@@ -25,6 +25,18 @@ class Constants {
     return 140;
   }
 
+  function int leftArrowKey() {
+    return 130;
+  }
+
+  function int upArrowKey() {
+    return 131;
+  }
+
+  function int rightArrowKey() {
+    return 132;
+  }
+
   function int gapBetweenPlatforms() {
     return 55;
   }

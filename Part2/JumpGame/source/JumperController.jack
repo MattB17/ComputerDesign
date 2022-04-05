@@ -8,14 +8,29 @@ class JumperController {
   // as the platform.
   field int stationary_shift_size_;
 
-  // the shift size when the Jumper is in a jump.
-  field int jump_shift_size_;
+  // the shift size when the Jumper is in motion.
+  field int moving_shift_size_;
 
-  constructor JumperController new(
-    int stationary_shift_size, int jump_shift_size) {
-    let jumper_ = Jumper.new(400, 199, 16, Constants.jumperBitMap());
+  // identifies whether the jumper is currently in a jump.
+  field bool in_jump_;
+
+  // identifies the jumper's current horizontal direction.
+  // a value of 0 indicates no horizontal movement, 1 for left, 2 for right.
+  field int horizontal_direction_;
+
+  // identifies if the jumper is moving upwards (at the start of a jump).
+  // otherwise, the jumper is moving down, it is either falling at the end of
+  // a jump or moving down while standing on a platform.
+  field bool moving_up_;
+
+  constructor JumperController new(int stationary_shift_size) {
+    let jumper_ = Jumper.new(
+      400, 199, Constants.blockSize(), Constants.jumperBitMap());
     let stationary_shift_size_ = stationary_shift_size;
-    let jump_shift_size_ = jump_shift_size;
+    let moving_shift_size_ = Constants.blockSize();
+    let in_jump_ = false;
+    let horizontal_direction_ = 0;
+    let moving_up_ = false;
     return this;
   }
 
@@ -23,6 +38,10 @@ class JumperController {
     do jumper_.dispose();
     do Memory.deAlloc(this);
     return;
+  }
+
+  method bool isJumping() {
+    return in_jump_;
   }
 
   method void drawJumper() {
@@ -35,12 +54,43 @@ class JumperController {
     return;
   }
 
+  method void startJump() {
+    let in_jump_ = true;
+    let moving_up_ = true;
+    return;
+  }
+
+  method void setLeftMovement() {
+    let horizontal_direction_ = 1;
+    return;
+  }
+
+  method void setRightMovement() {
+    let horizontal_direction_ = 2;
+    return;
+  }
+
   // returns a bool to signal whether the control loop was successful and the
   // jumper is still alive
   method bool runControlLoop() {
     do jumper_.erase();
 
-    do jumper_.shiftDown(stationary_shift_size_);
+    if (in_jump_) {
+      if (moving_up_) {
+        do jumper_.shiftUp(moving_shift_size_);
+      } else {
+        do jumper_.shiftDown(moving_shift_size_);
+      }
+    } else {
+      do jumper_.shiftDown(stationary_shift_size_);
+    }
+
+    if (horizontal_direction_ = 1) {
+      do jumper_.shiftLeft(moving_shift_size_);
+    }
+    if (horizontal_direction_ = 2) {
+      do jumper_.shiftRight(moving_shift_size_);
+    }
 
     if (~(jumper_.isBelowBoard())) {
       do jumper_.draw();
