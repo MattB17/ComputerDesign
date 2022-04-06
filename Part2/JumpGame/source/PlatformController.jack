@@ -15,11 +15,7 @@ class PlatformController {
     // platforms at the bottom of the board appear at the back of the list.
     let curr_platform = Platform.new(384, 215, 4, 16);
     do platforms_.addNewPlatform(curr_platform);
-    let curr_platform = Platform.new(64, 170, 4, 16);
-    do platforms_.addNewPlatform(curr_platform);
-    let curr_platform = Platform.new(384, 125, 4, 16);
-    do platforms_.addNewPlatform(curr_platform);
-    let curr_platform = Platform.new(64, 80, 4, 16);
+    let curr_platform = Platform.new(64, 125, 4, 16);
     do platforms_.addNewPlatform(curr_platform);
     let curr_platform = Platform.new(384, 35, 4, 16);
     do platforms_.addNewPlatform(curr_platform);

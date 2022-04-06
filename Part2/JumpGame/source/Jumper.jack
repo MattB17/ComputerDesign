@@ -86,6 +86,11 @@ class Jumper {
     let curr_row = y_ - 1;
     let search_row = 0;
     let offset = Utils.getOffset(x_, curr_row);
+
+    if (y_ < height_) {
+      return y_;
+    }
+
     while (search_row < height_) {
       if (~(curr_row < 0)) {
         if (~(Memory.peek(offset) = 0)) {
@@ -100,7 +105,8 @@ class Jumper {
   }
 
   method int gapFromObjectOnLeft() {
-    var int offset, curr_row, search_row;
+    var int offset, curr_row, search_row, board_end;
+    let board_end = Constants.boardHeight() - 1;
     let curr_row = y_;
     let search_row = 0;
     let offset = Utils.getOffset(x_ - Constants.blockSize(), curr_row);
@@ -110,8 +116,10 @@ class Jumper {
     }
 
     while (search_row < height_) {
-      if (~(Memory.peek(offset) = 0)) {
-        return 0;
+      if (~(curr_row > board_end)) {
+        if (~(Memory.peek(offset) = 0)) {
+          return 0;
+        }
       }
       let offset = offset + Constants.blocksPerRow();
       let search_row = search_row + 1;
@@ -122,19 +130,22 @@ class Jumper {
   }
 
   method int gapFromObjectOnRight() {
-    var int offset, curr_row, search_row, x;
+    var int offset, curr_row, search_row, board_end, x;
+    let board_end = Constants.boardHeight() - 1;
     let curr_row = y_;
     let search_row = 0;
     let x = x_ + Constants.blockSize();
-    let offset = utils.getOffset(x, curr_row);
+    let offset = Utils.getOffset(x, curr_row);
 
     if ((x + Constants.blockSize()) > Constants.boardWidth()) {
       return 0;
     }
 
     while (search_row < height_) {
-      if (~(Memory.peek(offset) = 0)) {
-        return 0;
+      if (~(curr_row > board_end)) {
+        if (~(Memory.peek(offset) = 0)) {
+          return 0;
+        }
       }
       let offset = offset + Constants.blocksPerRow();
       let search_row = search_row + 1;

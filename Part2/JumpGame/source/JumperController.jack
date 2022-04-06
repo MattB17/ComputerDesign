@@ -87,7 +87,7 @@ class JumperController {
       if (moving_up_) {
         let gap_from_object = jumper_.gapBelowObject();
         if (gap_from_object < Constants.blockSize()) {
-          do jumper_.shiftUp(gap_from_object);
+          do jumper_.shiftUp(gap_from_object - 1);
           let moving_up_ = false;
           let jump_height_ = 0;
         } else {
@@ -112,7 +112,6 @@ class JumperController {
       if (in_jump_ | jumper_.onPlatformAfterLeftStep()) {
         let gap_from_object = jumper_.gapFromObjectOnLeft();
         if (gap_from_object < Constants.blockSize()) {
-          let in_jump_ = false;
           let moving_up_ = false;
           let jump_height_ = 0;
         } else {
@@ -126,7 +125,6 @@ class JumperController {
       if (in_jump_ | jumper_.onPlatformAfterRightStep()) {
         let gap_from_object = jumper_.gapFromObjectOnRight();
         if (gap_from_object < Constants.blockSize()) {
-          let in_jump_ = false;
           let moving_up_ = false;
           let jump_height_ = 0;
         } else {
@@ -139,7 +137,7 @@ class JumperController {
 
     // signals that the jumper has moved up 10 16-bit blocks and will start to
     // fall. 10 was chosen so that it is doable to land on the other platform.
-    if (jump_height_ > 9) {
+    if (jump_height_ > 11) {
       let moving_up_ = false;
     }
 

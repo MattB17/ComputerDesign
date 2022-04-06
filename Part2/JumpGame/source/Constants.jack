@@ -38,7 +38,7 @@ class Constants {
   }
 
   function int gapBetweenPlatforms() {
-    return 55;
+    return 90;
   }
 
   function Array obstacleBitMap() {
