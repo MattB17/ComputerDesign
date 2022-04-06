@@ -80,18 +80,25 @@ class JumperController {
   // returns a bool to signal whether the control loop was successful and the
   // jumper is still alive
   method bool runControlLoop() {
-    var int gap_from_platform;
+    var int gap_from_object;
     do jumper_.erase();
 
     if (in_jump_) {
       if (moving_up_) {
-        do jumper_.shiftUp(moving_shift_size_);
-        // the jumper has moved up another 16-bit block.
-        let jump_height_ = jump_height_ + 1;
+        let gap_from_object = jumper_.gapBelowObject();
+        if (gap_from_object < Constants.blockSize()) {
+          do jumper_.shiftUp(gap_from_object);
+          let moving_up_ = false;
+          let jump_height_ = 0;
+        } else {
+          do jumper_.shiftUp(moving_shift_size_);
+          // the jumper has moved up another 16-bit block.
+          let jump_height_ = jump_height_ + 1;
+        }
       } else {
-        let gap_from_platform = jumper_.gapFromPlatform();
-        if (gap_from_platform < Constants.blockSize()) {
-          do jumper_.shiftDown(gap_from_platform);
+        let gap_from_object = jumper_.gapAbovePlatform();
+        if (gap_from_object < Constants.blockSize()) {
+          do jumper_.shiftDown(gap_from_object);
           let in_jump_ = false;
         } else {
           do jumper_.shiftDown(moving_shift_size_);
@@ -103,14 +110,28 @@ class JumperController {
 
     if (horizontal_direction_ = 1) {
       if (in_jump_ | jumper_.onPlatformAfterLeftStep()) {
-        do jumper_.shiftLeft(moving_shift_size_);
+        let gap_from_object = jumper_.gapFromObjectOnLeft();
+        if (gap_from_object < Constants.blockSize()) {
+          let in_jump_ = false;
+          let moving_up_ = false;
+          let jump_height_ = 0;
+        } else {
+          do jumper_.shiftLeft(moving_shift_size_);
+        }
       } else {
         let horizontal_direction_ = 0;
       }
     }
     if (horizontal_direction_ = 2) {
       if (in_jump_ | jumper_.onPlatformAfterRightStep()) {
-        do jumper_.shiftRight(moving_shift_size_);
+        let gap_from_object = jumper_.gapFromObjectOnRight();
+        if (gap_from_object < Constants.blockSize()) {
+          let in_jump_ = false;
+          let moving_up_ = false;
+          let jump_height_ = 0;
+        } else {
+          do jumper_.shiftRight(moving_shift_size_);
+        }
       } else {
         let horizontal_direction_ = 0;
       }

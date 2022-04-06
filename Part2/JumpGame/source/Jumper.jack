@@ -80,10 +80,74 @@ class Jumper {
     return (Memory.peek(offset) = -1);
   }
 
-  method int gapFromPlatform() {
+  method int gapBelowObject() {
     var int offset, curr_row, search_row, board_end;
     let board_end = Constants.boardHeight() - 1;
-    let curr_row = y_ + height_;
+    let curr_row = y_ - 1;
+    let search_row = 0;
+    let offset = Utils.getOffset(x_, curr_row);
+    while (search_row < height_) {
+      if (~(curr_row < 0)) {
+        if (~(Memory.peek(offset) = 0)) {
+          return search_row;
+        }
+      }
+      let offset = offset - Constants.blocksPerRow();
+      let search_row = search_row + 1;
+      let curr_row = curr_row - 1;
+    }
+    return search_row;
+  }
+
+  method int gapFromObjectOnLeft() {
+    var int offset, curr_row, search_row;
+    let curr_row = y_;
+    let search_row = 0;
+    let offset = Utils.getOffset(x_ - Constants.blockSize(), curr_row);
+
+    if (x_ < Constants.blockSize()) {
+      return 0;
+    }
+
+    while (search_row < height_) {
+      if (~(Memory.peek(offset) = 0)) {
+        return 0;
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let search_row = search_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return search_row;
+  }
+
+  method int gapFromObjectOnRight() {
+    var int offset, curr_row, search_row, x;
+    let curr_row = y_;
+    let search_row = 0;
+    let x = x_ + Constants.blockSize();
+    let offset = utils.getOffset(x, curr_row);
+
+    if ((x + Constants.blockSize()) > Constants.boardWidth()) {
+      return 0;
+    }
+
+    while (search_row < height_) {
+      if (~(Memory.peek(offset) = 0)) {
+        return 0;
+      }
+      let offset = offset + Constants.blocksPerRow();
+      let search_row = search_row + 1;
+      let curr_row = curr_row + 1;
+    }
+
+    return search_row;
+  }
+
+  method int gapAbovePlatform() {
+    var int offset, curr_row, search_row, board_end;
+    let board_end = Constants.boardHeight() - 1;
+    let curr_row = y_ + height_ + 1;
     let search_row = 0;
     let offset = Utils.getOffset(x_, curr_row);
     while (search_row < height_) {
