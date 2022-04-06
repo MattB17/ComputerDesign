@@ -80,6 +80,7 @@ class JumperController {
   // returns a bool to signal whether the control loop was successful and the
   // jumper is still alive
   method bool runControlLoop() {
+    var int gap_from_platform;
     do jumper_.erase();
 
     if (in_jump_) {
@@ -88,7 +89,13 @@ class JumperController {
         // the jumper has moved up another 16-bit block.
         let jump_height_ = jump_height_ + 1;
       } else {
-        do jumper_.shiftDown(moving_shift_size_);
+        let gap_from_platform = jumper_.gapFromPlatform();
+        if (gap_from_platform < Constants.blockSize()) {
+          do jumper_.shiftDown(gap_from_platform);
+          let in_jump_ = false;
+        } else {
+          do jumper_.shiftDown(moving_shift_size_);
+        }
       }
     } else {
       do jumper_.shiftDown(stationary_shift_size_);
@@ -109,9 +116,9 @@ class JumperController {
       }
     }
 
-    // signals that the jumper has moved up 8 16-bit blocks and will start to
-    // fall.
-    if (jump_height_ > 7) {
+    // signals that the jumper has moved up 10 16-bit blocks and will start to
+    // fall. 10 was chosen so that it is doable to land on the other platform.
+    if (jump_height_ > 9) {
       let moving_up_ = false;
     }
 
