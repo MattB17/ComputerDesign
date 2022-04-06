@@ -37,6 +37,10 @@ class Constants {
     return 132;
   }
 
+  function int downArrowKey() {
+    return 133;
+  }
+
   function int gapBetweenPlatforms() {
     return 90;
   }

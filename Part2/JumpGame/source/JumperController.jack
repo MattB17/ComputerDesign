@@ -67,6 +67,13 @@ class JumperController {
     return;
   }
 
+  method void setDownMovement() {
+    let moving_up_ = false;
+    let jump_height_ = 0;
+    let horizontal_direction_ = 0;
+    return;
+  }
+
   method void setLeftMovement() {
     let horizontal_direction_ = 1;
     return;
@@ -112,6 +119,7 @@ class JumperController {
       if (in_jump_ | jumper_.onPlatformAfterLeftStep()) {
         let gap_from_object = jumper_.gapFromObjectOnLeft();
         if (gap_from_object < Constants.blockSize()) {
+          do jumper_.shiftLeft(gap_from_object);
           let moving_up_ = false;
           let jump_height_ = 0;
         } else {
@@ -125,6 +133,7 @@ class JumperController {
       if (in_jump_ | jumper_.onPlatformAfterRightStep()) {
         let gap_from_object = jumper_.gapFromObjectOnRight();
         if (gap_from_object < Constants.blockSize()) {
+          do jumper_.shiftRight(gap_from_object);
           let moving_up_ = false;
           let jump_height_ = 0;
         } else {

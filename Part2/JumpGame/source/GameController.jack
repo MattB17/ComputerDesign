@@ -53,6 +53,10 @@ class GameController {
           (~(jumper_controller_.isJumping()))) {
         do jumper_controller_.startJump();
       }
+      if ((key = Constants.downArrowKey()) &
+          (jumper_controller_.isJumping())) {
+        do jumper_controller_.setDownMovement();
+      }
       if (key = Constants.leftArrowKey()) {
         do jumper_controller_.setLeftMovement();
       }
