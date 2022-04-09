@@ -4,6 +4,8 @@
 
 class GameController {
   field int score_;
+  field bool game_over_;
+  field int key_;
 
   field PlatformController platform_controller_; // controls the platforms.
   field ObstacleController obstacle_controller_; // controls the obstacles.
@@ -11,6 +13,8 @@ class GameController {
 
   constructor GameController new(int platform_shift_size) {
     let score_ = 0;
+    let game_over_ = false;
+    let key_ = 0;
     let platform_controller_ = PlatformController.new(platform_shift_size);
     let obstacle_controller_ = ObstacleController.new();
     let jumper_controller_ = JumperController.new(platform_shift_size);
@@ -26,13 +30,10 @@ class GameController {
   }
 
   method void run() {
-    var bool game_over;
-    var char key;
-
     do printStartScreen();
-    while (~(key = 32)) {
-      do Sys.wait(200);
-      let key = Keyboard.keyPressed();
+    while (~(key_ = Constants.spaceKey())) {
+      do Sys.wait(Constants.waitTime());
+      let key_ = Keyboard.keyPressed();
     }
 
     do Screen.clearScreen();
@@ -40,60 +41,38 @@ class GameController {
     do platform_controller_.drawPlatforms();
     do jumper_controller_.drawJumper();
 
-    let game_over = false;
-    while (~game_over) {
-      while ((key = 0) & (~game_over)) {
-        let key = Keyboard.keyPressed();
+    let game_over_ = false;
+    while (~game_over_) {
+      while ((key_ = 0) & (~game_over_)) {
+        let key_ = Keyboard.keyPressed();
         let score_ = score_ + 1;
         do platform_controller_.runControlLoop();
-        let game_over = (~(jumper_controller_.runControlLoop()));
+        let game_over_ = (~(jumper_controller_.runControlLoop()));
         if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
-        do Sys.wait(200);
+        do Sys.wait(Constants.waitTime());
       }
 
-      // if escape key is pressed the game is over
-      if (key = Constants.escKey()) {
-        let game_over = true;
-      }
-      if ((key = Constants.upArrowKey()) &
-          (~(jumper_controller_.isJumping()))) {
-        do jumper_controller_.startJump();
-      }
-      if ((key = Constants.downArrowKey()) &
-          (jumper_controller_.isJumping())) {
-        do jumper_controller_.setDownMovement();
-      }
-      if (key = Constants.leftArrowKey()) {
-        do jumper_controller_.setLeftMovement();
-      }
-      if (key = Constants.rightArrowKey()) {
-        do jumper_controller_.setRightMovement();
-      }
+      do handleKeyInput();
 
-      while ((~(key = 0)) & (~game_over)) {
-        let key = Keyboard.keyPressed();
+      while ((~(key_ = 0)) & (~game_over_)) {
+        let key_ = Keyboard.keyPressed();
         let score_ = score_ + 1;
         do platform_controller_.runControlLoop();
-        let game_over = (~(jumper_controller_.runControlLoop()));
+        let game_over_ = (~(jumper_controller_.runControlLoop()));
         if (score_ > 200) {
           do obstacle_controller_.runControlLoop();
         }
-        do Sys.wait(200);
+        do Sys.wait(Constants.waitTime());
       }
     }
 
-    if (game_over) {
-      do platform_controller_.erasePlatforms();
-      do jumper_controller_.eraseJumper();
-      if (score_ > 200) {
-        do obstacle_controller_.eraseObstacle();
+    if (game_over_) {
+      do setEndScreen();
+      while (~(key_ = Constants.escKey())) {
+        do Sys.wait(Constants.waitTime());
       }
-      do Output.printString("Game Over");
-      do Output.println();
-      do Output.printString("Your score was: ");
-      do Output.printInt(score_);
     }
     return;
   }
@@ -112,6 +91,38 @@ class GameController {
       "Use the left and right arrow keys to control direction.");
     do Output.println();
     do Output.printString("Press the space bar to begin");
+    return;
+  }
+
+  method void setEndScreen() {
+    do Screen.clearScreen();
+    do Output.moveCursor(0, 0);
+    do Output.printString("Game Over");
+    do Output.println();
+    do Output.printString("Your score was: ");
+    do Output.printInt(score_);
+    return;
+  }
+
+  method void handleKeyInput() {
+    // if escape key is pressed the game is over
+    if (key_ = Constants.escKey()) {
+      let game_over_ = true;
+    }
+    if ((key_ = Constants.upArrowKey()) &
+        (~(jumper_controller_.isJumping()))) {
+      do jumper_controller_.startJump();
+    }
+    if ((key_ = Constants.downArrowKey()) &
+        (jumper_controller_.isJumping())) {
+      do jumper_controller_.setDownMovement();
+    }
+    if (key_ = Constants.leftArrowKey()) {
+      do jumper_controller_.setLeftMovement();
+    }
+    if (key_ = Constants.rightArrowKey()) {
+      do jumper_controller_.setRightMovement();
+    }
     return;
   }
 }

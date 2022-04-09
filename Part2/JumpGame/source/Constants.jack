@@ -21,6 +21,14 @@ class Constants {
     return 512;
   }
 
+  function int waitTime() {
+    return 200;
+  }
+
+  function int spaceKey() {
+    return 32;
+  }
+
   function int escKey() {
     return 140;
   }
