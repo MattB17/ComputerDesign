@@ -62,7 +62,7 @@ class Jumper {
       return false;
     }
 
-    let offset = Utils.getOffset(x_ - Constants.blockSize(), y_ + height_);
+    let offset = Utils.getOffset(x, y);
     return (Memory.peek(offset) = -1);
   }
 
@@ -76,7 +76,7 @@ class Jumper {
       return false;
     }
 
-    let offset = Utils.getOffset(x_ + Constants.blockSize(), y_ + height_);
+    let offset = Utils.getOffset(x, y);
     return (Memory.peek(offset) = -1);
   }
 

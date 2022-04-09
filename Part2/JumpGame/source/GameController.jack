@@ -29,6 +29,14 @@ class GameController {
     var bool game_over;
     var char key;
 
+    do printStartScreen();
+    while (~(key = 32)) {
+      do Sys.wait(200);
+      let key = Keyboard.keyPressed();
+    }
+
+    do Screen.clearScreen();
+
     do platform_controller_.drawPlatforms();
     do jumper_controller_.drawJumper();
 
@@ -87,6 +95,23 @@ class GameController {
       do Output.printString("Your score was: ");
       do Output.printInt(score_);
     }
+    return;
+  }
+
+  method void printStartScreen() {
+    do Output.printString("Welcome to the Jumper game!");
+    do Output.println();
+    do Output.printString(
+      "The goal is to stay on the platforms as long as possible.");
+    do Output.println();
+    do Output.printString("Use the up arrow key to start a jump.");
+    do Output.println();
+    do Output.printString("Use the down arrow key to end the jump.");
+    do Output.println();
+    do Output.printString(
+      "Use the left and right arrow keys to control direction.");
+    do Output.println();
+    do Output.printString("Press the space bar to begin");
     return;
   }
 }
