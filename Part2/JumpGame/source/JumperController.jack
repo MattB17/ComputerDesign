@@ -1,7 +1,8 @@
 // A controller used to manage the Jumper throughout the game.
 
 class JumperController {
-  field Jumper jumper_; // the Jumper that is controlled by the user.
+  // the Jumper that is controlled by the user.
+  field Jumper jumper_;
 
   // the shift size when the Jumper is stationary. If the Jumper is stationary
   // it is standing on a platform and so should shift down at the same speed
@@ -116,7 +117,7 @@ class JumperController {
     }
 
     if (horizontal_direction_ = 1) {
-      if (in_jump_ | jumper_.onPlatformAfterLeftStep()) {
+      if (in_jump_ | jumper_.onPlatformAfterLeftStep(moving_shift_size_)) {
         let gap_from_object = jumper_.gapFromObjectOnLeft();
         if (gap_from_object < Constants.blockSize()) {
           do jumper_.shiftLeft(gap_from_object);
@@ -130,7 +131,7 @@ class JumperController {
       }
     }
     if (horizontal_direction_ = 2) {
-      if (in_jump_ | jumper_.onPlatformAfterRightStep()) {
+      if (in_jump_ | jumper_.onPlatformAfterRightStep(moving_shift_size_)) {
         let gap_from_object = jumper_.gapFromObjectOnRight();
         if (gap_from_object < Constants.blockSize()) {
           do jumper_.shiftRight(gap_from_object);

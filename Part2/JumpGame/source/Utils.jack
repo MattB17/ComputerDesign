@@ -1,18 +1,22 @@
 // Holds a set of utility (helper) functions used throughout the project.
 
 class Utils {
+  // Retrieves the memory location given the x and y coordinates on the screen.
   function int getOffset(int x, int y) {
     return (Constants.boardStart() +
             (y * Constants.blocksPerRow()) +
             (x / Constants.blockSize()));
   }
 
+  // Determines if the y position represents a location below the board.
   function bool isBelowBoard(int y) {
     var int gap_from_bottom;
     let gap_from_bottom = Constants.boardHeight() - 1 - y;
     return (gap_from_bottom < 0);
   }
 
+  // Draws the bitmap given by bitmap_vals at the screen location given by x
+  // and y. The length of the array is height.
   function void drawBitMapArray(int x, int y, int height, Array bitmap_vals) {
     var int obj_row, curr_row, board_end, offset;
     let obj_row = 0;
@@ -32,6 +36,9 @@ class Utils {
     return;
   }
 
+  // Erases a bitmap whose left corner is (x, y) and spans height rows. Note
+  // this corresponds to erasing a height x 16 block whose left corner is
+  // (x, y).
   function void eraseBitMap(int x, int y, int height) {
     var int obj_row, curr_row, board_end, offset;
     let obj_row = 0;

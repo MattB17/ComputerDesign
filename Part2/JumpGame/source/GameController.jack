@@ -3,14 +3,25 @@
 // is delegated to the JumperController. GameController controls both of these.
 
 class GameController {
+  // the user's score.
   field int score_;
+
+  // indicates whether the game is being played or over.
   field bool game_over_;
+
+  // the current key that the user is pressing.
   field int key_;
 
-  field PlatformController platform_controller_; // controls the platforms.
-  field ObstacleController obstacle_controller_; // controls the obstacles.
-  field JumperController jumper_controller_; // controls the jumper.
+  // controls the platforms.
+  field PlatformController platform_controller_;
 
+  // controls the obstacles.
+  field ObstacleController obstacle_controller_;
+
+  // controls the jumper.
+  field JumperController jumper_controller_;
+
+  // Construct a new GameController.
   constructor GameController new(int platform_shift_size) {
     let score_ = 0;
     let game_over_ = false;
@@ -21,6 +32,7 @@ class GameController {
     return this;
   }
 
+  // Dispose of the GameController.
   method void dispose() {
     do platform_controller_.dispose();
     do obstacle_controller_.dispose();
@@ -29,7 +41,9 @@ class GameController {
     return;
   }
 
+  // Run the main loop of the GameController.
   method void run() {
+    // Print the welcome screen.
     do printStartScreen();
     while (~(key_ = Constants.spaceKey())) {
       do Sys.wait(Constants.waitTime());
@@ -38,9 +52,12 @@ class GameController {
 
     do Screen.clearScreen();
 
+    // Draw the platforms and jumper.
     do platform_controller_.drawPlatforms();
     do jumper_controller_.drawJumper();
 
+    // Run the game. Continually scroll the platforms and jumper. Moving the
+    // jumper according to user input.
     let game_over_ = false;
     while (~game_over_) {
       while ((key_ = 0) & (~game_over_)) {
@@ -68,6 +85,7 @@ class GameController {
       }
     }
 
+    // Set the exit screen to display the users score.
     if (game_over_) {
       do setEndScreen();
       while (~(key_ = Constants.escKey())) {
@@ -77,7 +95,9 @@ class GameController {
     return;
   }
 
+  // Displays the startup screen with instructions on how to play the game.
   method void printStartScreen() {
+    do Screen.clearScreen();
     do Output.printString("Welcome to the Jumper game!");
     do Output.println();
     do Output.printString(
@@ -94,6 +114,7 @@ class GameController {
     return;
   }
 
+  // Displays the ending screen with the users score.
   method void setEndScreen() {
     do Screen.clearScreen();
     do Output.moveCursor(0, 0);
@@ -104,6 +125,7 @@ class GameController {
     return;
   }
 
+  // Handles input from the keyboard to end the game or move the jumper.
   method void handleKeyInput() {
     // if escape key is pressed the game is over
     if (key_ = Constants.escKey()) {

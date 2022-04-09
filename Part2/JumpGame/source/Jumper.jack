@@ -1,14 +1,17 @@
 // Represents the user-controlled jumper in the game.
 
 class Jumper {
-  field int x_, y_; // screen location of the jumper's top left corner.
+  // screen location of the jumper's top left corner.
+  field int x_, y_;
 
   // the height of the jumper (number of rows), this is also the length of
   // the row-wise bitmap Array.
   field int height_;
 
-  field Array bitmap_vals_; // the row-wise bitmap values of the jumper.
+  // the row-wise bitmap values of the jumper.
+  field Array bitmap_vals_;
 
+  // constructs a new jumper object.
   constructor Jumper new(int x, int y, int height, Array bitmap_vals) {
     let x_ = x;
     let y_ = y;
@@ -17,45 +20,54 @@ class Jumper {
     return this;
   }
 
+  // disposes of the jumper object.
   method void dispose() {
     do bitmap_vals_.dispose();
     do Memory.deAlloc(this);
     return;
   }
 
+  // draws the jumper with its top left corner at (x_, y_).
   method void draw() {
     do Utils.drawBitMapArray(x_, y_, height_, bitmap_vals_);
     return;
   }
 
+  // erases the jumper.
   method void erase() {
     do Utils.eraseBitMap(x_, y_, height_);
     return;
   }
 
+  // shifts the jumper down num_rows rows.
   method void shiftDown(int num_rows) {
     let y_ = y_ + num_rows;
     return;
   }
 
+  // shifts the jumper down num_rows rows.
   method void shiftUp(int num_rows) {
     let y_ = y_ - num_rows;
     return;
   }
 
+  // shifts the jumper right num_cols columns.
   method void shiftRight(int num_cols) {
     let x_ = x_ + num_cols;
     return;
   }
 
+  // shifts the jumper left num_cols columns.
   method void shiftLeft(int num_cols) {
     let x_ = x_ - num_cols;
     return;
   }
 
-  method bool onPlatformAfterLeftStep() {
+  // determines if the jumper is on a platform after a step shifting the
+  // jumper step_size columns to the left.
+  method bool onPlatformAfterLeftStep(int step_size) {
     var int offset, x, y;
-    let x = x_ - Constants.blockSize();
+    let x = x_ - step_size;
     let y = y_ + height_;
 
     if ((x < 0) | (y > (Constants.boardHeight() - 1))) {
@@ -66,9 +78,11 @@ class Jumper {
     return (Memory.peek(offset) = -1);
   }
 
-  method bool onPlatformAfterRightStep() {
+  // determines if the jumper is on a platform after a step shifting the
+  // jumper step_size columns to the right.
+  method bool onPlatformAfterRightStep(int step_size) {
     var int offset, x, y;
-    let x = x_ + Constants.blockSize();
+    let x = x_ + step_size;
     let y = y_ + height_;
 
     if ((x > (Constants.boardWidth() - 1)) |
@@ -80,6 +94,12 @@ class Jumper {
     return (Memory.peek(offset) = -1);
   }
 
+  // determines the number of columns between the jumper and the next object
+  // above the jumper. That is, the space the jumper can move into without
+  // hitting anything.
+  // Only returns a number between 0 and height_ where a value of height_
+  // signifies that the jumper can shift up one full block without hitting
+  // anything.
   method int gapBelowObject() {
     var int offset, curr_row, search_row, board_end;
     let board_end = Constants.boardHeight() - 1;
@@ -104,6 +124,12 @@ class Jumper {
     return search_row;
   }
 
+  // determines the number of columns between the jumper and the next object
+  // to the left of the jumper. That is, the space the jumper can move into
+  // without hitting anything.
+  // Only returns a number between 0 and block size (16) where a value of block
+  // size signifies that the jumper can shift left one full block without
+  // hitting anything.
   method int gapFromObjectOnLeft() {
     var int offset, curr_row, search_row, board_end;
     let board_end = Constants.boardHeight() - 1;
@@ -129,6 +155,12 @@ class Jumper {
     return search_row;
   }
 
+  // determines the number of columns between the jumper and the next object
+  // to the right of the jumper. That is, the space the jumper can move into
+  // without hitting anything.
+  // Only returns a number between 0 and block size (16) where a value of block
+  // size signifies that the jumper can shift right one full block without
+  // hitting anything.
   method int gapFromObjectOnRight() {
     var int offset, curr_row, search_row, board_end, x;
     let board_end = Constants.boardHeight() - 1;
@@ -155,6 +187,12 @@ class Jumper {
     return search_row;
   }
 
+  // determines the number of columns between the jumper and the next object
+  // below the jumper. That is, the space the jumper can move into without
+  // hitting anything.
+  // Only returns a number between 0 and height_ where a value of height_
+  // signifies that the jumper can shift down one full block without hitting
+  // anything.
   method int gapAbovePlatform() {
     var int offset, curr_row, search_row, board_end;
     let board_end = Constants.boardHeight() - 1;

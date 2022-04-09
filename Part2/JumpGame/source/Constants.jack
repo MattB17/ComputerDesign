@@ -1,4 +1,6 @@
-// A set of constant used throughout the game.
+// A set of constants used throughout the game. They are named here to make
+// it clearer what their purpose is, rather than just numbers scattered
+// throughout the code.
 
 class Constants {
   function int boardStart() {
