@@ -1,18 +1,18 @@
 // A representation of the platform on which the avatar lands
 
 class Platform {
-  field int x_, y_;  // screen location of the platform's top-left corner
+  // screen location of the platform's top-left corner.
+  field int x_, y_;
 
   // represents the number of 16-bit segments wide the platform is.
   // that is, a value of 4 means the platform is 16 * 4 = 64 bits wide.
   field int width_blocks_;
 
-  field int height_; // the height of the platform
+  // the height of the platform.
+  field int height_;
 
-  /**
-    Constructs a new platform at a given location with a specific
-    width and size
-  */
+  // Constructs a new platform with its top left corner at (x, y) spanning
+  // height rows and width_blocks blocks wide.
   constructor Platform new(int x, int y, int width_blocks, int height) {
     let x_ = x;
     let y_ = y;
@@ -21,28 +21,31 @@ class Platform {
     return this;
   }
 
-  /** Disposes this platform. */
+  // Disposes of the platform.
   method void dispose() {
     do Memory.deAlloc(this);
     return;
   }
 
+  // Returns the row corresponding to the top of the platform.
   method int getY() {
     return y_;
   }
 
-  /** Draws the platform on the screen */
+  // Draws the platform on the screen.
   method void draw() {
     do drawInternal(-1);
     return;
   }
 
-  /** Erases the platform from the screen */
+  // Erases the platform from the screen.
   method void erase() {
     do drawInternal(0);
     return;
   }
 
+  // A helper method to draw the platform on the screen in the specified color:
+  // -1 for black and 0 for white.
   method void drawInternal(int color) {
     var int row_count, block_count;
     var int curr_row, board_end;
@@ -69,11 +72,14 @@ class Platform {
     return;
   }
 
+  // Shifts the platform down num_rows rows.
   method void shiftDown(int num_rows) {
     let y_ = y_ + num_rows;
     return;
   }
 
+  // Identifies whether the top of the platform is below the board. Used to
+  // signal that the platform should be removed.
   method bool isBelowBoard() {
     return Utils.isBelowBoard(y_);
   }

@@ -1,12 +1,16 @@
 // A controller object used to manage the platforms on the screen.
 
 class PlatformController {
-  field PlatformList platforms_; // the list of platforms on screen.
+  // the list of platforms on screen.
+  field PlatformList platforms_;
+
   // controls whether the next platform is on the left or right.
   field bool next_platform_on_left_;
-  // the number of rows to shift the platform on each loop.
+
+  // the number of rows to shift the platforms on each loop.
   field int shift_size_;
 
+  // Constructs a new PlatformController.
   constructor PlatformController new(int shift_size) {
     var Platform curr_platform;
     let platforms_ = PlatformList.new();
@@ -26,22 +30,26 @@ class PlatformController {
     return this;
   }
 
+  // Disposes of the PlatformController.
   method void dispose() {
     do platforms_.dispose();
     do Memory.deAlloc(this);
     return;
   }
 
+  // Draws all the platforms handled by the PlatformController.
   method void drawPlatforms() {
     do platforms_.drawAll();
     return;
   }
 
+  // Erases all the platforms handled by the PlatformController.
   method void erasePlatforms() {
     do platforms_.eraseAll();
     return;
   }
 
+  // Runs the PlatformController's main control loop.
   method void runControlLoop() {
     var int gap_from_top;
     var Platform new_platform;
@@ -57,16 +65,7 @@ class PlatformController {
     let gap_from_top = (
       getGapSizeFromTop() - Constants.gapBetweenPlatforms() + 16);
     if (gap_from_top > 0) {
-      if (next_platform_on_left_) {
-        let new_platform = Platform.new(64, gap_from_top - 15, 4, 16);
-        do platforms_.addNewPlatform(new_platform);
-        let next_platform_on_left_ = false;
-      }
-      else {
-        let new_platform = Platform.new(384, gap_from_top - 15, 4, 16);
-        do platforms_.addNewPlatform(new_platform);
-        let next_platform_on_left_ = true;
-      }
+      do addNewPlatform(gap_from_top);
     }
 
     do drawPlatforms();
@@ -74,20 +73,42 @@ class PlatformController {
     return;
   }
 
+  // Shifts all platforms down by shift_size_ rows.
   method void shiftPlatformsDown() {
     do platforms_.shiftAllDown(shift_size_);
     return;
   }
 
+  // Used to add a new platform starting at the top of the screen. In
+  // particular, it's top row is located at (gap_from_top - 15).
+  method void addNewPlatform(int gap_from_top) {
+    if (next_platform_on_left_) {
+      let new_platform = Platform.new(64, gap_from_top - 15, 4, 16);
+      do platforms_.addNewPlatform(new_platform);
+      let next_platform_on_left_ = false;
+    }
+    else {
+      let new_platform = Platform.new(384, gap_from_top - 15, 4, 16);
+      do platforms_.addNewPlatform(new_platform);
+      let next_platform_on_left_ = true;
+    }
+    return;
+  }
+
+  // Identifies whether the top of the last platform is below the board. Used
+  // to signal that the last platform should be removed.
   method bool isLastPlatformBelowBoard() {
     return platforms_.isOffBoard();
   }
 
+  // Removes the last platform.
   method void removeLastPlatform() {
     do platforms_.removeLastPlatform();
     return;
   }
 
+  // Determines the gap between the top platform and the top of the screen in
+  // terms of number of rows.
   method int getGapSizeFromTop() {
     return platforms_.getGapSizeFromTop();
   }

@@ -122,6 +122,8 @@ class JumperController {
     } else {
       do jumper_.shiftDown(stationary_shift_size_);
     }
+
+    return;
   }
 
   // controls the horizontal movement of the jumper.
@@ -157,6 +159,8 @@ class JumperController {
         let horizontal_direction_ = 0;
       }
     }
+
+    return;
   }
 
   // returns a bool to signal whether the control loop was successful and the
