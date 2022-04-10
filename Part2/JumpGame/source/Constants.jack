@@ -3,58 +3,78 @@
 // throughout the code.
 
 class Constants {
+  // The memory location where the board starts.
   function int boardStart() {
     return 16384;
   }
 
+  // The number of 16-bit blocks in a row of the screen (512 / 16)
   function int blocksPerRow() {
     return 32;
   }
 
+  // The size of a block (16-bits)
   function int blockSize() {
     return 16;
   }
 
+  // The maximum jump height, expressed in terms of 16-bit blocks. That is the
+  // maximum jump height is (jumpBlocks * 16)
+  function int jumpBlocks() {
+    return 12;
+  }
+
+  // The number of rows on the screen.
   function int boardHeight() {
     return 256;
   }
 
+  // The number of columns on the screen.
   function int boardWidth() {
     return 512;
   }
 
+  // The wait time between each iteration of the control loop.
   function int waitTime() {
     return 200;
   }
 
+  // The integer value representing the space key.
   function int spaceKey() {
     return 32;
   }
 
+  // The integer value representing the escape key.
   function int escKey() {
     return 140;
   }
 
+  // The integer value representing the left arrow key.
   function int leftArrowKey() {
     return 130;
   }
 
+  // The integer value representing the up arrow key.
   function int upArrowKey() {
     return 131;
   }
 
+  // The integer value representing the right arrow key.
   function int rightArrowKey() {
     return 132;
   }
 
+  // The integer value representing the down arrow key.
   function int downArrowKey() {
     return 133;
   }
 
+  // An integer representing the number of rows between platforms.
   function int gapBetweenPlatforms() {
     return 90;
   }
 
+  // Represents the bitmap array for an Obstacle.
   function Array obstacleBitMap() {
     var Array bit_map;
     let bit_map = Array.new(16);
@@ -77,6 +97,7 @@ class Constants {
     return bit_map;
   }
 
+  // Represents the bitmap array for the Jumper.
   function Array jumperBitMap() {
     var Array bit_map;
     let bit_map = Array.new(16);

@@ -1,14 +1,17 @@
 // Represents a game obstacle that drops down the board.
 
 class Obstacle {
-  field int x_, y_; // screen location of the obstacle's top left corner.
+  // screen location of the obstacle's top left corner.
+  field int x_, y_;
 
   // the height of the obstacle (number of rows), this is also the length of
   // the row-wise bitmap Array.
   field int height_;
 
-  field Array bitmap_vals_; // the row-wise bitmap values of the obstacle.
+  // the row-wise bitmap values of the obstacle.
+  field Array bitmap_vals_;
 
+  // Constructs a new obstacle.
   constructor Obstacle new(int x, int y, int height, Array bitmap_vals) {
     let x_ = x;
     let y_ = y;
@@ -17,27 +20,34 @@ class Obstacle {
     return this;
   }
 
+  // Disposes of the obstacle.
   method void dispose() {
     do bitmap_vals_.dispose();
     do Memory.deAlloc(this);
     return;
   }
 
+  // Draws the obstacle with its top left corner at (x_, y_).
   method void draw() {
     do Utils.drawBitMapArray(x_, y_, height_, bitmap_vals_);
     return;
   }
 
+  // Erases the obstacle.
   method void erase() {
     do Utils.eraseBitMap(x_, y_, height_);
     return;
   }
 
+  // Shifts the obstacle down num_rows rows.
   method void shiftDown(int num_rows) {
     let y_ = y_ + num_rows;
     return;
   }
 
+  // Identifies whether the top of the obstacle is below the board. Used as a
+  // signal to remove the current obstacle and start a new one at the top of
+  // the board. 
   method bool isBelowBoard() {
     return Utils.isBelowBoard(y_);
   }

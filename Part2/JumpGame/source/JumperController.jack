@@ -29,6 +29,7 @@ class JumperController {
   // will start to fall.
   field int jump_height_;
 
+  // Constructs a new JumperController.
   constructor JumperController new(int stationary_shift_size) {
     let jumper_ = Jumper.new(
       400, 199, Constants.blockSize(), Constants.jumperBitMap());
@@ -41,26 +42,31 @@ class JumperController {
     return this;
   }
 
+  // disposes of the JumperController.
   method void dispose() {
     do jumper_.dispose();
     do Memory.deAlloc(this);
     return;
   }
 
+  // Indicates whether the jumper is currently jumping.
   method bool isJumping() {
     return in_jump_;
   }
 
+  // Draws the jumper.
   method void drawJumper() {
     do jumper_.draw();
     return;
   }
 
+  // Erases the jumper.
   method void eraseJumper() {
     do jumper_.erase();
     return;
   }
 
+  // Initiates a jump by starting the upward movement of the jumper.
   method void startJump() {
     let in_jump_ = true;
     let moving_up_ = true;
@@ -68,6 +74,7 @@ class JumperController {
     return;
   }
 
+  // Transitions to the second half of the jump where the jumper begins to fall.
   method void setDownMovement() {
     let moving_up_ = false;
     let jump_height_ = 0;
@@ -75,21 +82,21 @@ class JumperController {
     return;
   }
 
+  // Sets the jumper moving left.
   method void setLeftMovement() {
     let horizontal_direction_ = 1;
     return;
   }
 
+  // Sets the jumper moving right.
   method void setRightMovement() {
     let horizontal_direction_ = 2;
     return;
   }
 
-  // returns a bool to signal whether the control loop was successful and the
-  // jumper is still alive
-  method bool runControlLoop() {
+  // controls the vertical movement of the jumper.
+  method void handleVerticalMovement() {
     var int gap_from_object;
-    do jumper_.erase();
 
     if (in_jump_) {
       if (moving_up_) {
@@ -115,6 +122,11 @@ class JumperController {
     } else {
       do jumper_.shiftDown(stationary_shift_size_);
     }
+  }
+
+  // controls the horizontal movement of the jumper.
+  method void handleHorizontalMovement() {
+    var int gap_from_object;
 
     if (horizontal_direction_ = 1) {
       if (in_jump_ | jumper_.onPlatformAfterLeftStep(moving_shift_size_)) {
@@ -130,6 +142,7 @@ class JumperController {
         let horizontal_direction_ = 0;
       }
     }
+
     if (horizontal_direction_ = 2) {
       if (in_jump_ | jumper_.onPlatformAfterRightStep(moving_shift_size_)) {
         let gap_from_object = jumper_.gapFromObjectOnRight();
@@ -144,10 +157,19 @@ class JumperController {
         let horizontal_direction_ = 0;
       }
     }
+  }
 
-    // signals that the jumper has moved up 10 16-bit blocks and will start to
-    // fall. 10 was chosen so that it is doable to land on the other platform.
-    if (jump_height_ > 11) {
+  // returns a bool to signal whether the control loop was successful and the
+  // jumper is still alive
+  method bool runControlLoop() {
+    do jumper_.erase();
+
+    do handleVerticalMovement();
+    do handleHorizontalMovement();
+
+    // checks if the jumper has reached peak jump height signifying that the
+    // jumper should start to fall.
+    if (jump_height_ > (Constants.jumpBlocks() - 1)) {
       let moving_up_ = false;
     }
 
