@@ -3,10 +3,17 @@
 // pointers so that the node can be stored in a DoublyLinkedList
 
 class PlatformNode {
+  // The Platform for the node.
   field Platform platform_;
+
+  // The previous pointer.
   field PlatformNode prev_;
+
+  // The next pointer.
   field PlatformNode next_;
 
+  // Constructs a new PlatformNode. Note that the previous and next pointers
+  // are initialized to null.
   constructor PlatformNode new(Platform platform) {
     let platform_ = platform;
     let prev_ = null;
@@ -14,6 +21,7 @@ class PlatformNode {
     return this;
   }
 
+  // Disposes of the platform node.
   method void dispose() {
     do platform_.erase();
     do platform_.dispose();
@@ -21,43 +29,52 @@ class PlatformNode {
     return;
   }
 
+  // Retrieves the node pointed to by the previous pointer.
   method PlatformNode getPrev() {
     return prev_;
   }
 
+  // Retrieves the node pointed to by the next pointer.
   method PlatformNode getNext() {
     return next_;
   }
 
+  // Sets the node pointed to by the previous pointer.
   method void setPrev(ListNode prev_node) {
     let prev_ = prev_node;
     return;
   }
 
+  // Sets the node pointed to by the next pointer.
   method void setNext(ListNode next_node) {
     let next_ = next_node;
     return;
   }
 
+  // Draws the platform handled by the PlatformNode.
   method void drawPlatform() {
     do platform_.draw();
     return;
   }
 
+  // Erases the platform handled by the PlatformNode.
   method void erasePlatform() {
     do platform_.erase();
     return;
   }
 
+  // Shifts the platform down num_rows rows.
   method void shiftPlatformDown(int num_rows) {
     do platform_.shiftDown(num_rows);
     return;
   }
 
+  // Identifies whether the platform is below the board.
   method bool isPlatformBelowBoard() {
     return platform_.isBelowBoard();
   }
 
+  // Gets the y coordinate of the top of the platform.
   method int getPlatformTop() {
     return platform_.getY();
   }

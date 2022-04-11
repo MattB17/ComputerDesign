@@ -9,14 +9,17 @@
 // of the list, that is, no inserting or deleting from the middle of the list.
 
 class PlatformList {
-  field PlatformNode head_, tail_; // the head and tail of the list
+  // the head and tail of the list
+  field PlatformNode head_, tail_;
 
+  // creates a new PlatformList object.
   constructor PlatformList new() {
     let head_ = null;
     let tail_ = null;
     return this;
   }
 
+  // Disposes of the PlatformList.
   method void dispose() {
     var PlatformNode curr_node;
     let curr_node = head_;
@@ -61,6 +64,7 @@ class PlatformList {
     return;
   }
 
+  // Draws all the platforms in the list.
   method void drawAll() {
     var PlatformNode curr_node;
     let curr_node = head_;
@@ -71,6 +75,7 @@ class PlatformList {
     return;
   }
 
+  // Erases all the platforms in the list.
   method void eraseAll() {
     var PlatformNode curr_node;
     let curr_node = head_;
@@ -81,6 +86,7 @@ class PlatformList {
     return;
   }
 
+  // Shifts all the platforms in the list down by num_rows rows.
   method void shiftAllDown(int num_rows) {
     var PlatformNode curr_node;
     let curr_node = head_;
@@ -91,6 +97,8 @@ class PlatformList {
     return;
   }
 
+  // Indicates whether the tail of the list is off the board and thus should be
+  // removed from the list. The tail of the list is also the lowest platform.
   method bool isOffBoard() {
     if (tail_ = null) {
       return false;
@@ -98,6 +106,8 @@ class PlatformList {
     return tail_.isPlatformBelowBoard();
   }
 
+  // The size of the gap between the top platform in the list and the top of
+  // the board.
   method int getGapSizeFromTop() {
     if (head_ = null) {
       return Constants.boardHeight();
