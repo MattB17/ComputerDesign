@@ -4,6 +4,8 @@ platform to platform without falling off. The platforms continuously scroll
 down the screen, and as time progresses, falling obstacles are added to
 increase the difficulty.
 
+Code can be found [here](https://github.com/MattB17/ComputerDesign/tree/main/Part2/JumpGame)
+
 The screen is 256 x 512 bits and memory can be accessed in segments of 16 bits.
 
 ### Building the game
