@@ -2,8 +2,11 @@
 #ifndef KEYWORD_H
 #define KEYWORD_H
 
+#include <unordered_map>
+#include <string>
+
 enum Keyword {
-  // The set of possible keyworkds
+  // The set of possible keywords
   CLASS = 0,
   METHOD = 1,
   FUNCTION = 2,
@@ -27,5 +30,38 @@ enum Keyword {
   THIS = 20,
   UNKNOWN = 21
 };
+
+static std::unordered_map<std::string, Keyword> const keyword_map =
+  {
+    {"class", Keyword::CLASS},
+    {"method", Keyword::METHOD},
+    {"function", Keyword::FUNCTION},
+    {"constructor", Keyword::CONSTRUCTOR},
+    {"int", Keyword::INT},
+    {"bool", Keyword::BOOLEAN},
+    {"char", Keyword::CHAR},
+    {"void", Keyword::VOID},
+    {"var", Keyword::VAR},
+    {"static", Keyword::STATIC},
+    {"field", Keyword::FIELD},
+    {"let", Keyword::LET},
+    {"do", Keyword::DO},
+    {"if", Keyword::IF},
+    {"else", Keyword::ELSE},
+    {"while", Keyword::WHILE},
+    {"return", Keyword::RETURN},
+    {"true", Keyword::TRUE},
+    {"false", Keyword::FALSE},
+    {"null", Keyword::NULL},
+    {"this", Keyword::THIS}
+  };
+
+static Keyword GetKeywordFromString(const std::string keyword_str) {
+  auto keyword_pair = keyword_map.find(keyword_str);
+  if (keyword_pair == keyword_map.end()) {
+    return Keyword::UNKNOWN;
+  }
+  return keyword_pair->second;
+}
 
 #endif  // KEYWORD_H

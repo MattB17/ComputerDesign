@@ -7,9 +7,13 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 project(VMTranslator VERSION 1.0)
 include_directories(
+  ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_SOURCE_DIR}/include
 )
 
 add_executable(
   JackCompiler
+
+  src/main.cc
+  src/tokenizer.cc
 )

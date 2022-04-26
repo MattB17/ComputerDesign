@@ -4,9 +4,9 @@
 #define TOKENIZER_H
 
 #include <fstream>
-#include <sstream>
 #include <string>
 
+#include "keyword.h"
 #include "token_type.h"
 
 class Tokenizer {
@@ -17,13 +17,17 @@ public:
   Tokenizer(Tokenizer&&) = delete;
   Tokenizer &operator=(Tokenizer&&) = delete;
   ~Tokenizer() {}
+
+  const TokenType getTokenType() { return token_type_; }
+
+  const Keyword getKeyword();
 private:
   // The stream for the input file.
   std::ofstream jack_stream_;
 
-  // The token type and a stream of characters representing the current token.
+  // The token type and a string representing the current token.
   TokenType token_type_;
-  std::stringstream token_stream_;
+  std::string token_;
 };
 
 #endif  // TOKENIZER_H
