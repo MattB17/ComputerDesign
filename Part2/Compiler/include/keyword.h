@@ -28,4 +28,4 @@ enum Keyword {
   UNKNOWN = 21
 };
 
-#endif KEYWORD_H
+#endif  // KEYWORD_H
