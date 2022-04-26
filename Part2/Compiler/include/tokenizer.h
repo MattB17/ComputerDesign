@@ -19,6 +19,8 @@ public:
   Tokenizer &operator=(Tokenizer&&) = delete;
   ~Tokenizer() {}
 
+  bool hasMoreTokens();
+
   const TokenType getTokenType() { return token_type_; }
 
   const Keyword getKeyword();
