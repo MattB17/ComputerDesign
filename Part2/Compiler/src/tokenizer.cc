@@ -14,7 +14,7 @@ bool Tokenizer::hasMoreTokens() {
     if (std::isspace(static_cast<unsigned char>(next_char))) {
       curr_char << jack_stream_;
     } else {
-      // handle comments
+      removeComment();
     }
   }
   return false;
@@ -38,8 +38,33 @@ const std::string Tokenizer::getIntVal() {
   return int_val;
 }
 
-// Note, when we encounter a stream we just don't add the '"' to the stream
+// Note, when we encounter a string we just don't add the '"' to the stream
 // so we can just directly cast it.
 const std::string Tokenizer::getStringVal() {
   return token_stream_.str();
+}
+
+void Tokenizer::removeComment() {
+  if (next_char == '/') {
+    // throw it away, we know we're dealing with a comment.
+    curr_char << jack_stream_;
+    next_char = jack_stream_.peek();
+    if (next_char == '/') {
+      // this means we have an inline comment. So just move to next line.
+      std::string line;
+      std::getline(jack_stream_, line);
+    } else if (next_char == '*') {
+      // we are dealing with a block comment. So we keep parsing until we
+      // find '*/'.
+      curr_char << jack_stream_;
+      bool found_comment_end = false;
+      while ((!found_comment_end) && (!jack_stream_.eof())) {
+        curr_char << jack_stream_;
+        if (curr_char == '*') {
+          curr_char << jack_stream_;
+          found_comment_end = (curr_char == '/');
+        }
+      }
+    }
+  }
 }

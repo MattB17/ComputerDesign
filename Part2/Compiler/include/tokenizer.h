@@ -19,20 +19,35 @@ public:
   Tokenizer &operator=(Tokenizer&&) = delete;
   ~Tokenizer() {}
 
+  // Determines if the stream has any more tokens.
   bool hasMoreTokens();
 
+  // The type of the current token.
   const TokenType getTokenType() { return token_type_; }
 
+  // Returns the keyword corresponding to the current token.
+  // Should only be called if the token type is KEYWORD.
   const Keyword getKeyword();
 
+  // Returns the symbol corresponding to the current token.
+  // Should only be called if the token type is SYMBOL.
   const char getSymbol();
 
+  // Returns the identifier corresponding to the current token.
+  // Should only be called if the token type is IDENTIFIER.
   const std::string getIdentifier();
 
+  // Returns the integer corresponding to the current token.
+  // Should only be called if the token type is INT_CONST.
   const int getIntVal();
 
+  // Returns the string corresponding to the current token.
+  // Should only be called if the token type is STRING_CONST.
   const std::string getStringVal();
 private:
+  // Removes the current comment pointed to by the jack_stream_.
+  void removeComment();
+
   // The stream for the input file.
   std::ofstream jack_stream_;
 
