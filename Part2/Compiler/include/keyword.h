@@ -64,4 +64,8 @@ static Keyword GetKeywordFromString(const std::string keyword_str) {
   return keyword_pair->second;
 }
 
+static bool IsKeyword(const std::string token_str) {
+  return (keyword_map.find(token_str) != keyword_map.end());
+}
+
 #endif  // KEYWORD_H

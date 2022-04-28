@@ -22,6 +22,10 @@ public:
   // Determines if the stream has any more tokens.
   bool hasMoreTokens();
 
+  // Advances the tokenizer and makes the next token in the file stream the
+  // current token. This should only be called if `hasMoreTokens` returns true.
+  void advance();
+
   // The type of the current token.
   const TokenType getTokenType() { return token_type_; }
 
@@ -46,7 +50,7 @@ public:
   const std::string getStringVal();
 private:
   // Removes the current comment pointed to by the jack_stream_.
-  void removeComment();
+  void removeComment(char next_char);
 
   // The stream for the input file.
   std::ofstream jack_stream_;
