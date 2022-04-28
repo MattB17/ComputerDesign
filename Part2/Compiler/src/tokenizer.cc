@@ -1,4 +1,6 @@
+#include "symbol.h"
 #include "tokenizer.h"
+#include "util.h"
 
 Tokenizer::Tokenizer(std::string jack_file) : token_type_(TokenType::UNKNOWN) {
   jack_stream_.open(jack_file);
@@ -65,8 +67,8 @@ void Tokenizer::advance() {
   // token to figure out which.
   token_stream_ << jack_stream_.get();
   while (!jack_stream_.eof()) {
-    next_char << jack_stream_.peek();
-    if (isalnum(next_char)) {
+    next_char = jack_stream_.peek();
+    if (isIdentifierChar(next_char)) {
       token_stream_ << jack_stream_.get();
     } else if (IsSymbol(next_char) ||
                std::isspace(static_cast<unsigned char>(next_char))) {
@@ -86,14 +88,14 @@ const Keyword Tokenizer::getKeyword() {
 }
 
 const char Tokenizer::getSymbol() {
-  return token_stream_.getc();
+  return token_stream_.get();
 }
 
 const std::string Tokenizer::getIdentifier() {
   return token_stream_.str();
 }
 
-const std::string Tokenizer::getIntVal() {
+const int Tokenizer::getIntVal() {
   int int_val;
   token_stream_ >> int_val;
   return int_val;

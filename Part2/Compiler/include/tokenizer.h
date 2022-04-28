@@ -53,11 +53,11 @@ private:
   void removeComment(char next_char);
 
   // The stream for the input file.
-  std::ofstream jack_stream_;
+  std::ifstream jack_stream_;
 
   // The token type and a stream of characters representing the current token.
   TokenType token_type_;
-  std::string_stream_ token_stream_;
+  std::stringstream token_stream_;
 };
 
 #endif  // TOKENIZER_H
