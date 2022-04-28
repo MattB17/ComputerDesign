@@ -1,0 +1,7 @@
+class Main {
+  function void main() {
+    var int x;
+    let x = (10 * 3) - (5 * 4);
+    return;
+  }
+}

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "symbol.h"
 #include "tokenizer.h"
 #include "util.h"
@@ -24,6 +26,7 @@ bool Tokenizer::hasMoreTokens() {
 
 void Tokenizer::advance() {
   char next_char = jack_stream_.peek();
+  std::cout << next_char;
   // We are dealing with a symbol.
   if (IsSymbol(next_char)) {
     token_type_ = TokenType::SYMBOL;

@@ -14,15 +14,20 @@ int main(int argc, char** argv) {
       curr_token_type = tokenizer.getTokenType();
       switch (curr_token_type) {
         case TokenType::KEYWORD:
-          std::cout << "Keyword: " << tokenizer.getKeyword();
+          std::cout << "Keyword: " << tokenizer.getKeyword() << std::endl;
+          break;
         case TokenType::SYMBOL:
-          std::cout << "Symbol: " << tokenizer.getSymbol();
+          std::cout << "Symbol: " << tokenizer.getSymbol() << std::endl;
+          break;
         case TokenType::IDENTIFIER:
-          std::cout << "Identifier: " << tokenizer.getIdentifier();
+          std::cout << "Identifier: " << tokenizer.getIdentifier() << std::endl;
+          break;
         case TokenType::INT_CONST:
-          std::cout << "Int: " << tokenizer.getIntVal();
+          std::cout << "Int: " << tokenizer.getIntVal() << std::endl;
+          break;
         case TokenType::STRING_CONST:
-          std::cout << "String: " << tokenizer.getStringVal();
+          std::cout << "String: " << tokenizer.getStringVal() << std::endl;
+          break;
         default:
           std::cout << "Unknown" << std::endl;
       }
