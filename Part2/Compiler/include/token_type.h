@@ -12,8 +12,4 @@ enum TokenType {
   UNKNOWN = 5
 };
 
-bool isTokenBeginningChar(char curr_char) {
-  return (isalnum(curr_char) || (curr_char == '"') || (curr_char == "_"));
-}
-
 #endif  // TOKEN_TYPE_H

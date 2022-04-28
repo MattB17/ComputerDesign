@@ -7,7 +7,7 @@ Tokenizer::Tokenizer(std::string jack_file) : token_type_(TokenType::UNKNOWN) {
 bool Tokenizer::hasMoreTokens() {
   while (!jack_stream_.eof()) {
     char next_char = jack_stream_.peek();
-    if (isTokenBeginningChar(next_char) || IsSymbol(next_char)) {
+    if (isTokenBeginningChar(next_char)) {
       return true;
     }
     if (std::isspace(static_cast<unsigned char>(next_char))) {
@@ -30,13 +30,13 @@ void Tokenizer::advance() {
     return;
   }
   // we are dealing with an integer.
-  if (isalnum(next_char)) {
+  if (isdigit(next_char)) {
     token_type_ = TokenType::INT_CONST;
     token_stream_ << jack_stream_.get();
     // keep parsing until we encounter a space or symbol.
     while(!jack_stream_.eof()) {
       next_char = jack_stream_.peek();
-      if (isalnum(next_char)) {
+      if (isdigit(next_char)) {
         token_stream_ << jack_stream_.get();
       } else if (IsSymbol(next_char) ||
                  std::isspace(static_cast<unsigned char>(next_char))) {
