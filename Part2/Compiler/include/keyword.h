@@ -5,61 +5,61 @@
 #include <unordered_map>
 #include <string>
 
-enum Keyword {
+enum class Keyword {
   // The set of possible keywords
-  kCLASS = 0,
-  kMETHOD = 1,
-  kFUNCTION = 2,
-  kCONSTRUCTOR = 3,
-  kINT = 4,
-  kBOOLEAN = 5,
-  kCHAR = 6,
-  kVOID = 7,
-  kVAR = 8,
-  kSTATIC = 9,
-  kFIELD = 10,
-  kLET = 11,
-  kDO = 12,
-  kIF = 13,
-  kELSE = 14,
-  kWHILE = 15,
-  kRETURN = 16,
-  kTRUE = 17,
-  kFALSE = 18,
-  kNULL = 19,
-  kTHIS = 20,
-  kUNKNOWN = 21
+  CLASS = 0,
+  METHOD = 1,
+  FUNCTION = 2,
+  CONSTRUCTOR = 3,
+  INT = 4,
+  BOOLEAN = 5,
+  CHAR = 6,
+  VOID = 7,
+  VAR = 8,
+  STATIC = 9,
+  FIELD = 10,
+  LET = 11,
+  DO = 12,
+  IF = 13,
+  ELSE = 14,
+  WHILE = 15,
+  RETURN = 16,
+  TRUE = 17,
+  FALSE = 18,
+  NULL_VAL = 19,
+  THIS = 20,
+  UNKNOWN = 21
 };
 
 static std::unordered_map<std::string, Keyword> const keyword_map =
   {
-    {"class", Keyword::kCLASS},
-    {"method", Keyword::kMETHOD},
-    {"function", Keyword::kFUNCTION},
-    {"constructor", Keyword::kCONSTRUCTOR},
-    {"int", Keyword::kINT},
-    {"bool", Keyword::kBOOLEAN},
-    {"char", Keyword::kCHAR},
-    {"void", Keyword::kVOID},
-    {"var", Keyword::kVAR},
-    {"static", Keyword::kSTATIC},
-    {"field", Keyword::kFIELD},
-    {"let", Keyword::kLET},
-    {"do", Keyword::kDO},
-    {"if", Keyword::kIF},
-    {"else", Keyword::kELSE},
-    {"while", Keyword::kWHILE},
-    {"return", Keyword::kRETURN},
-    {"true", Keyword::kTRUE},
-    {"false", Keyword::kFALSE},
-    {"null", Keyword::kNULL},
-    {"this", Keyword::kTHIS}
+    {"class", Keyword::CLASS},
+    {"method", Keyword::METHOD},
+    {"function", Keyword::FUNCTION},
+    {"constructor", Keyword::CONSTRUCTOR},
+    {"int", Keyword::INT},
+    {"bool", Keyword::BOOLEAN},
+    {"char", Keyword::CHAR},
+    {"void", Keyword::VOID},
+    {"var", Keyword::VAR},
+    {"static", Keyword::STATIC},
+    {"field", Keyword::FIELD},
+    {"let", Keyword::LET},
+    {"do", Keyword::DO},
+    {"if", Keyword::IF},
+    {"else", Keyword::ELSE},
+    {"while", Keyword::WHILE},
+    {"return", Keyword::RETURN},
+    {"true", Keyword::TRUE},
+    {"false", Keyword::FALSE},
+    {"null", Keyword::NULL_VAL},
+    {"this", Keyword::THIS}
   };
 
 static Keyword GetKeywordFromString(const std::string keyword_str) {
   auto keyword_pair = keyword_map.find(keyword_str);
   if (keyword_pair == keyword_map.end()) {
-    return Keyword::kUNKNOWN;
+    return Keyword::UNKNOWN;
   }
   return keyword_pair->second;
 }

@@ -2,7 +2,7 @@
 #ifndef TOKEN_TYPE_H
 #define TOKEN_TYPE_H
 
-enum TokenType {
+enum class TokenType {
   // The set of possible token types
   KEYWORD = 0,
   SYMBOL = 1,

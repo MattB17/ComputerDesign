@@ -52,6 +52,9 @@ private:
   // Removes the current comment pointed to by the jack_stream_.
   void removeComment(char next_char);
 
+  // retrieves the next character from the jack stream.
+  char getNextCharFromJackStream();
+
   // The stream for the input file.
   std::ifstream jack_stream_;
 

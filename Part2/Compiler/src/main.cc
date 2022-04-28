@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
       curr_token_type = tokenizer.getTokenType();
       switch (curr_token_type) {
         case TokenType::KEYWORD:
-          std::cout << "Keyword: " << tokenizer.getKeyword() << std::endl;
+          std::cout << "Keyword: " << static_cast<int>(tokenizer.getKeyword()) << std::endl;
           break;
         case TokenType::SYMBOL:
           std::cout << "Symbol: " << tokenizer.getSymbol() << std::endl;

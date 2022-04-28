@@ -20,4 +20,8 @@ bool isTokenBeginningChar(char curr_char) {
           IsSymbol(curr_char));
 }
 
+bool isSpaceChar(char curr_char) {
+  return std::isspace(static_cast<unsigned char>(curr_char));
+}
+
 #endif  // UTIL_H

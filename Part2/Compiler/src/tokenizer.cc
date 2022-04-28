@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "symbol.h"
 #include "tokenizer.h"
 #include "util.h"
@@ -14,7 +12,7 @@ bool Tokenizer::hasMoreTokens() {
     if (isTokenBeginningChar(next_char)) {
       return true;
     }
-    if (std::isspace(static_cast<unsigned char>(next_char))) {
+    if (isSpaceChar(next_char)) {
       char curr_char;
       jack_stream_.get(curr_char);
     } else {
@@ -25,26 +23,26 @@ bool Tokenizer::hasMoreTokens() {
 }
 
 void Tokenizer::advance() {
+  token_stream_.clear();
+  token_stream_.str(std::string());
   char next_char = jack_stream_.peek();
-  std::cout << next_char;
   // We are dealing with a symbol.
   if (IsSymbol(next_char)) {
     token_type_ = TokenType::SYMBOL;
     // It is just a single character, so put it in the stream and return.
-    token_stream_ << jack_stream_.get();
+    token_stream_ << getNextCharFromJackStream();
     return;
   }
   // we are dealing with an integer.
   if (isdigit(next_char)) {
     token_type_ = TokenType::INT_CONST;
-    token_stream_ << jack_stream_.get();
+    token_stream_ << getNextCharFromJackStream();
     // keep parsing until we encounter a space or symbol.
     while(!jack_stream_.eof()) {
       next_char = jack_stream_.peek();
       if (isdigit(next_char)) {
-        token_stream_ << jack_stream_.get();
-      } else if (IsSymbol(next_char) ||
-                 std::isspace(static_cast<unsigned char>(next_char))) {
+        token_stream_ << getNextCharFromJackStream();
+      } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
         break;
       }
     }
@@ -68,13 +66,12 @@ void Tokenizer::advance() {
   }
   // otherwise, we have a keyword or identifier but we need to parse the
   // token to figure out which.
-  token_stream_ << jack_stream_.get();
+  token_stream_ << getNextCharFromJackStream();
   while (!jack_stream_.eof()) {
     next_char = jack_stream_.peek();
     if (isIdentifierChar(next_char)) {
-      token_stream_ << jack_stream_.get();
-    } else if (IsSymbol(next_char) ||
-               std::isspace(static_cast<unsigned char>(next_char))) {
+      token_stream_ << getNextCharFromJackStream();
+    } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
       break;
     }
   }
@@ -134,4 +131,8 @@ void Tokenizer::removeComment(char next_char) {
       }
     }
   }
+}
+
+char Tokenizer::getNextCharFromJackStream() {
+  return static_cast<char>(jack_stream_.get());
 }
