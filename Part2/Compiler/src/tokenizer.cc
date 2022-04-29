@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "symbol.h"
 #include "tokenizer.h"
 #include "util.h"
@@ -13,11 +11,9 @@ bool Tokenizer::hasMoreTokens() {
     char next_char = jack_stream_.peek();
     if (startsComment(next_char)) {
       removeComment(next_char);
-    }
-    if (isTokenBeginningChar(next_char)) {
+    } else if (isTokenBeginningChar(next_char)) {
       return true;
-    }
-    if (isSpaceChar(next_char)) {
+    } else if (isSpaceChar(next_char)) {
       char curr_char;
       jack_stream_.get(curr_char);
     }
