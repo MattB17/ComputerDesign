@@ -55,6 +55,9 @@ private:
   // retrieves the next character from the jack stream.
   char getNextCharFromJackStream();
 
+  // Identifies whether `next_char` is the first character of a comment.
+  bool startsComment(char next_char);
+
   // The stream for the input file.
   std::ifstream jack_stream_;
 

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "symbol.h"
 #include "tokenizer.h"
 #include "util.h"
@@ -9,14 +11,15 @@ Tokenizer::Tokenizer(std::string jack_file) : token_type_(TokenType::UNKNOWN) {
 bool Tokenizer::hasMoreTokens() {
   while (!jack_stream_.eof()) {
     char next_char = jack_stream_.peek();
+    if (startsComment(next_char)) {
+      removeComment(next_char);
+    }
     if (isTokenBeginningChar(next_char)) {
       return true;
     }
     if (isSpaceChar(next_char)) {
       char curr_char;
       jack_stream_.get(curr_char);
-    } else {
-      removeComment(next_char);
     }
   }
   return false;
@@ -135,4 +138,17 @@ void Tokenizer::removeComment(char next_char) {
 
 char Tokenizer::getNextCharFromJackStream() {
   return static_cast<char>(jack_stream_.get());
+}
+
+bool Tokenizer::startsComment(char next_char) {
+  if (next_char != '/') {
+    return false;
+  }
+  jack_stream_.seekg(1, jack_stream_.cur);
+  char second_char = jack_stream_.peek();
+  jack_stream_.seekg(-1, jack_stream_.cur);
+  if ((second_char == '/') || (second_char == '*')) {
+    return true;
+  }
+  return false;
 }
