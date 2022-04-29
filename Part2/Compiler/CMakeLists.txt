@@ -16,4 +16,5 @@ add_executable(
 
   src/main.cc
   src/tokenizer.cc
+  src/compilation_engine.cc
 )

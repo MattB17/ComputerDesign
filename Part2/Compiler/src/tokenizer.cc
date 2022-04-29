@@ -1,5 +1,6 @@
-#include "symbol.h"
 #include "tokenizer.h"
+
+#include "symbol.h"
 #include "util.h"
 
 Tokenizer::Tokenizer(std::string jack_file) : token_type_(TokenType::UNKNOWN) {
