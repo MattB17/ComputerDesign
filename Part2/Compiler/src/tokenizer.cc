@@ -1,5 +1,7 @@
 #include "tokenizer.h"
 
+#include <iostream>
+
 #include "exceptions.h"
 #include "symbol.h"
 #include "util.h"
@@ -89,6 +91,14 @@ void Tokenizer::advance() {
     token_type_ = TokenType::IDENTIFIER;
   }
   return;
+}
+
+bool Tokenizer::nextToken() {
+  if (!hasMoreTokens()) {
+    return false;
+  }
+  advance();
+  return true;
 }
 
 const Keyword Tokenizer::getKeyword() {

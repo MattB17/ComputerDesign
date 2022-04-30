@@ -26,6 +26,10 @@ public:
   // current token. This should only be called if `hasMoreTokens` returns true.
   void advance();
 
+  // Advances the tokenizer to the next token if one exists and returns true.
+  // Otherwise, returns false.
+  bool nextToken();
+
   // The type of the current token.
   const TokenType getTokenType() { return token_type_; }
 

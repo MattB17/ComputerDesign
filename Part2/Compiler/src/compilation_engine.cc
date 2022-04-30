@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "exception.h"
 #include "util.h"
 
 CompilationEngine::CompilationEngine(std::string jack_file)
@@ -16,6 +17,41 @@ void CompilationEngine::compile() {
     writeTokenWithTag();
     xml_stream_ << '\n';
   }
+}
+
+void CompilationEngine::compileVarDec() {
+  const std::string var_tag = "varDec";
+  writeOpenTag(var_tag);
+  xml_stream_ << '\n';
+  expectKeyword(Keyword::VAR);
+  writeTokenWithTag();
+  xml_stream_ << '\n';
+  tokenizer_.nextToken();
+  expectType();
+  writeTokenWithTag();
+  xml_stream_ << '\n';
+  tokenizer_.nextToken();
+  expectIdentifier();
+  writeTokenWithTag();
+  xml_stream_ << '\n';
+  tokenizer_.nextToken();
+  while (!isStatementEnd()) {
+    if ((tokenizer_.getTokenType() == TokenType::SYMBOL)) {
+      writeTokenWithTag();
+      xml_stream_ << '\n';
+      tokenizer_.nextToken();
+      expectIdentifier();
+      writeTokenWithTag();
+      xml_stream_ << '\n';
+      tokenizer_.nextToken();
+    } else {
+      throw ExpectedStatementEnd();
+    }
+  }
+  writeTokenWithTag();
+  xml_stream_ << '\n';
+  writeCloseTag(var_tag);
+  xml_stream_ << '\n';
 }
 
 void CompilationEngine::writeTokenWithTag() {
@@ -59,4 +95,35 @@ void CompilationEngine::writeOpenTag(std::string tag) {
 
 void CompilationEngine::writeCloseTag(std::string tag) {
   xml_stream_ << " </" << tag << ">";
+}
+
+void CompilationEngine::expectKeyword(Keyword k) {
+  if ((tokenizer_.getTokenType() != TokenType::KEYWORD) ||
+      (tokenizer_.getKeyword() != k)) {
+    throw KeywordNotFound(k);
+  }
+  return;
+}
+
+void CompilationEngine::expectType() {
+  if (tokenizer_.getTokenType() == TokenType::IDENTIFIER) {
+    return;
+  }
+  if ((tokenizer_.getTokenType() == TokenType::KEYWORD) &&
+      (IsPrimitiveType(tokenizer_.getKeyword())) {
+    return;
+  }
+  throw InvalidType();
+}
+
+void CompilationEngine::expectIdentifier() {
+  if (tokenizer_.getTokenType() == TokenType::IDENTIFIER) {
+    return;
+  }
+  throw MissingIdentifier();
+}
+
+bool CompilationEngine::isStatementEnd() {
+  return ((tokenizer_.getTokenType() == TokenType::SYMBOL) &&
+          (tokenizer_.getSymbol() == ';'));
 }
