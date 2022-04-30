@@ -1,5 +1,6 @@
 #include "tokenizer.h"
 
+#include "exceptions.h"
 #include "symbol.h"
 #include "util.h"
 
@@ -44,6 +45,8 @@ void Tokenizer::advance() {
         token_stream_ << getNextCharFromJackStream();
       } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
         break;
+      } else {
+        throw InvalidIdentifier();
       }
     }
     return;
@@ -61,6 +64,9 @@ void Tokenizer::advance() {
         token_stream_ << temp_char;
         jack_stream_.get(temp_char);
       }
+      if (temp_char != '"') {
+        throw NonTerminatedString();
+      }
     }
     return;
   }
@@ -73,6 +79,8 @@ void Tokenizer::advance() {
       token_stream_ << getNextCharFromJackStream();
     } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
       break;
+    } else {
+      throw InvalidIdentifier();
     }
   }
   if (IsKeyword(token_stream_.str())) {

@@ -1,0 +1,7 @@
+class Main {
+  function void main() {
+    var int 123xyz;
+    let 123xyz = (10 * 3) - (5 * 4);
+    return;
+  }
+}
