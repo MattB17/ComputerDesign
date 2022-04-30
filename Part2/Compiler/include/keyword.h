@@ -56,6 +56,55 @@ static std::unordered_map<std::string, Keyword> const keyword_map =
     {"this", Keyword::THIS}
   };
 
+static std::string keywordToString(Keyword k) {
+  switch (k) {
+    case Keyword::CLASS:
+      return "class";
+    case Keyword::METHOD:
+      return "method";
+    case Keyword::FUNCTION:
+      return "function";
+    case Keyword::CONSTRUCTOR:
+      return "constructor";
+    case Keyword::INT:
+      return "int";
+    case Keyword::BOOLEAN:
+      return "bool";
+    case Keyword::CHAR:
+      return "char";
+    case Keyword::VOID:
+      return "void";
+    case Keyword::VAR:
+      return "var";
+    case Keyword::STATIC:
+      return "static";
+    case Keyword::FIELD:
+      return "field";
+    case Keyword::LET:
+      return "let";
+    case Keyword::DO:
+      return "do";
+    case Keyword::IF:
+      return "if";
+    case Keyword::ELSE:
+      return "else";
+    case Keyword::WHILE:
+      return "while";
+    case Keyword::RETURN:
+      return "return";
+    case Keyword::TRUE:
+      return "true";
+    case Keyword::FALSE:
+      return "false";
+    case Keyword::NULL_VAL:
+      return "null";
+    case Keyword::THIS:
+      return "this";
+    default:
+      return "unknown";
+  }
+}
+
 static Keyword GetKeywordFromString(const std::string keyword_str) {
   auto keyword_pair = keyword_map.find(keyword_str);
   if (keyword_pair == keyword_map.end()) {

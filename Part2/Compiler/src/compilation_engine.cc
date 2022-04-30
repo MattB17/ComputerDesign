@@ -24,7 +24,7 @@ void CompilationEngine::writeTokenWithTag() {
     case TokenType::KEYWORD:
       tag = "keyword";
       writeOpenTag(tag);
-      xml_stream_ << static_cast<int>(tokenizer_->getKeyword());
+      xml_stream_ << keywordToString(tokenizer_->getKeyword());
       break;
     case TokenType::SYMBOL:
       tag = "symbol";
