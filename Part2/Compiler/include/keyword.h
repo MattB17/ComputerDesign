@@ -120,7 +120,7 @@ static bool IsKeyword(const std::string token_str) {
 static bool IsPrimitiveType(const Keyword k) {
   return ((k == Keyword::INT) ||
           (k == Keyword::CHAR) ||
-          (k = Keyword::BOOLEAN));
+          (k == Keyword::BOOLEAN));
 }
 
 #endif  // KEYWORD_H

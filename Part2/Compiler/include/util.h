@@ -35,4 +35,8 @@ static std::string jackFileToXmlFile(std::string jack_file) {
   return ss.str();
 }
 
+static const char* streamToCharArray(std::stringstream& ss) {
+  return ss.str().c_str();
+}
+
 #endif  // UTIL_H

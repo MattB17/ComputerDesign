@@ -1,7 +1,5 @@
 #include "tokenizer.h"
 
-#include <iostream>
-
 #include "exceptions.h"
 #include "symbol.h"
 #include "util.h"
@@ -48,7 +46,7 @@ void Tokenizer::advance() {
       } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
         break;
       } else {
-        throw InvalidIdentifier();
+        throw InvalidIdentifier(next_char);
       }
     }
     return;
@@ -82,7 +80,7 @@ void Tokenizer::advance() {
     } else if (IsSymbol(next_char) || isSpaceChar(next_char)) {
       break;
     } else {
-      throw InvalidIdentifier();
+      throw InvalidIdentifier(next_char);
     }
   }
   if (IsKeyword(token_stream_.str())) {
@@ -106,7 +104,7 @@ const Keyword Tokenizer::getKeyword() {
 }
 
 const char Tokenizer::getSymbol() {
-  return token_stream_.get();
+  return static_cast<unsigned char>(token_stream_.get());
 }
 
 const std::string Tokenizer::getIdentifier() {
