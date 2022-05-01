@@ -9,94 +9,49 @@
 #include "keyword.h"
 #include "util.h"
 
-class ExpectedStatementEnd : public std::exception {
-private:
-  std::string received_token_;
+class ExpectedStatementEnd : public std::runtime_error {
 public:
   explicit ExpectedStatementEnd(std::string received_token)
-    : received_token_(received_token) {}
-
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Expected ';'. Instead, received " << received_token_ << ".";
-    return streamToCharArray(ss);
-  }
+    : std::runtime_error("Expected ';'. Instead received " +
+                         received_token + ".") {}
 };
 
-class MissingIdentifier : public std::exception {
-private:
-  std::string received_token_;
+class MissingIdentifier : public std::runtime_error {
 public:
   explicit MissingIdentifier(std::string received_token)
-    : received_token_(received_token) {}
-
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Expected a valid identifier. Instead received ";
-    ss << received_token_ << ".";
-    return streamToCharArray(ss);
-  }
+    : std::runtime_error("Expected a valid identifier. Instead received " +
+                         received_token + ".") {}
 };
 
-class InvalidType : public std::exception {
-private:
-  std::string received_token_;
+class InvalidType : public std::runtime_error {
 public:
   explicit InvalidType(std::string received_token)
-    : received_token_(received_token) {}
-
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Expected a valid type. Instead received ";
-    ss << received_token_ << ".";
-    return streamToCharArray(ss);
-  }
+    : std::runtime_error("Expected a valid type. Instead received " +
+                         received_token + ".") {}
 };
 
-class KeywordNotFound : public std::exception {
-private:
-  Keyword expected_keyword_;
-  std::string received_token_;
+class KeywordNotFound : public std::runtime_error {
 public:
   KeywordNotFound(Keyword expected_keyword, std::string received_token)
-    : expected_keyword_(expected_keyword), received_token_(received_token) {}
-
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Keyword Not Found: Expected to receive keyword ";
-    ss << keywordToString(expected_keyword_) << ", but instead got ";
-    ss << received_token_ << ".";
-    return streamToCharArray(ss);
-  }
+    : std::runtime_error("Expected to receive keyword " +
+                         keywordToString(expected_keyword) +
+                         ", but instead got " + received_token + ".") {}
 };
 
-class InvalidToken : public std::exception {
-private:
-  char start_char_;
+class InvalidToken : public std::runtime_error {
 public:
-  explicit InvalidToken(const char start_char) : start_char_(start_char) {}
-
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Invalid Token: tokens must be a symbol, a string, an integer or ";
-    ss << "a valid identifier that does not start with a number.";
-    ss << "Instead received a token starting with " << start_char_ << ".";
-    return streamToCharArray(ss);
-  }
+  explicit InvalidToken(const char start_char) : std::runtime_error(
+    "Tokens must be a symbol, a string, an integer, or a valid identifier " +
+    " that does not start with a number. Instead received a token starting " +
+    "with " + start_char + ".") {}
 };
 
-class InvalidIdentifier : public std::exception {
-private:
-  char start_char_;
+class InvalidIdentifier : public std::runtime_error {
 public:
-  explicit InvalidIdentifier(const char start_char) : start_char_(start_char) {}
-  virtual const char* what() const throw() {
-    std::stringstream ss;
-    ss << "Invalid Identifier: identifiers must contain only '_' or ";
-    ss << "alphanumerics, and must not start with a number. Instead, received ";
-    ss << "an identifier starting with " << start_char_ << ".";
-    return streamToCharArray(ss);
-  }
+  explicit InvalidIdentifier(const char start_char) : std::runtime_error(
+    "Identifiers must contain only '_' or alphanumerics, and must not start " +
+    "with a number. Instead, received an identifier starting with " +
+    start_char + ".") {}
 };
 
 class NonTerminatedString : public std::exception {
