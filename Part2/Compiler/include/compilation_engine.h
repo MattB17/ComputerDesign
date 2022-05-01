@@ -24,6 +24,9 @@ public:
 
   // Compiles a variable declaration statement.
   void compileVarDec();
+
+  // Compiles a static variable declaration, or a field declaration.
+  void compileClassVarDec();
 private:
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();
@@ -33,6 +36,16 @@ private:
 
   // Writes the XML closing tag for `tag`.
   void writeCloseTag(std::string tag);
+
+  // Writes the current token to the XML stream with the appropriate tag and
+  // appends the newline character.
+  void writeTerminatedTokenAndTag();
+
+  // Writes the XML opening tag for `tag` and appends the newline character.
+  void writeTerminatedOpenTag(std::string tag);
+
+  // Writes the XML closing tag for `tag` and appends the newline character.
+  void writeTerminatedCloseTag(std::string tag);
 
   // Handles the expectation that the compiler expects to receive keyword `k`.
   // If `k` is not the next token, an exception is thrown.
@@ -44,6 +57,10 @@ private:
 
   // Handles the expection of the compiler receiving a valid identifier.
   void expectIdentifier();
+
+  // Handles the expectation of the compiler receiving a class var keyword.
+  // That is, the keywords `static` or `field`.
+  void expectClassVarKeyword();
 
   // Returns whether the current token pointed to by the tokenizer is a token
   // edning the current statement, that is ';'.

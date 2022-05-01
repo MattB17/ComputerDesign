@@ -9,6 +9,14 @@
 #include "keyword.h"
 #include "util.h"
 
+class InvalidClassVarKeyword : public std::runtime_error {
+public:
+  explicit InvalidClassVarKeyword(std::string received_token)
+    : std::runtime_error("Expected keyword `static` or `field` for class "
+                         "variable declaration. Instead received " +
+                         received_token + ".") {}
+};
+
 class ExpectedStatementEnd : public std::runtime_error {
 public:
   explicit ExpectedStatementEnd(std::string received_token)
@@ -40,16 +48,16 @@ public:
 
 class InvalidToken : public std::runtime_error {
 public:
-  explicit InvalidToken(const char start_char) : std::runtime_error(
-    "Tokens must be a symbol, a string, an integer, or a valid identifier " +
-    " that does not start with a number. Instead received a token starting " +
+  explicit InvalidToken(std::string start_char) : std::runtime_error(
+    "Tokens must be a symbol, a string, an integer, or a valid identifier "
+    " that does not start with a number. Instead received a token starting "
     "with " + start_char + ".") {}
 };
 
 class InvalidIdentifier : public std::runtime_error {
 public:
-  explicit InvalidIdentifier(const char start_char) : std::runtime_error(
-    "Identifiers must contain only '_' or alphanumerics, and must not start " +
+  explicit InvalidIdentifier(std::string start_char) : std::runtime_error(
+    "Identifiers must contain only '_' or alphanumerics, and must not start "
     "with a number. Instead, received an identifier starting with " +
     start_char + ".") {}
 };

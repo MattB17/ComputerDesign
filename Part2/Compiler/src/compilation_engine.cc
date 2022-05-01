@@ -21,38 +21,58 @@ void CompilationEngine::compile() {
 
 void CompilationEngine::compileVarDec() {
   const std::string var_tag = "varDec";
-  writeOpenTag(var_tag);
-  xml_stream_ << '\n';
+  writeTerminatedOpenTag(var_tag);
   expectKeyword(Keyword::VAR);
-  writeTokenWithTag();
-  xml_stream_ << '\n';
+  writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
   expectType();
-  writeTokenWithTag();
-  xml_stream_ << '\n';
+  writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
   expectIdentifier();
-  writeTokenWithTag();
-  xml_stream_ << '\n';
+  writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
   while (!isStatementEnd()) {
     if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
         (tokenizer_->getSymbol() == ',')) {
-      writeTokenWithTag();
-      xml_stream_ << '\n';
+      writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       expectIdentifier();
-      writeTokenWithTag();
-      xml_stream_ << '\n';
+      writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString());
     }
   }
-  writeTokenWithTag();
-  xml_stream_ << '\n';
-  writeCloseTag(var_tag);
-  xml_stream_ << '\n';
+  writeTerminatedTokenAndTag();
+  writeTerminatedCloseTag(var_tag);
+}
+
+void CompilationEngine::compileClassVarDec() {
+  const std::string class_var_tag = "classVarDec";
+  writeTerminatedOpenTag(class_var_tag);
+  expectClassVarKeyword();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  expectType();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  while (!isStatementEnd()) {
+    if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
+        (tokenizer_->getSymbol() == ',')) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+      expectIdentifier();
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+    } else {
+      throw ExpectedStatementEnd(tokenizer_->tokenToString());
+    }
+  }
+  writeTerminatedTokenAndTag();
+  writeTerminatedCloseTag(class_var_tag);
 }
 
 void CompilationEngine::writeTokenWithTag() {
@@ -99,6 +119,21 @@ void CompilationEngine::writeCloseTag(std::string tag) {
   xml_stream_ << "</" << tag << ">";
 }
 
+void CompilationEngine::writeTerminatedTokenAndTag() {
+  writeTokenWithTag();
+  xml_stream_ << '\n';
+}
+
+void CompilationEngine::writeTerminatedOpenTag(std::string tag) {
+  writeOpenTag(tag);
+  xml_stream_ << '\n';
+}
+
+void CompilationEngine::writeTerminatedCloseTag(std::string tag) {
+  writeCloseTag(tag);
+  xml_stream_ << '\n';
+}
+
 void CompilationEngine::expectKeyword(Keyword k) {
   if ((tokenizer_->getTokenType() != TokenType::KEYWORD) ||
       (tokenizer_->getKeyword() != k)) {
@@ -123,6 +158,15 @@ void CompilationEngine::expectIdentifier() {
     return;
   }
   throw MissingIdentifier(tokenizer_->tokenToString());
+}
+
+void CompilationEngine::expectClassVarKeyword() {
+  if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
+      ((tokenizer_->getKeyword() == Keyword::STATIC) ||
+       (tokenizer_->getKeyword() == Keyword::FIELD))) {
+    return;
+  }
+  throw InvalidClassVarKeyword(tokenizer_->tokenToString());
 }
 
 bool CompilationEngine::isStatementEnd() {
