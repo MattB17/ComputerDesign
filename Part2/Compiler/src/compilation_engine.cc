@@ -20,7 +20,6 @@ void CompilationEngine::compile() {
 }
 
 void CompilationEngine::compileVarDec() {
-  tokenizer_->nextToken();
   const std::string var_tag = "varDec";
   writeOpenTag(var_tag);
   xml_stream_ << '\n';
