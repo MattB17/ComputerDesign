@@ -30,6 +30,9 @@ public:
 
   // compiles a list of parameters.
   void compileParameterList();
+
+  // compiles a term.
+  void compileTerm();
 private:
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();

@@ -123,4 +123,11 @@ static bool IsPrimitiveType(const Keyword k) {
           (k == Keyword::BOOLEAN));
 }
 
+static bool IsKeywordConstant(const Keyword k) {
+  return ((k == Keyword::TRUE) ||
+          (k == Keyword::FALSE) ||
+          (k == Keyword::NULL_VAL) ||
+          (k == Keyword::THIS));
+}
+
 #endif  // KEYWORD_H

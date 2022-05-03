@@ -9,6 +9,15 @@
 #include "keyword.h"
 #include "util.h"
 
+class InvalidTerm : public std::runtime_error {
+public:
+  explicit InvalidTerm(std::string received_token) : std::runtime_error(
+    "A valid term is one of an integer constant, a string constant, a valid "
+    "identifier, or a keyword constant: `true`, `false`, `null`, or `this`. "
+    "Instead received " + received_token + ".")
+  {}
+};
+
 class InvalidClassVarKeyword : public std::runtime_error {
 public:
   explicit InvalidClassVarKeyword(std::string received_token)

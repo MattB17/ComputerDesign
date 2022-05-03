@@ -67,7 +67,6 @@ void CompilationEngine::compileClassVarDec() {
 void CompilationEngine::compileParameterList() {
   const std::string parameter_list_tag = "parameterList";
   writeTerminatedOpenTag(parameter_list_tag);
-  tokenizer_->nextToken();
   if (currentTokenIsExpectedSymbol(')')) {
     writeTerminatedCloseTag(parameter_list_tag);
     return;
@@ -85,8 +84,23 @@ void CompilationEngine::compileParameterList() {
   writeTerminatedCloseTag(parameter_list_tag);
 }
 
-void CompilationEngine::writeTokenWithTag() {
+void CompilationEngine::compileTerm() {
   writeTabs();
+  const std::string term_tag = "term";
+  writeOpenTag(term_tag);
+  if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
+      (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
+      (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
+      ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
+       (IsKeywordConstant(tokenizer_->getKeyword())))) {
+    writeTokenWithTag();
+    writeCloseTag(term_tag);
+    return;
+  }
+  throw InvalidTerm(tokenizer_->tokenToString());
+}
+
+void CompilationEngine::writeTokenWithTag() {
   std::string tag;
   switch (tokenizer_->getTokenType()) {
     case TokenType::KEYWORD:
@@ -131,6 +145,7 @@ void CompilationEngine::writeCloseTag(std::string tag) {
 }
 
 void CompilationEngine::writeTerminatedTokenAndTag() {
+  writeTabs();
   writeTokenWithTag();
   xml_stream_ << '\n';
 }
