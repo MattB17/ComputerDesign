@@ -27,6 +27,9 @@ public:
 
   // Compiles a static variable declaration, or a field declaration.
   void compileClassVarDec();
+
+  // compiles a list of parameters.
+  void compileParameterList();
 private:
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();
@@ -62,9 +65,9 @@ private:
   // That is, the keywords `static` or `field`.
   void expectClassVarKeyword();
 
-  // Returns whether the current token pointed to by the tokenizer is a token
-  // edning the current statement, that is ';'.
-  bool isStatementEnd();
+  // Returns whether the current token pointed to by the tokenizer is the
+  // symbol `expected_symbol`.
+  bool currentTokenIsExpectedSymbol(char expected_symbol);
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;

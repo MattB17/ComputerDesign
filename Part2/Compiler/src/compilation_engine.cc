@@ -1,5 +1,6 @@
 #include "compilation_engine.h"
 
+#include <iostream>
 #include <string>
 
 #include "exceptions.h"
@@ -31,9 +32,8 @@ void CompilationEngine::compileVarDec() {
   expectIdentifier();
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
-  while (!isStatementEnd()) {
-    if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
-        (tokenizer_->getSymbol() == ',')) {
+  while (!currentTokenIsExpectedSymbol(';')) {
+    if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       expectIdentifier();
@@ -59,9 +59,8 @@ void CompilationEngine::compileClassVarDec() {
   expectIdentifier();
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
-  while (!isStatementEnd()) {
-    if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
-        (tokenizer_->getSymbol() == ',')) {
+  while (!currentTokenIsExpectedSymbol(';')) {
+    if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       expectIdentifier();
@@ -73,6 +72,37 @@ void CompilationEngine::compileClassVarDec() {
   }
   writeTerminatedTokenAndTag();
   writeTerminatedCloseTag(class_var_tag);
+}
+
+void CompilationEngine::compileParameterList() {
+  const std::string parameter_list_tag = "parameterList";
+  writeTerminatedOpenTag(parameter_list_tag);
+  tokenizer_->nextToken();
+  if (currentTokenIsExpectedSymbol(')')) {
+    writeTerminatedCloseTag(parameter_list_tag);
+    return;
+  }
+  expectType();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  while (!currentTokenIsExpectedSymbol(')')) {
+    if (currentTokenIsExpectedSymbol(',')) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+      expectType();
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+      expectIdentifier();
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+    } else {
+      throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+    }
+  }
+  writeTerminatedCloseTag(parameter_list_tag);
 }
 
 void CompilationEngine::writeTokenWithTag() {
@@ -144,10 +174,12 @@ void CompilationEngine::expectKeyword(Keyword k) {
 
 void CompilationEngine::expectType() {
   if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
+    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
       (IsPrimitiveType(tokenizer_->getKeyword()))) {
+    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   throw InvalidType(tokenizer_->tokenToString());
@@ -155,6 +187,7 @@ void CompilationEngine::expectType() {
 
 void CompilationEngine::expectIdentifier() {
   if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
+    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   throw MissingIdentifier(tokenizer_->tokenToString());
@@ -169,7 +202,7 @@ void CompilationEngine::expectClassVarKeyword() {
   throw InvalidClassVarKeyword(tokenizer_->tokenToString());
 }
 
-bool CompilationEngine::isStatementEnd() {
+bool CompilationEngine::currentTokenIsExpectedSymbol(char expected_symbol) {
   return ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
-          (tokenizer_->getSymbol() == ';'));
+          (tokenizer_->getSymbol() == expected_symbol));
 }
