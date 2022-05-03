@@ -61,6 +61,10 @@ private:
   // Handles the expection of the compiler receiving a valid identifier.
   void expectIdentifier();
 
+  // Handles a type followed by an identifier. An exception is thrown if the
+  // next 2 tokens are not a type and an identifier respectively.
+  void handleTypeAndIdentifierPair();
+
   // Handles the expectation of the compiler receiving a class var keyword.
   // That is, the keywords `static` or `field`.
   void expectClassVarKeyword();
@@ -69,11 +73,17 @@ private:
   // symbol `expected_symbol`.
   bool currentTokenIsExpectedSymbol(char expected_symbol);
 
+  // Writes `num_tabs_` tabs to the `xml_stream_`.
+  void writeTabs();
+
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
 
   // A stream representing the to which the compilation engine writes output.
   std::ofstream xml_stream_;
+
+  // The number of tabs (or level of nesting) for the xml tags.
+  int num_tabs_;
 };
 
 #endif  // COMPILATION_ENGINE_H

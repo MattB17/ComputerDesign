@@ -7,7 +7,7 @@
 #include "util.h"
 
 CompilationEngine::CompilationEngine(std::string jack_file)
-  : tokenizer_(std::make_unique<Tokenizer>(jack_file))
+  : tokenizer_(std::make_unique<Tokenizer>(jack_file)), num_tabs_(0)
 {
   xml_stream_.open(jackFileToXmlFile(jack_file));
 }
@@ -26,12 +26,7 @@ void CompilationEngine::compileVarDec() {
   expectKeyword(Keyword::VAR);
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
-  expectType();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
-  expectIdentifier();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
+  handleTypeAndIdentifierPair();
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
@@ -53,12 +48,7 @@ void CompilationEngine::compileClassVarDec() {
   expectClassVarKeyword();
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
-  expectType();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
-  expectIdentifier();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
+  handleTypeAndIdentifierPair();
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
@@ -82,22 +72,12 @@ void CompilationEngine::compileParameterList() {
     writeTerminatedCloseTag(parameter_list_tag);
     return;
   }
-  expectType();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
-  expectIdentifier();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
+  handleTypeAndIdentifierPair();
   while (!currentTokenIsExpectedSymbol(')')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
-      expectType();
-      writeTerminatedTokenAndTag();
-      tokenizer_->nextToken();
-      expectIdentifier();
-      writeTerminatedTokenAndTag();
-      tokenizer_->nextToken();
+      handleTypeAndIdentifierPair();
     } else {
       throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
     }
@@ -106,6 +86,7 @@ void CompilationEngine::compileParameterList() {
 }
 
 void CompilationEngine::writeTokenWithTag() {
+  writeTabs();
   std::string tag;
   switch (tokenizer_->getTokenType()) {
     case TokenType::KEYWORD:
@@ -155,11 +136,15 @@ void CompilationEngine::writeTerminatedTokenAndTag() {
 }
 
 void CompilationEngine::writeTerminatedOpenTag(std::string tag) {
+  writeTabs();
   writeOpenTag(tag);
   xml_stream_ << '\n';
+  num_tabs_++;
 }
 
 void CompilationEngine::writeTerminatedCloseTag(std::string tag) {
+  num_tabs_--;
+  writeTabs();
   writeCloseTag(tag);
   xml_stream_ << '\n';
 }
@@ -174,12 +159,10 @@ void CompilationEngine::expectKeyword(Keyword k) {
 
 void CompilationEngine::expectType() {
   if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
-    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
       (IsPrimitiveType(tokenizer_->getKeyword()))) {
-    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   throw InvalidType(tokenizer_->tokenToString());
@@ -187,10 +170,18 @@ void CompilationEngine::expectType() {
 
 void CompilationEngine::expectIdentifier() {
   if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
-    std::cout << tokenizer_->tokenToString() << std::endl;
     return;
   }
   throw MissingIdentifier(tokenizer_->tokenToString());
+}
+
+void CompilationEngine::handleTypeAndIdentifierPair() {
+  expectType();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
 }
 
 void CompilationEngine::expectClassVarKeyword() {
@@ -205,4 +196,10 @@ void CompilationEngine::expectClassVarKeyword() {
 bool CompilationEngine::currentTokenIsExpectedSymbol(char expected_symbol) {
   return ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
           (tokenizer_->getSymbol() == expected_symbol));
+}
+
+void CompilationEngine::writeTabs() {
+  for (int i = 0; i < num_tabs_; i++) {
+    xml_stream_ << '\t';
+  }
 }
