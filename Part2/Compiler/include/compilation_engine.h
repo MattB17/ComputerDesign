@@ -64,6 +64,9 @@ private:
   // Handles the expection of the compiler receiving a valid identifier.
   void expectIdentifier();
 
+  // Handles the expectation of the compiler receiving a valid term.
+  void expectTerm();
+
   // Handles a type followed by an identifier. An exception is thrown if the
   // next 2 tokens are not a type and an identifier respectively.
   void handleTypeAndIdentifierPair();

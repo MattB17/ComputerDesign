@@ -40,6 +40,7 @@ void CompilationEngine::compileVarDec() {
   }
   writeTerminatedTokenAndTag();
   writeTerminatedCloseTag(var_tag);
+  return;
 }
 
 void CompilationEngine::compileClassVarDec() {
@@ -62,6 +63,7 @@ void CompilationEngine::compileClassVarDec() {
   }
   writeTerminatedTokenAndTag();
   writeTerminatedCloseTag(class_var_tag);
+  return;
 }
 
 void CompilationEngine::compileParameterList() {
@@ -82,22 +84,16 @@ void CompilationEngine::compileParameterList() {
     }
   }
   writeTerminatedCloseTag(parameter_list_tag);
+  return;
 }
 
 void CompilationEngine::compileTerm() {
-  writeTabs();
   const std::string term_tag = "term";
-  writeOpenTag(term_tag);
-  if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
-      (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
-      (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
-      ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-       (IsKeywordConstant(tokenizer_->getKeyword())))) {
-    writeTokenWithTag();
-    writeCloseTag(term_tag);
-    return;
-  }
-  throw InvalidTerm(tokenizer_->tokenToString());
+  writeTerminatedOpenTag(term_tag);
+  expectType();
+  writeTerminatedTokenAndTag();
+  writeTerminatedCloseTag(term_tag);
+  return;
 }
 
 void CompilationEngine::writeTokenWithTag() {
@@ -188,6 +184,27 @@ void CompilationEngine::expectIdentifier() {
     return;
   }
   throw MissingIdentifier(tokenizer_->tokenToString());
+}
+
+if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
+    (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
+    (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
+    ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
+     (IsKeywordConstant(tokenizer_->getKeyword())))) {
+  writeTerminatedTokenAndTag();
+  writeTerminatedCloseTag(term_tag);
+  return;
+}
+
+void CompilationEngine::expectType() {
+  if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
+      (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
+      (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
+      ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
+       (IsKeywordConstant(tokenizer_->getKeyword())))) {
+    return;
+  }
+  throw InvalidTerm(tokenizer_->tokenToString());
 }
 
 void CompilationEngine::handleTypeAndIdentifierPair() {
