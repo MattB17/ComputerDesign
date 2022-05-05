@@ -24,21 +24,33 @@ void CompilationEngine::compileVarDec() {
   const std::string var_tag = "varDec";
   writeTerminatedOpenTag(var_tag);
   expectKeyword(Keyword::Type::VAR);
+  // Write the `var` token.
   writeTerminatedTokenAndTag();
+
   tokenizer_->nextToken();
+
+  //Expect a type and identifier pair (type and parameter).
   handleTypeAndIdentifierPair();
+
+  // Check if we have reached the end of the statement. If not, we have a `,`
+  // signifying additional variable names of the same type.
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
+
+      // Expect a variable name and write its tag.
       expectIdentifier();
       writeTerminatedTokenAndTag();
+
       tokenizer_->nextToken();
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString());
     }
   }
+  // Write the statement end `;`.
   writeTerminatedTokenAndTag();
+
   writeTerminatedCloseTag(var_tag);
   return;
 }
@@ -46,14 +58,23 @@ void CompilationEngine::compileVarDec() {
 void CompilationEngine::compileClassVarDec() {
   const std::string class_var_tag = "classVarDec";
   writeTerminatedOpenTag(class_var_tag);
+
+  // Expects a class variable declaration and adds the appropriate tag.
   expectClassVarKeyword();
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
+
+  // Expects a type and identifier pair (type and parameter pair).
   handleTypeAndIdentifierPair();
+
+  // Check if we have reached the end of the statement. If not, we have a `,`
+  // signifying additional variable names of the same type.
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
+
+      // Expect a variable name and write its tag.
       expectIdentifier();
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
@@ -61,23 +82,39 @@ void CompilationEngine::compileClassVarDec() {
       throw ExpectedStatementEnd(tokenizer_->tokenToString());
     }
   }
+  // Write the statement end `;`.
   writeTerminatedTokenAndTag();
   writeTerminatedCloseTag(class_var_tag);
   return;
 }
 
 void CompilationEngine::compileParameterList() {
+  // It is assumed that the opening bracket is the first symbol so we advance
+  // the tokenizer to inside the token list.
+  tokenizer_->nextToken();
+
   const std::string parameter_list_tag = "parameterList";
   writeTerminatedOpenTag(parameter_list_tag);
+
+  // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
     writeTerminatedCloseTag(parameter_list_tag);
     return;
   }
+
+  // Expect a type and identifier (type and variable name) as the parameter
+  // list is not empty.
   handleTypeAndIdentifierPair();
+
+  // Check for more elements in the parameter list. Either we have hit the end
+  // of the list (signified by `)`) or we get a `,` signifying more parameters.
   while (!currentTokenIsExpectedSymbol(')')) {
+    // we have another parameter
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
+
+      // Expect a type and identifier (type and variable name).
       handleTypeAndIdentifierPair();
     } else {
       throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
@@ -87,12 +124,50 @@ void CompilationEngine::compileParameterList() {
   return;
 }
 
+void CompilationEngine::compileReturn() {
+  tokenizer_->nextToken();
+  const std::string return_tag = "returnStatement";
+  writeTerminatedOpenTag(return_tag);
+
+  // write keyword return.
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // we haven't hit statement end so we have the form `return expression;`
+  if (!currentTokenIsExpectedSymbol(';')) {
+    compileExpression();
+  }
+
+  tokenizer_->nextToken();
+
+  // now we expect statement end.
+  if (!currentTokenIsExpectedSymbol(';')) {
+    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+  }
+  writeTerminatedTokenAndTag();
+
+  writeTerminatedCloseTag(return_tag);
+  return;
+}
+
 void CompilationEngine::compileTerm() {
   const std::string term_tag = "term";
   writeTerminatedOpenTag(term_tag);
   expectTerm();
+
+  // Write the term and its appropriate tags.
   writeTerminatedTokenAndTag();
+
   writeTerminatedCloseTag(term_tag);
+  return;
+}
+
+void CompilationEngine::compileExpression() {
+  const std::string expression_tag = "expression";
+  writeTerminatedOpenTag(expression_tag);
+  compileTerm();
+  writeTerminatedCloseTag(expression_tag);
   return;
 }
 
