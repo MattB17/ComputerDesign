@@ -83,7 +83,7 @@ void Tokenizer::advance() {
       throw InvalidIdentifier(std::string(1, next_char));
     }
   }
-  if (IsKeyword(token_stream_.str())) {
+  if (Keyword::IsKeyword(token_stream_.str())) {
     token_type_ = TokenType::KEYWORD;
   } else {
     token_type_ = TokenType::IDENTIFIER;
@@ -99,8 +99,8 @@ bool Tokenizer::nextToken() {
   return true;
 }
 
-const Keyword Tokenizer::getKeyword() {
-  return GetKeywordFromString(token_stream_.str());
+const Keyword::Type Tokenizer::getKeyword() {
+  return Keyword::GetKeywordFromString(token_stream_.str());
 }
 
 const char Tokenizer::getSymbol() {

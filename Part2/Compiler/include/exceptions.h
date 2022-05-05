@@ -57,9 +57,9 @@ public:
 
 class KeywordNotFound : public std::runtime_error {
 public:
-  KeywordNotFound(Keyword expected_keyword, std::string received_token)
+  KeywordNotFound(Keyword::Type expected_keyword, std::string received_token)
     : std::runtime_error("Expected to receive keyword " +
-                         keywordToString(expected_keyword) +
+                         Keyword::KeywordToString(expected_keyword) +
                          ", but instead got " + received_token + ".") {}
 };
 

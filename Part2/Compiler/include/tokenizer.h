@@ -38,7 +38,7 @@ public:
 
   // Returns the keyword corresponding to the current token.
   // Should only be called if the token type is KEYWORD.
-  const Keyword getKeyword();
+  const Keyword::Type getKeyword();
 
   // Returns the symbol corresponding to the current token.
   // Should only be called if the token type is SYMBOL.

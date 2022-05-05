@@ -23,7 +23,7 @@ void CompilationEngine::compile() {
 void CompilationEngine::compileVarDec() {
   const std::string var_tag = "varDec";
   writeTerminatedOpenTag(var_tag);
-  expectKeyword(Keyword::VAR);
+  expectKeyword(Keyword::Type::VAR);
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
   handleTypeAndIdentifierPair();
@@ -90,7 +90,7 @@ void CompilationEngine::compileParameterList() {
 void CompilationEngine::compileTerm() {
   const std::string term_tag = "term";
   writeTerminatedOpenTag(term_tag);
-  expectType();
+  expectTerm();
   writeTerminatedTokenAndTag();
   writeTerminatedCloseTag(term_tag);
   return;
@@ -102,7 +102,7 @@ void CompilationEngine::writeTokenWithTag() {
     case TokenType::KEYWORD:
       tag = "keyword";
       writeOpenTag(tag);
-      xml_stream_ << " " << keywordToString(tokenizer_->getKeyword());
+      xml_stream_ << " " << Keyword::KeywordToString(tokenizer_->getKeyword());
       break;
     case TokenType::SYMBOL:
       tag = "symbol";
@@ -160,7 +160,7 @@ void CompilationEngine::writeTerminatedCloseTag(std::string tag) {
   xml_stream_ << '\n';
 }
 
-void CompilationEngine::expectKeyword(Keyword k) {
+void CompilationEngine::expectKeyword(Keyword::Type k) {
   if ((tokenizer_->getTokenType() != TokenType::KEYWORD) ||
       (tokenizer_->getKeyword() != k)) {
     throw KeywordNotFound(k, tokenizer_->tokenToString());
@@ -173,7 +173,7 @@ void CompilationEngine::expectType() {
     return;
   }
   if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-      (IsPrimitiveType(tokenizer_->getKeyword()))) {
+      (Keyword::IsPrimitiveType(tokenizer_->getKeyword()))) {
     return;
   }
   throw InvalidType(tokenizer_->tokenToString());
@@ -186,22 +186,12 @@ void CompilationEngine::expectIdentifier() {
   throw MissingIdentifier(tokenizer_->tokenToString());
 }
 
-if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
-    (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
-    (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
-    ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-     (IsKeywordConstant(tokenizer_->getKeyword())))) {
-  writeTerminatedTokenAndTag();
-  writeTerminatedCloseTag(term_tag);
-  return;
-}
-
-void CompilationEngine::expectType() {
+void CompilationEngine::expectTerm() {
   if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
       (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
       (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
       ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-       (IsKeywordConstant(tokenizer_->getKeyword())))) {
+       (Keyword::IsKeywordConstant(tokenizer_->getKeyword())))) {
     return;
   }
   throw InvalidTerm(tokenizer_->tokenToString());
@@ -218,8 +208,8 @@ void CompilationEngine::handleTypeAndIdentifierPair() {
 
 void CompilationEngine::expectClassVarKeyword() {
   if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-      ((tokenizer_->getKeyword() == Keyword::STATIC) ||
-       (tokenizer_->getKeyword() == Keyword::FIELD))) {
+      ((tokenizer_->getKeyword() == Keyword::Type::STATIC) ||
+       (tokenizer_->getKeyword() == Keyword::Type::FIELD))) {
     return;
   }
   throw InvalidClassVarKeyword(tokenizer_->tokenToString());

@@ -55,7 +55,7 @@ private:
 
   // Handles the expectation that the compiler expects to receive keyword `k`.
   // If `k` is not the next token, an exception is thrown.
-  void expectKeyword(Keyword k);
+  void expectKeyword(Keyword::Type k);
 
   // Handles the expectation of the compiler receiving a valid type. A type is
   // either `int`, `char`, `bool`, or a valid identifier representing a class.

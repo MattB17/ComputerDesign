@@ -15,6 +15,7 @@ add_executable(
   JackCompiler
 
   src/main.cc
+  src/keyword.cc
   src/tokenizer.cc
   src/compilation_engine.cc
 )
