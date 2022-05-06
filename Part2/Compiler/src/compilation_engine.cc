@@ -90,7 +90,7 @@ void CompilationEngine::compileClassVarDec() {
 
 void CompilationEngine::compileParameterList() {
   // It is assumed that the opening bracket is the first symbol so we advance
-  // the tokenizer to inside the token list.
+  // the tokenizer to inside the parameter list.
   tokenizer_->nextToken();
 
   const std::string parameter_list_tag = "parameterList";
@@ -221,6 +221,45 @@ void CompilationEngine::compileExpression() {
   writeTerminatedOpenTag(expression_tag);
   compileTerm();
   writeTerminatedCloseTag(expression_tag);
+  return;
+}
+
+void CompilationEngine::compileExpressionList() {
+  tokenizer_->nextToken();
+  // It is assumed that the opening bracket is the first symbol so we advance
+  // the tokenizer to inside the parameter list.
+  tokenizer_->nextToken();
+
+  const std::string expression_list_tag = "expressionList";
+  writeTerminatedOpenTag(expression_list_tag);
+
+  // We have an empty parameter list `()`.
+  if (currentTokenIsExpectedSymbol(')')) {
+    writeTerminatedCloseTag(expression_list_tag);
+    return;
+  }
+
+  // expect an expression.
+  compileExpression();
+
+  tokenizer_->nextToken();
+
+  // Check for more elements in the expression list. Either we have hit the end
+  // of the list (signified by `)`) or we get a `,` signifying more parameters.
+  while (!currentTokenIsExpectedSymbol(')')) {
+    // we have another expression.
+    if (currentTokenIsExpectedSymbol(',')) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+
+      // Expect an expression.
+      compileExpression();
+      tokenizer_->nextToken();
+    } else {
+      throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+    }
+  }
+  writeTerminatedCloseTag(expression_list_tag);
   return;
 }
 
