@@ -31,6 +31,9 @@ public:
   // compiles a list of parameters.
   void compileParameterList();
 
+  // Compiles a let statement.
+  void compileLet();
+
   // compiles a return statement.
   void compileReturn();
 

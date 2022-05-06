@@ -125,7 +125,6 @@ void CompilationEngine::compileParameterList() {
 }
 
 void CompilationEngine::compileReturn() {
-  tokenizer_->nextToken();
   const std::string return_tag = "returnStatement";
   writeTerminatedOpenTag(return_tag);
 
@@ -148,6 +147,60 @@ void CompilationEngine::compileReturn() {
   writeTerminatedTokenAndTag();
 
   writeTerminatedCloseTag(return_tag);
+  return;
+}
+
+// Let statements are of 2 forms `let varName = expression;` or
+// `let varName[expression] = expression;`.
+void CompilationEngine::compileLet() {
+  const std::string let_tag = "letStatement";
+  writeTerminatedOpenTag(let_tag);
+
+  // write keyword let.
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // expect a valid identifier for the varname
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // If we encounter `[` then we know we are in the second case.
+  if (currentTokenIsExpectedSymbol('[')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+    compileExpression();
+    tokenizer_->nextToken();
+    if (currentTokenIsExpectedSymbol(']')) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+    } else {
+      throw ExpectedSymbol(tokenizer_->tokenToString(), "]", let_tag);
+    }
+  }
+
+  // handle the equal sign
+  if (currentTokenIsExpectedSymbol('=')) {
+    writeTerminatedTokenAndTag();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
+  }
+  tokenizer_->nextToken();
+
+  // handle the expression of the right of the `=`.
+  compileExpression();
+
+  tokenizer_->nextToken();
+
+  // now we expect statement end.
+  if (!currentTokenIsExpectedSymbol(';')) {
+    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+  }
+  writeTerminatedTokenAndTag();
+
+  writeTerminatedCloseTag(let_tag);
   return;
 }
 

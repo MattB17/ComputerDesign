@@ -9,6 +9,16 @@
 #include "keyword.h"
 #include "util.h"
 
+class ExpectedSymbol : public std::runtime_error {
+public:
+  ExpectedSymbol(std::string received_token,
+                 std::string expected_token,
+                 std::string compile_tag) : std::runtime_error(
+    "Expected to receive " + expected_token + " as part of " +
+    compile_tag+ ". Instead, received " + received_token + ".")
+  {}
+};
+
 class InvalidTerm : public std::runtime_error {
 public:
   explicit InvalidTerm(std::string received_token) : std::runtime_error(
