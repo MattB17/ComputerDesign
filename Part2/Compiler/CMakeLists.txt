@@ -16,6 +16,7 @@ add_executable(
 
   src/main.cc
   src/keyword.cc
+  src/exceptions.cc
   src/tokenizer.cc
   src/compilation_engine.cc
 )

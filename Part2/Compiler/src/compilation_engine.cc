@@ -45,7 +45,7 @@ void CompilationEngine::compileVarDec() {
 
       tokenizer_->nextToken();
     } else {
-      throw ExpectedStatementEnd(tokenizer_->tokenToString());
+      throw ExpectedStatementEnd(tokenizer_->tokenToString(), var_tag);
     }
   }
   // Write the statement end `;`.
@@ -79,7 +79,7 @@ void CompilationEngine::compileClassVarDec() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
     } else {
-      throw ExpectedStatementEnd(tokenizer_->tokenToString());
+      throw ExpectedStatementEnd(tokenizer_->tokenToString(), class_var_tag);
     }
   }
   // Write the statement end `;`.
@@ -117,7 +117,8 @@ void CompilationEngine::compileParameterList() {
       // Expect a type and identifier (type and variable name).
       handleTypeAndIdentifierPair();
     } else {
-      throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+      throw ExpectedClosingParenthesis(
+        tokenizer_->tokenToString(), ")", parameter_list_tag);
     }
   }
   writeTerminatedCloseTag(parameter_list_tag);
@@ -174,7 +175,7 @@ void CompilationEngine::compileReturn() {
 
   // now we expect statement end.
   if (!currentTokenIsExpectedSymbol(';')) {
-    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+    throw ExpectedStatementEnd(tokenizer_->tokenToString(), return_tag);
   }
   writeTerminatedTokenAndTag();
 
@@ -210,7 +211,8 @@ void CompilationEngine::compileLet() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
     } else {
-      throw ExpectedSymbol(tokenizer_->tokenToString(), "]", let_tag);
+      throw ExpectedClosingParenthesis(
+        tokenizer_->tokenToString(), "]", let_tag);
     }
   }
 
@@ -229,7 +231,7 @@ void CompilationEngine::compileLet() {
 
   // now we expect statement end.
   if (!currentTokenIsExpectedSymbol(';')) {
-    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+    throw ExpectedStatementEnd(tokenizer_->tokenToString(), let_tag);
   }
   writeTerminatedTokenAndTag();
 
@@ -252,7 +254,7 @@ void CompilationEngine::compileIf() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "(", if_tag);
+    throw ExpectedOpeningParenthesis(tokenizer_->tokenToString(), "(", if_tag);
   }
 
   // compile the expression specifying the if condition.
@@ -265,7 +267,7 @@ void CompilationEngine::compileIf() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), ")", if_tag);
+    throw ExpectedClosingParenthesis(tokenizer_->tokenToString(), ")", if_tag);
   }
 
   // Expect opening '{' to start the if statements.
@@ -273,7 +275,7 @@ void CompilationEngine::compileIf() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "{", if_tag);
+    throw ExpectedOpeningParenthesis(tokenizer_->tokenToString(), "{", if_tag);
   }
 
   // compile the if statements.
@@ -282,7 +284,7 @@ void CompilationEngine::compileIf() {
   if (currentTokenIsExpectedSymbol('}')) {
     writeTerminatedTokenAndTag();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "}", if_tag);
+    throw ExpectedClosingParenthesis(tokenizer_->tokenToString(), "}", if_tag);
   }
 
   // get the next token to determine whether it is an else.
@@ -299,7 +301,8 @@ void CompilationEngine::compileIf() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
     } else {
-      throw ExpectedSymbol(tokenizer_->tokenToString(), "{", else_tag);
+      throw ExpectedOpeningParenthesis(
+        tokenizer_->tokenToString(), "{", else_tag);
     }
 
     // compile the else statements.
@@ -308,7 +311,8 @@ void CompilationEngine::compileIf() {
     if (currentTokenIsExpectedSymbol('}')) {
       writeTerminatedTokenAndTag();
     } else {
-      throw ExpectedSymbol(tokenizer_->tokenToString(), "}", else_tag);
+      throw ExpectedClosingParenthesis(
+        tokenizer_->tokenToString(), "}", else_tag);
     }
   }
 
@@ -333,7 +337,8 @@ void CompilationEngine::compileWhile() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "(", while_tag);
+    throw ExpectedOpeningParenthesis(
+      tokenizer_->tokenToString(), "(", while_tag);
   }
 
   // compile the expression specifying the while condition.
@@ -346,7 +351,8 @@ void CompilationEngine::compileWhile() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), ")", while_tag);
+    throw ExpectedClosingParenthesis(
+      tokenizer_->tokenToString(), ")", while_tag);
   }
 
   // Expect opening '{' to start the while statements.
@@ -354,7 +360,8 @@ void CompilationEngine::compileWhile() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "{", while_tag);
+    throw ExpectedOpeningParenthesis(
+      tokenizer_->tokenToString(), "{", while_tag);
   }
 
   // compile the while statements.
@@ -363,7 +370,8 @@ void CompilationEngine::compileWhile() {
   if (currentTokenIsExpectedSymbol('}')) {
     writeTerminatedTokenAndTag();
   } else {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "}", while_tag);
+    throw ExpectedClosingParenthesis(
+      tokenizer_->tokenToString(), "}", while_tag);
   }
 
   writeTerminatedCloseTag(while_tag);
@@ -386,7 +394,7 @@ void CompilationEngine::compileDo() {
 
   // Expect end of statement.
   if (!currentTokenIsExpectedSymbol(';')) {
-    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+    throw ExpectedStatementEnd(tokenizer_->tokenToString(), do_tag);
   }
   writeTerminatedTokenAndTag();
 
@@ -445,7 +453,8 @@ void CompilationEngine::compileExpressionList() {
       compileExpression();
       tokenizer_->nextToken();
     } else {
-      throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+      throw ExpectedClosingParenthesis(
+        tokenizer_->tokenToString(), ")", expression_list_tag);
     }
   }
   writeTerminatedCloseTag(expression_list_tag);
@@ -455,6 +464,7 @@ void CompilationEngine::compileExpressionList() {
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
 // `varName.subroutineName(expressionList)`.
 void CompilationEngine::compileSubroutineCall() {
+  const std::string call_tag = "subroutineCall";
   // expect an identifier (either `subroutineName` or `varName`).
   expectIdentifier();
   writeTerminatedTokenAndTag();
@@ -475,14 +485,16 @@ void CompilationEngine::compileSubroutineCall() {
 
   // Now we expect the start of the expression list.
   if (!currentTokenIsExpectedSymbol('(')) {
-    throw ExpectedOpeningParenthesis("(", tokenizer_->tokenToString());
+    throw ExpectedOpeningParenthesis(
+      tokenizer_->tokenToString(), "(", call_tag);
   }
   writeTerminatedTokenAndTag();
   compileExpressionList();
 
   // Now we expect the end of the expression list.
   if (!currentTokenIsExpectedSymbol(')')) {
-    throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+    throw ExpectedClosingParenthesis(
+      tokenizer_->tokenToString(), ")", call_tag);
   }
   writeTerminatedTokenAndTag();
   return;

@@ -3,8 +3,6 @@
 #define EXCEPTIONS_H
 
 #include <exception>
-#include <iostream>
-#include <sstream>
 
 #include "keyword.h"
 #include "util.h"
@@ -12,89 +10,62 @@
 class ExpectedSymbol : public std::runtime_error {
 public:
   ExpectedSymbol(std::string received_token,
-                 std::string expected_token,
-                 std::string compile_tag) : std::runtime_error(
-    "Expected to receive " + expected_token + " as part of " +
-    compile_tag+ ". Instead, received " + received_token + ".")
-  {}
+                 std::string expected_symbol,
+                 std::string compile_tag);
+};
+
+class ExpectedOpeningParenthesis : public ExpectedSymbol {
+public:
+  ExpectedOpeningParenthesis(std::string received_token,
+                             std::string expected_parenthesis,
+                             std::string compile_tag);
+};
+
+class ExpectedClosingParenthesis : public ExpectedSymbol {
+public:
+  ExpectedClosingParenthesis(std::string received_token,
+                             std::string expected_parenthesis,
+                             std::string compile_tag);
+};
+
+class ExpectedStatementEnd : public ExpectedSymbol {
+public:
+  ExpectedStatementEnd(std::string received_token, std::string compile_tag);
 };
 
 class InvalidTerm : public std::runtime_error {
 public:
-  explicit InvalidTerm(std::string received_token) : std::runtime_error(
-    "A valid term is one of an integer constant, a string constant, a valid "
-    "identifier, or a keyword constant: `true`, `false`, `null`, or `this`. "
-    "Instead received " + received_token + ".")
-  {}
+  explicit InvalidTerm(std::string received_token);
 };
 
 class InvalidClassVarKeyword : public std::runtime_error {
 public:
-  explicit InvalidClassVarKeyword(std::string received_token)
-    : std::runtime_error("Expected keyword `static` or `field` for class "
-                         "variable declaration. Instead received " +
-                         received_token + ".") {}
-};
-
-class ExpectedOpeningParenthesis : public std::runtime_error {
-public:
-  ExpectedOpeningParenthesis(
-    std::string expected_parenthesis, std::string received_token)
-    : std::runtime_error("Expected " + expected_parenthesis + ". Instead "
-                         "received " + received_token + ".") {}
-};
-
-class ExpectedClosingParenthesis : public std::runtime_error {
-public:
-  ExpectedClosingParenthesis(
-    std::string expected_parenthesis, std::string received_token)
-    : std::runtime_error("Expected " + expected_parenthesis + ". Instead "
-                         "received " + received_token + ".") {}
-};
-
-class ExpectedStatementEnd : public std::runtime_error {
-public:
-  explicit ExpectedStatementEnd(std::string received_token)
-    : std::runtime_error("Expected ';'. Instead received " +
-                         received_token + ".") {}
+  explicit InvalidClassVarKeyword(std::string received_token);
 };
 
 class MissingIdentifier : public std::runtime_error {
 public:
-  explicit MissingIdentifier(std::string received_token)
-    : std::runtime_error("Expected a valid identifier. Instead received " +
-                         received_token + ".") {}
+  explicit MissingIdentifier(std::string received_token);
 };
 
 class InvalidType : public std::runtime_error {
 public:
-  explicit InvalidType(std::string received_token)
-    : std::runtime_error("Expected a valid type. Instead received " +
-                         received_token + ".") {}
+  explicit InvalidType(std::string received_token);
 };
 
 class KeywordNotFound : public std::runtime_error {
 public:
-  KeywordNotFound(Keyword::Type expected_keyword, std::string received_token)
-    : std::runtime_error("Expected to receive keyword " +
-                         Keyword::KeywordToString(expected_keyword) +
-                         ", but instead got " + received_token + ".") {}
+  KeywordNotFound(Keyword::Type expected_keyword, std::string received_token);
 };
 
 class InvalidToken : public std::runtime_error {
 public:
-  explicit InvalidToken(std::string start_char) : std::runtime_error(
-    "Tokens must be a symbol, a string, an integer, or a valid identifier "
-    " that does not start with a number. Instead received a token starting "
-    "with " + start_char + ".") {}
+  explicit InvalidToken(std::string start_char);
 };
 
 class InvalidIdentifier : public std::runtime_error {
 public:
-  explicit InvalidIdentifier(std::string start_char) : std::runtime_error(
-    "Identifiers must contain only '_' or alphanumerics, and must not start "
-    "with a number. Instead, received an identifier starting with " +
-    start_char + ".") {}
+  explicit InvalidIdentifier(std::string start_char);
 };
 
 class NonTerminatedString : public std::exception {
