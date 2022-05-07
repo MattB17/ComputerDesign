@@ -130,7 +130,7 @@ void CompilationEngine::compileStatements() {
 
   // loop through statements, compiling each one.
   while (currentTokenIsStatementKeyword()) {
-    switch (tokenizer_->getKeyword) {
+    switch (tokenizer_->getKeyword()) {
       case Keyword::Type::LET:
         compileLet();
         break;
@@ -239,11 +239,59 @@ void CompilationEngine::compileIf() {
 }
 
 void CompilationEngine::compileWhile() {
+  tokenizer_->nextToken();
+  const std::string while_tag = "whileStatement";
+  writeTerminatedOpenTag(while_tag);
+
+  // write keyword while.
+  expectKeyword(Keyword::Type::WHILE);
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // Expect opening `(` to start the while condition.
+  if (currentTokenIsExpectedSymbol('(')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "(", while_tag);
+  }
+
+  // compile the expression specifying the while condition.
+  compileExpression();
+
+  tokenizer_->nextToken();
+
+  // Expect closing ')' to end the while condition.
+  if (currentTokenIsExpectedSymbol(')')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), ")", while_tag);
+  }
+
+  // Expect opening '{' to start the while statements.
+  if (currentTokenIsExpectedSymbol('{')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "{", while_tag);
+  }
+
+  // compile the while statements.
+  compileStatements();
+
+  if (currentTokenIsExpectedSymbol('}')) {
+    writeTerminatedTokenAndTag();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "}", while_tag);
+  }
+
+  writeTerminatedCloseTag(while_tag);
   return;
 }
 
 void CompilationEngine::compileDo() {
-  tokenizer_->nextToken();
   const std::string do_tag = "doStatement";
   writeTerminatedOpenTag(do_tag);
 
@@ -491,7 +539,7 @@ bool CompilationEngine::currentTokenIsStatementKeyword() {
         (tokenizer_->getKeyword() == Keyword::Type::IF) ||
         (tokenizer_->getKeyword() == Keyword::Type::WHILE) ||
         (tokenizer_->getKeyword() == Keyword::Type::DO) ||
-        (tokenizer_->getKeyword() == Keyword::Type::RETURN) {
+        (tokenizer_->getKeyword() == Keyword::Type::RETURN)) {
       return true;
     }
   }
