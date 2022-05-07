@@ -31,8 +31,17 @@ public:
   // compiles a list of parameters.
   void compileParameterList();
 
+  // compiles a collection of statements.
+  void compileStatements();
+
   // compiles a do statement.
   void compileDo();
+
+  // compiles an if statement.
+  void compileIf();
+
+  // compiles a while statement.
+  void compileWhile();
 
   // Compiles a let statement.
   void compileLet();
@@ -96,6 +105,10 @@ private:
   // Returns whether the current token pointed to by the tokenizer is the
   // symbol `expected_symbol`.
   bool currentTokenIsExpectedSymbol(char expected_symbol);
+
+  // Returns whether the current token pointed to by the tokenizer is a
+  // statement keyword, one of: `let`, `if`, `while`, `do`, `return`.
+  bool currentTokenIsStatementKeyword();
 
   // Writes `num_tabs_` tabs to the `xml_stream_`.
   void writeTabs();

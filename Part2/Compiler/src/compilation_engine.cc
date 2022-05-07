@@ -124,6 +124,34 @@ void CompilationEngine::compileParameterList() {
   return;
 }
 
+void CompilationEngine::compileStatements() {
+  const std::string statements_tag = "statements";
+  writeTerminatedOpenTag(statements_tag);
+
+  // loop through statements, compiling each one.
+  while (currentTokenIsStatementKeyword()) {
+    switch (tokenizer_->getKeyword) {
+      case Keyword::Type::LET:
+        compileLet();
+        break;
+      case Keyword::Type::IF:
+        compileIf();
+        break;
+      case Keyword::Type::WHILE:
+        compileWhile();
+        break;
+      case Keyword::Type::DO:
+        compileDo();
+        break;
+      default:
+        compileReturn();
+    }
+    tokenizer_->nextToken();
+  }
+  writeTerminatedCloseTag(statements_tag);
+  return;
+}
+
 void CompilationEngine::compileReturn() {
   const std::string return_tag = "returnStatement";
   writeTerminatedOpenTag(return_tag);
@@ -203,6 +231,14 @@ void CompilationEngine::compileLet() {
   writeTerminatedTokenAndTag();
 
   writeTerminatedCloseTag(let_tag);
+  return;
+}
+
+void CompilationEngine::compileIf() {
+  return;
+}
+
+void CompilationEngine::compileWhile() {
   return;
 }
 
@@ -447,6 +483,19 @@ void CompilationEngine::expectClassVarKeyword() {
 bool CompilationEngine::currentTokenIsExpectedSymbol(char expected_symbol) {
   return ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
           (tokenizer_->getSymbol() == expected_symbol));
+}
+
+bool CompilationEngine::currentTokenIsStatementKeyword() {
+  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    if ((tokenizer_->getKeyword() == Keyword::Type::LET) ||
+        (tokenizer_->getKeyword() == Keyword::Type::IF) ||
+        (tokenizer_->getKeyword() == Keyword::Type::WHILE) ||
+        (tokenizer_->getKeyword() == Keyword::Type::DO) ||
+        (tokenizer_->getKeyword() == Keyword::Type::RETURN) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void CompilationEngine::writeTabs() {
