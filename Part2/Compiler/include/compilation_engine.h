@@ -45,6 +45,9 @@ public:
 
   // compiles an expression list.
   void compileExpressionList();
+
+  // compiles a subroutine call.
+  void compileSubroutineCall();
 private:
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();

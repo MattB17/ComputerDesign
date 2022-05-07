@@ -36,6 +36,14 @@ public:
                          received_token + ".") {}
 };
 
+class ExpectedOpeningParenthesis : public std::runtime_error {
+public:
+  ExpectedOpeningParenthesis(
+    std::string expected_parenthesis, std::string received_token)
+    : std::runtime_error("Expected " + expected_parenthesis + ". Instead "
+                         "received " + received_token + ".") {}
+};
+
 class ExpectedClosingParenthesis : public std::runtime_error {
 public:
   ExpectedClosingParenthesis(

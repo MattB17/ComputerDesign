@@ -225,7 +225,6 @@ void CompilationEngine::compileExpression() {
 }
 
 void CompilationEngine::compileExpressionList() {
-  tokenizer_->nextToken();
   // It is assumed that the opening bracket is the first symbol so we advance
   // the tokenizer to inside the parameter list.
   tokenizer_->nextToken();
@@ -260,6 +259,44 @@ void CompilationEngine::compileExpressionList() {
     }
   }
   writeTerminatedCloseTag(expression_list_tag);
+  return;
+}
+
+// A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
+// `varName.subroutineName(expressionList)`.
+void CompilationEngine::compileSubroutineCall() {
+  // expect an identifier (either `subroutineName` or `varName`).
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // this means we are in the second case.
+  if (currentTokenIsExpectedSymbol('.')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+
+    // expect an identifier for the subroutine
+    expectIdentifier();
+    writeTerminatedTokenAndTag();
+
+    tokenizer_->nextToken();
+  }
+
+  // Now we expect the start of the expression list.
+  if (!currentTokenIsExpectedSymbol('(')) {
+    throw ExpectedOpeningParenthesis("(", tokenizer_->tokenToString());
+  }
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+  compileExpressionList();
+  tokenizer_->nextToken();
+
+  // Now we expect the end of the expression list.
+  if (!currentTokenIsExpectedSymbol(')')) {
+    throw ExpectedClosingParenthesis(")", tokenizer_->tokenToString());
+  }
+  writeTerminatedTokenAndTag();
   return;
 }
 
