@@ -129,6 +129,7 @@ void CompilationEngine::compileReturn() {
   writeTerminatedOpenTag(return_tag);
 
   // write keyword return.
+  expectKeyword(Keyword::Type::RETURN);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
@@ -157,6 +158,7 @@ void CompilationEngine::compileLet() {
   writeTerminatedOpenTag(let_tag);
 
   // write keyword let.
+  expectKeyword(Keyword::Type::LET);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
@@ -189,7 +191,7 @@ void CompilationEngine::compileLet() {
   }
   tokenizer_->nextToken();
 
-  // handle the expression of the right of the `=`.
+  // handle the expression on the right of the `=`.
   compileExpression();
 
   tokenizer_->nextToken();
@@ -201,6 +203,31 @@ void CompilationEngine::compileLet() {
   writeTerminatedTokenAndTag();
 
   writeTerminatedCloseTag(let_tag);
+  return;
+}
+
+void CompilationEngine::compileDo() {
+  tokenizer_->nextToken();
+  const std::string do_tag = "doStatement";
+  writeTerminatedOpenTag(do_tag);
+
+  // write keyword do.
+  expectKeyword(Keyword::Type::DO);
+  writeTerminatedTokenAndTag();
+
+  // compile the subroutine call.
+  tokenizer_->nextToken();
+  compileSubroutineCall();
+
+  tokenizer_->nextToken();
+
+  // Expect end of statement.
+  if (!currentTokenIsExpectedSymbol(';')) {
+    throw ExpectedStatementEnd(tokenizer_->tokenToString());
+  }
+  writeTerminatedTokenAndTag();
+
+  writeTerminatedCloseTag(do_tag);
   return;
 }
 
@@ -288,9 +315,7 @@ void CompilationEngine::compileSubroutineCall() {
     throw ExpectedOpeningParenthesis("(", tokenizer_->tokenToString());
   }
   writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
   compileExpressionList();
-  tokenizer_->nextToken();
 
   // Now we expect the end of the expression list.
   if (!currentTokenIsExpectedSymbol(')')) {

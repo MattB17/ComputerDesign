@@ -1,5 +1,7 @@
 #include "tokenizer.h"
 
+#include <iostream>
+
 #include "exceptions.h"
 #include "symbol.h"
 #include "util.h"
@@ -96,6 +98,7 @@ bool Tokenizer::nextToken() {
     return false;
   }
   advance();
+  std::cout << tokenToString() << std::endl;
   return true;
 }
 

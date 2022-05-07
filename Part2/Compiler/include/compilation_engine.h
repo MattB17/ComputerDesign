@@ -31,6 +31,9 @@ public:
   // compiles a list of parameters.
   void compileParameterList();
 
+  // compiles a do statement.
+  void compileDo();
+
   // Compiles a let statement.
   void compileLet();
 
