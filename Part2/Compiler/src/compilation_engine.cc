@@ -133,20 +133,23 @@ void CompilationEngine::compileStatements() {
     switch (tokenizer_->getKeyword()) {
       case Keyword::Type::LET:
         compileLet();
+        tokenizer_->nextToken();
         break;
       case Keyword::Type::IF:
         compileIf();
         break;
       case Keyword::Type::WHILE:
         compileWhile();
+        tokenizer_->nextToken();
         break;
       case Keyword::Type::DO:
         compileDo();
+        tokenizer_->nextToken();
         break;
       default:
         compileReturn();
+        tokenizer_->nextToken();
     }
-    tokenizer_->nextToken();
   }
   writeTerminatedCloseTag(statements_tag);
   return;
@@ -235,11 +238,87 @@ void CompilationEngine::compileLet() {
 }
 
 void CompilationEngine::compileIf() {
+  const std::string if_tag = "ifStatement";
+  writeTerminatedOpenTag(if_tag);
+
+  // write keyword if.
+  expectKeyword(Keyword::Type::IF);
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // Expecting opening `(` to start the if condition.
+  if (currentTokenIsExpectedSymbol('(')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "(", if_tag);
+  }
+
+  // compile the expression specifying the if condition.
+  compileExpression();
+
+  tokenizer_->nextToken();
+
+  // Expect closing ')' to end the if condition.
+  if (currentTokenIsExpectedSymbol(')')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), ")", if_tag);
+  }
+
+  // Expect opening '{' to start the if statements.
+  if (currentTokenIsExpectedSymbol('{')) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "{", if_tag);
+  }
+
+  // compile the if statements.
+  compileStatements();
+
+  if (currentTokenIsExpectedSymbol('}')) {
+    writeTerminatedTokenAndTag();
+  } else {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "}", if_tag);
+  }
+
+  // get the next token to determine whether it is an else.
+  tokenizer_->nextToken();
+  const std::string else_tag = "elseStatement";
+
+  if (currentTokenIsExpectedKeyword(Keyword::Type::ELSE)) {
+    writeTerminatedTokenAndTag();
+
+    tokenizer_->nextToken();
+
+    // Expect opening '{' to start the else statements.
+    if (currentTokenIsExpectedSymbol('{')) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+    } else {
+      throw ExpectedSymbol(tokenizer_->tokenToString(), "{", else_tag);
+    }
+
+    // compile the else statements.
+    compileStatements();
+
+    if (currentTokenIsExpectedSymbol('}')) {
+      writeTerminatedTokenAndTag();
+    } else {
+      throw ExpectedSymbol(tokenizer_->tokenToString(), "}", else_tag);
+    }
+  }
+
+  // we get the next token to stay consistent as we retrieved the else before.
+  tokenizer_->nextToken();
+  writeTerminatedCloseTag(if_tag);
   return;
 }
 
 void CompilationEngine::compileWhile() {
-  tokenizer_->nextToken();
   const std::string while_tag = "whileStatement";
   writeTerminatedOpenTag(while_tag);
 
@@ -531,6 +610,11 @@ void CompilationEngine::expectClassVarKeyword() {
 bool CompilationEngine::currentTokenIsExpectedSymbol(char expected_symbol) {
   return ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
           (tokenizer_->getSymbol() == expected_symbol));
+}
+
+bool CompilationEngine::currentTokenIsExpectedKeyword(Keyword::Type k) {
+  return ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
+          (tokenizer_->getKeyword() == k));
 }
 
 bool CompilationEngine::currentTokenIsStatementKeyword() {

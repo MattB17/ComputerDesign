@@ -106,6 +106,10 @@ private:
   // symbol `expected_symbol`.
   bool currentTokenIsExpectedSymbol(char expected_symbol);
 
+  // Returns whether the current token pointed to by the tokenizer is the
+  // keyword `k`.
+  bool currentTokenIsExpectedKeyword(Keyword::Type k);
+
   // Returns whether the current token pointed to by the tokenizer is a
   // statement keyword, one of: `let`, `if`, `while`, `do`, `return`.
   bool currentTokenIsStatementKeyword();

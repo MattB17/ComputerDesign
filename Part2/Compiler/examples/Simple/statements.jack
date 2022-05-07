@@ -1,0 +1,12 @@
+let x = 1;
+if (x) {
+  do func1(true, "The grey fox");
+} else {
+  do func2(false, "Another strings");
+}
+let y = 17;
+while (x) {
+  let x = 0;
+  do func3(1234, "A third string");
+}
+return;
