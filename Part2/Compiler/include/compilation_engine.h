@@ -58,27 +58,33 @@ public:
   // compiles an expression list.
   void compileExpressionList();
 
+private:
   // compiles a subroutine call.
   void compileSubroutineCall();
-private:
+
+  // Compiles additional variables listed in a variable declaration statement.
+  // `compile_tag` is a string representing the name of the statement being
+  // compiled.
+  void compileAdditionalVarDecs(const std::string compile_tag);
+
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();
 
   // Writes the XML opening tag for `tag`.
-  void writeOpenTag(std::string tag);
+  void writeOpenTag(const std::string tag);
 
   // Writes the XML closing tag for `tag`.
-  void writeCloseTag(std::string tag);
+  void writeCloseTag(const std::string tag);
 
   // Writes the current token to the XML stream with the appropriate tag and
   // appends the newline character.
   void writeTerminatedTokenAndTag();
 
   // Writes the XML opening tag for `tag` and appends the newline character.
-  void writeTerminatedOpenTag(std::string tag);
+  void writeTerminatedOpenTag(const std::string tag);
 
   // Writes the XML closing tag for `tag` and appends the newline character.
-  void writeTerminatedCloseTag(std::string tag);
+  void writeTerminatedCloseTag(const std::string tag);
 
   // Handles the expectation that the compiler expects to receive keyword `k`.
   // If `k` is not the next token, an exception is thrown.
@@ -97,6 +103,20 @@ private:
   // Handles a type followed by an identifier. An exception is thrown if the
   // next 2 tokens are not a type and an identifier respectively.
   void handleTypeAndIdentifierPair();
+
+  // Handles the end of a statement. That is, expects and outputs the token `;`.
+  // If the token is not found, an error is generated.
+  void handleStatementEnd(const std::string compile_tag);
+
+  // Handles the expectation of an opening parenthesis `parenthesis`. If the
+  // parenthesis is not found, an error is generated.
+  void handleOpeningParenthesis(
+    char parenthesis, const std::string compile_tag);
+
+  // Handles the expectation of a closing parenthesis `parenthesis`. If the
+  // parenthesis is not found, an error is generated.
+  void handleClosingParenthesis(
+    char parenthesis, const std::string compile_tag);
 
   // Handles the expectation of the compiler receiving a class var keyword.
   // That is, the keywords `static` or `field`.
