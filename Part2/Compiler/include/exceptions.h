@@ -43,6 +43,11 @@ public:
   explicit InvalidClassVarKeyword(std::string received_token);
 };
 
+class InvalidSubroutineDecKeyword : public std::runtime_error {
+public:
+  explicit InvalidSubroutineDecKeyword(std::string received_token);
+};
+
 class MissingIdentifier : public std::runtime_error {
 public:
   explicit MissingIdentifier(std::string received_token);
@@ -51,6 +56,11 @@ public:
 class InvalidType : public std::runtime_error {
 public:
   explicit InvalidType(std::string received_token);
+};
+
+class InvalidFunctionReturnType : public std::runtime_error {
+public:
+  explicit InvalidFunctionReturnType(std::string received_token);
 };
 
 class KeywordNotFound : public std::runtime_error {

@@ -37,6 +37,12 @@ InvalidClassVarKeyword::InvalidClassVarKeyword(std::string received_token)
                        received_token + ".")
 {}
 
+InvalidSubroutineDecKeyword::InvalidSubroutineDecKeyword(
+  std::string received_token) : std::runtime_error(
+  "Expected subroutine declaration keyword, one of: `constructor`, `function`, "
+  "or `method`. Instead received " + received_token + ".")
+{}
+
 MissingIdentifier::MissingIdentifier(std::string received_token)
   : std::runtime_error("Expected a valid identifier. Instead received " +
                        received_token + ".")
@@ -44,6 +50,13 @@ MissingIdentifier::MissingIdentifier(std::string received_token)
 
 InvalidType::InvalidType(std::string received_token) : std::runtime_error(
   "Expected a valid type. Instead received " + received_token + ".")
+{}
+
+InvalidFunctionReturnType::InvalidFunctionReturnType(std::string received_token)
+  : std::runtime_error("Expected a valid function return type: either an "
+                       "identifier representing a class name or one of "
+                       "`void`, `int`, `char`, or `bool`. Instead received " +
+                       received_token + ".")
 {}
 
 KeywordNotFound::KeywordNotFound(Keyword::Type expected_keyword,

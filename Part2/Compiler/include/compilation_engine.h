@@ -60,6 +60,9 @@ public:
   // compiles an expression list.
   void compileExpressionList();
 
+  // Compiles a subroutine declaration.
+  void compileSubroutineDec();
+
   // compiles the body of a subroutine.
   void compileSubroutineBody();
 
@@ -112,6 +115,15 @@ private:
 
   // Handles the expectation of the compiler receiving a valid term.
   void expectTerm();
+
+  // Handles the expectation of a subroutine declaration keyword. That is, one
+  // of `constructor`, `function`, `method`.
+  void expectSubroutineDecKeyword();
+
+  // Handles the expectation of the compiler receiving a valid function return
+  // type. A function return type is either `void`, `int`, `char`, `bool`, or
+  // a valid identifier representing a class.
+  void expectFunctionReturnType();
 
   // Handles a type followed by an identifier. An exception is thrown if the
   // next 2 tokens are not a type and an identifier respectively.

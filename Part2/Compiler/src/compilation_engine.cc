@@ -324,6 +324,35 @@ void CompilationEngine::compileExpressionList() {
   return;
 }
 
+void CompilationEngine::compileSubroutineDec() {
+  const std::string subroutine_tag = "subroutineDec";
+  writeTerminatedOpenTag(subroutine_tag);
+
+  expectSubroutineDecKeyword();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+
+  expectFunctionReturnType();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+
+  // expect a valid identifier for the subroutine name.
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+  tokenizer_->nextToken();
+
+  // Now we expect a parameter list enclosed in `(` and `)`.
+  handleOpeningParenthesis('(', subroutine_tag);
+  compileParameterList();
+  handleClosingParenthesis(')', subroutine_tag);
+
+  // Lastly we compile the body of the subroutine.
+  compileSubroutineBody();
+
+  writeTerminatedCloseTag(subroutine_tag);
+  return;
+}
+
 void CompilationEngine::compileSubroutineBody() {
   const std::string subroutine_tag = "subroutineBody";
   writeTerminatedOpenTag(subroutine_tag);
@@ -488,6 +517,19 @@ void CompilationEngine::expectType() {
   throw InvalidType(tokenizer_->tokenToString());
 }
 
+void CompilationEngine::expectFunctionReturnType() {
+  if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
+    return;
+  }
+  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    if ((Keyword::IsPrimitiveType(tokenizer_->getKeyword())) ||
+        (tokenizer_->getKeyword() == Keyword::Type::VOID)) {
+      return;
+    }
+  }
+  throw InvalidFunctionReturnType(tokenizer_->tokenToString());
+}
+
 void CompilationEngine::expectIdentifier() {
   if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
     return;
@@ -504,6 +546,17 @@ void CompilationEngine::expectTerm() {
     return;
   }
   throw InvalidTerm(tokenizer_->tokenToString());
+}
+
+void CompilationEngine::expectSubroutineDecKeyword() {
+  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    if ((tokenizer_->getKeyword() == Keyword::Type::CONSTRUCTOR) ||
+        (tokenizer_->getKeyword() == Keyword::Type::FUNCTION) ||
+        (tokenizer_->getKeyword() == Keyword::Type::METHOD)) {
+      return;
+    }
+  }
+  throw InvalidSubroutineDecKeyword(tokenizer_->tokenToString());
 }
 
 void CompilationEngine::handleTypeAndIdentifierPair() {
