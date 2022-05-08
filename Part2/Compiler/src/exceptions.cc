@@ -4,7 +4,7 @@ ExpectedSymbol::ExpectedSymbol(std::string received_token,
                                std::string expected_symbol,
                                std::string compile_tag)
   : std::runtime_error("Expected to receive " + expected_symbol +
-                       " as part of " + compile_tag + "Instead received " +
+                       " as part of " + compile_tag + ". Instead received " +
                        received_token + ".")
 {}
 

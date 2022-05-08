@@ -22,7 +22,7 @@ void CompilationEngine::compile() {
 
 void CompilationEngine::compileTemp() {
   tokenizer_->nextToken();
-  compileStatements();
+  compileSubroutineDec();
   return;
 }
 
@@ -71,10 +71,6 @@ void CompilationEngine::compileClassVarDec() {
 }
 
 void CompilationEngine::compileParameterList() {
-  // It is assumed that the opening bracket is the first symbol so we advance
-  // the tokenizer to inside the parameter list.
-  tokenizer_->nextToken();
-
   const std::string parameter_list_tag = "parameterList";
   writeTerminatedOpenTag(parameter_list_tag);
 
@@ -149,9 +145,8 @@ void CompilationEngine::compileReturn() {
   // we haven't hit statement end so we have the form `return expression;`
   if (!currentTokenIsExpectedSymbol(';')) {
     compileExpression();
+    tokenizer_->nextToken();
   }
-
-  tokenizer_->nextToken();
 
   // now we expect statement end.
   handleStatementEnd(return_tag);

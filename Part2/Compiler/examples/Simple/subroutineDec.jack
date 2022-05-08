@@ -1,0 +1,15 @@
+function void someFunc(bool func_selector) {
+  var int x, y;
+  let x = 1;
+  if (func_selector) {
+    do func1(true, "The grey fox");
+  } else {
+    do func2(false, "Another string");
+  }
+  let y = 17;
+  while (x) {
+    let x = 0;
+    do func3(1234, "A third string");
+  }
+  return;
+}
