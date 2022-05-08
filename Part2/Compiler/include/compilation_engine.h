@@ -144,10 +144,6 @@ private:
   void handleClosingParenthesis(
     char parenthesis, const std::string compile_tag);
 
-  // Handles the expectation of the compiler receiving a class var keyword.
-  // That is, the keywords `static` or `field`.
-  void expectClassVarKeyword();
-
   // Returns whether the current token pointed to by the tokenizer is the
   // symbol `expected_symbol`.
   bool currentTokenIsExpectedSymbol(char expected_symbol);

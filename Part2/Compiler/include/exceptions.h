@@ -38,11 +38,6 @@ public:
   explicit InvalidTerm(std::string received_token);
 };
 
-class InvalidClassVarKeyword : public std::runtime_error {
-public:
-  explicit InvalidClassVarKeyword(std::string received_token);
-};
-
 class InvalidSubroutineDecKeyword : public std::runtime_error {
 public:
   explicit InvalidSubroutineDecKeyword(std::string received_token);

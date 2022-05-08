@@ -31,12 +31,6 @@ InvalidTerm::InvalidTerm(std::string received_token) : std::runtime_error(
   "Instead received " + received_token + ".")
 {}
 
-InvalidClassVarKeyword::InvalidClassVarKeyword(std::string received_token)
-  : std::runtime_error("Expected keyword `static` or `field` for class "
-                       "variable declaration. Instead received " +
-                       received_token + ".")
-{}
-
 InvalidSubroutineDecKeyword::InvalidSubroutineDecKeyword(
   std::string received_token) : std::runtime_error(
   "Expected subroutine declaration keyword, one of: `constructor`, `function`, "

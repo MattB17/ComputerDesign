@@ -13,10 +13,10 @@ CompilationEngine::CompilationEngine(std::string jack_file)
 }
 
 void CompilationEngine::compile() {
-  while (tokenizer_->hasMoreTokens()) {
-    tokenizer_->advance();
-    writeTokenWithTag();
-    xml_stream_ << '\n';
+  bool moreClasses = tokenizer_->nextToken();
+  while (moreClasses) {
+    compileClass();
+    moreClasses = (tokenizer_->getTokenType() != TokenType::UNKNOWN);
   }
 }
 
@@ -41,6 +41,7 @@ void CompilationEngine::compileClass() {
   // now we expect a sequence of class var declaration statements.
   while (currentTokenIsClassVarKeyword()) {
     compileClassVarDec();
+    tokenizer_->nextToken();
   }
 
   // then we expect a sequence of subroutine declarations. Everything from now
@@ -59,8 +60,9 @@ void CompilationEngine::compileClass() {
 void CompilationEngine::compileVarDec() {
   const std::string var_tag = "varDec";
   writeTerminatedOpenTag(var_tag);
-  expectKeyword(Keyword::Type::VAR);
-  // Write the `var` token.
+
+  // Write the `var` token. We know this is the current token as this is the
+  // precondition for entering this method.
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
@@ -82,8 +84,9 @@ void CompilationEngine::compileClassVarDec() {
   const std::string class_var_tag = "classVarDec";
   writeTerminatedOpenTag(class_var_tag);
 
-  // Expects a class variable declaration and adds the appropriate tag.
-  expectClassVarKeyword();
+  // Adds a tag for a class variable declaration. We already know it is a class
+  // variable declaration keyword because we check for that before entering
+  // this function.
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
 
@@ -94,8 +97,8 @@ void CompilationEngine::compileClassVarDec() {
   // signifying additional variable names of the same type.
   compileAdditionalVarDecs(class_var_tag);
 
-  // Write the statement end `;`.
-  writeTerminatedTokenAndTag();
+  handleStatementEnd(class_var_tag);
+
   writeTerminatedCloseTag(class_var_tag);
   return;
 }
@@ -388,7 +391,10 @@ void CompilationEngine::compileSubroutineBody() {
     compileVarDec();
     tokenizer_->nextToken();
   }
-  compileStatements();
+
+  if (currentTokenIsStatementKeyword()) {
+    compileStatements();
+  }
 
   handleClosingParenthesis('}', subroutine_tag);
 
@@ -623,15 +629,6 @@ void CompilationEngine::handleClosingParenthesis(
       tokenizer_->tokenToString(), std::string(1, parenthesis), compile_tag);
   }
   return;
-}
-
-void CompilationEngine::expectClassVarKeyword() {
-  if ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
-      ((tokenizer_->getKeyword() == Keyword::Type::STATIC) ||
-       (tokenizer_->getKeyword() == Keyword::Type::FIELD))) {
-    return;
-  }
-  throw InvalidClassVarKeyword(tokenizer_->tokenToString());
 }
 
 bool CompilationEngine::currentTokenIsClassVarKeyword() {
