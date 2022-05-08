@@ -22,6 +22,8 @@ public:
   // Runs the compilation process. Translating the jack file to an XML file.
   void compile();
 
+  void compileTemp();
+
   // Compiles a variable declaration statement.
   void compileVarDec();
 
@@ -66,6 +68,14 @@ private:
   // `compile_tag` is a string representing the name of the statement being
   // compiled.
   void compileAdditionalVarDecs(const std::string compile_tag);
+
+  // Compiles the condition of an if or while statement. The condition has the
+  // form `(expression)` as in `if (expression) { ... }`.
+  void compileStatementCondition(const std::string compile_tag);
+
+  // Compiles a scoped set of statements. That is, a set of statements between
+  // `{` and `}`.
+  void compileScopedStatements(const std::string compile_tag);
 
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();

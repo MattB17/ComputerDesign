@@ -20,6 +20,12 @@ void CompilationEngine::compile() {
   }
 }
 
+void CompilationEngine::compileTemp() {
+  tokenizer_->nextToken();
+  compileStatements();
+  return;
+}
+
 void CompilationEngine::compileVarDec() {
   const std::string var_tag = "varDec";
   writeTerminatedOpenTag(var_tag);
@@ -138,7 +144,6 @@ void CompilationEngine::compileReturn() {
   writeTerminatedOpenTag(return_tag);
 
   // write keyword return.
-  expectKeyword(Keyword::Type::RETURN);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
@@ -164,7 +169,6 @@ void CompilationEngine::compileLet() {
   writeTerminatedOpenTag(let_tag);
 
   // write keyword let.
-  expectKeyword(Keyword::Type::LET);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
@@ -181,13 +185,7 @@ void CompilationEngine::compileLet() {
     tokenizer_->nextToken();
     compileExpression();
     tokenizer_->nextToken();
-    if (currentTokenIsExpectedSymbol(']')) {
-      writeTerminatedTokenAndTag();
-      tokenizer_->nextToken();
-    } else {
-      throw ExpectedClosingParenthesis(
-        tokenizer_->tokenToString(), "]", let_tag);
-    }
+    handleClosingParenthesis(']', let_tag);
   }
 
   // handle the equal sign
@@ -215,46 +213,21 @@ void CompilationEngine::compileIf() {
   writeTerminatedOpenTag(if_tag);
 
   // write keyword if.
-  expectKeyword(Keyword::Type::IF);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
 
-  // Expecting opening `(` to start the if condition.
-  handleOpeningParenthesis('(', if_tag);
-
-  // compile the expression specifying the if condition.
-  compileExpression();
-
-  tokenizer_->nextToken();
-
-  // Expect closing ')' to end the if condition.
-  handleClosingParenthesis(')', if_tag);
-
-  // Expect opening '{' to start the if statements.
-  handleOpeningParenthesis('{', if_tag);
-
-  // compile the if statements.
-  compileStatements();
-
-  handleClosingParenthesis('}', if_tag);
+  compileStatementCondition(if_tag);
+  compileScopedStatements(if_tag);
 
   // get the next token to determine whether it is an else.
   tokenizer_->nextToken();
-  const std::string else_tag = "elseStatement";
 
   if (currentTokenIsExpectedKeyword(Keyword::Type::ELSE)) {
     writeTerminatedTokenAndTag();
 
     tokenizer_->nextToken();
-
-    // Expect opening '{' to start the else statements.
-    handleOpeningParenthesis('{', else_tag);
-
-    // compile the else statements.
-    compileStatements();
-
-    handleClosingParenthesis('}', else_tag);
+    compileScopedStatements("elseStatement");
   }
 
   // we get the next token to stay consistent as we retrieved the else before.
@@ -268,29 +241,12 @@ void CompilationEngine::compileWhile() {
   writeTerminatedOpenTag(while_tag);
 
   // write keyword while.
-  expectKeyword(Keyword::Type::WHILE);
   writeTerminatedTokenAndTag();
 
   tokenizer_->nextToken();
 
-  // Expect opening `(` to start the while condition.
-  handleOpeningParenthesis('(', while_tag);
-
-  // compile the expression specifying the while condition.
-  compileExpression();
-
-  tokenizer_->nextToken();
-
-  // Expect closing ')' to end the while condition.
-  handleClosingParenthesis(')', while_tag);
-
-  // Expect opening '{' to start the while statements.
-  handleOpeningParenthesis('{', while_tag);
-
-  // compile the while statements.
-  compileStatements();
-
-  handleClosingParenthesis('}', while_tag);
+  compileStatementCondition(while_tag);
+  compileScopedStatements(while_tag);
 
   writeTerminatedCloseTag(while_tag);
   return;
@@ -301,7 +257,6 @@ void CompilationEngine::compileDo() {
   writeTerminatedOpenTag(do_tag);
 
   // write keyword do.
-  expectKeyword(Keyword::Type::DO);
   writeTerminatedTokenAndTag();
 
   // compile the subroutine call.
@@ -433,39 +388,45 @@ void CompilationEngine::compileAdditionalVarDecs(
   return;
 }
 
+void CompilationEngine::compileStatementCondition(
+  const std::string compile_tag) {
+  handleOpeningParenthesis('(', compile_tag);
+  compileExpression();
+  tokenizer_->nextToken();
+  handleClosingParenthesis(')', compile_tag);
+  return;
+}
+
+void CompilationEngine::compileScopedStatements(const std::string compile_tag) {
+  handleOpeningParenthesis('{', compile_tag);
+  compileStatements();
+  handleClosingParenthesis('}', compile_tag);
+  return;
+}
+
 void CompilationEngine::writeTokenWithTag() {
   std::string tag;
   switch (tokenizer_->getTokenType()) {
     case TokenType::KEYWORD:
       tag = "keyword";
-      writeOpenTag(tag);
-      xml_stream_ << " " << Keyword::KeywordToString(tokenizer_->getKeyword());
       break;
     case TokenType::SYMBOL:
       tag = "symbol";
-      writeOpenTag(tag);
-      xml_stream_ << " " << tokenizer_->getSymbol();
       break;
     case TokenType::IDENTIFIER:
       tag = "identifier";
-      writeOpenTag(tag);
-      xml_stream_ << " " << tokenizer_->getIdentifier();
       break;
     case TokenType::INT_CONST:
       tag = "intConstant";
-      writeOpenTag(tag);
-      xml_stream_ << " " << tokenizer_->getIntVal();
       break;
     case TokenType::STRING_CONST:
       tag = "stringConstant";
-      writeOpenTag(tag);
-      xml_stream_ << " " << tokenizer_->getStringVal();
       break;
     default:
       tag = "unknown";
-      writeOpenTag(tag);
   }
-  xml_stream_ << " ";
+  writeOpenTag(tag);
+  xml_stream_ << " " << tokenizer_->tokenToString() << " ";
   writeCloseTag(tag);
 }
 
