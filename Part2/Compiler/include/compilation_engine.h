@@ -22,7 +22,8 @@ public:
   // Runs the compilation process. Translating the jack file to an XML file.
   void compile();
 
-  void compileTemp();
+  // Runs the compilation process for an entire class.
+  void compileClass();
 
   // Compiles a variable declaration statement.
   void compileVarDec();
@@ -158,6 +159,10 @@ private:
   // Returns whether the current token pointed to by the tokenizer is a
   // statement keyword, one of: `let`, `if`, `while`, `do`, `return`.
   bool currentTokenIsStatementKeyword();
+
+  // Returns whether the current token pointed to by the tokenizer is a
+  // class var keyword, one of: `static` or `field`.
+  bool currentTokenIsClassVarKeyword();
 
   // Writes `num_tabs_` tabs to the `xml_stream_`.
   void writeTabs();

@@ -95,6 +95,9 @@ void Tokenizer::advance() {
 
 bool Tokenizer::nextToken() {
   if (!hasMoreTokens()) {
+    token_type_ = TokenType::UNKNOWN;
+    token_stream_.clear();
+    token_stream_.str(std::string());
     return false;
   }
   advance();

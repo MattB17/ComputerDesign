@@ -20,9 +20,39 @@ void CompilationEngine::compile() {
   }
 }
 
-void CompilationEngine::compileTemp() {
+void CompilationEngine::compileClass() {
+  const std::string class_tag = "class";
+  writeTerminatedOpenTag(class_tag);
+
+  expectKeyword(Keyword::Type::CLASS);
+  writeTerminatedTokenAndTag();
+
   tokenizer_->nextToken();
-  compileSubroutineDec();
+
+  // expect an identifier for the class name.
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+
+  tokenizer_->nextToken();
+
+  // opening bracket to start the class definition.
+  handleOpeningParenthesis('{', class_tag);
+
+  // now we expect a sequence of class var declaration statements.
+  while (currentTokenIsClassVarKeyword()) {
+    compileClassVarDec();
+  }
+
+  // then we expect a sequence of subroutine declarations. Everything from now
+  // until the closing `}` should be part of a subroutine declaration.
+  while (!currentTokenIsExpectedSymbol('}')) {
+    compileSubroutineDec();
+  }
+
+  // lastly we compile the closing parenthesis
+  handleClosingParenthesis('}', class_tag);
+
+  writeTerminatedCloseTag(class_tag);
   return;
 }
 
@@ -602,6 +632,16 @@ void CompilationEngine::expectClassVarKeyword() {
     return;
   }
   throw InvalidClassVarKeyword(tokenizer_->tokenToString());
+}
+
+bool CompilationEngine::currentTokenIsClassVarKeyword() {
+  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    if ((tokenizer_->getKeyword() == Keyword::Type::STATIC) ||
+        (tokenizer_->getKeyword() == Keyword::Type::FIELD)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool CompilationEngine::currentTokenIsExpectedSymbol(char expected_symbol) {
