@@ -60,6 +60,9 @@ public:
   // compiles an expression list.
   void compileExpressionList();
 
+  // compiles the body of a subroutine.
+  void compileSubroutineBody();
+
 private:
   // compiles a subroutine call.
   void compileSubroutineCall();

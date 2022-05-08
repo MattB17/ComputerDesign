@@ -42,8 +42,7 @@ void CompilationEngine::compileVarDec() {
   // signifying additional variable names of the same type.
   compileAdditionalVarDecs(var_tag);
 
-  // Write the statement end `;`.
-  writeTerminatedTokenAndTag();
+  handleStatementEnd(var_tag);
 
   writeTerminatedCloseTag(var_tag);
   return;
@@ -124,7 +123,6 @@ void CompilationEngine::compileStatements() {
         break;
       case Keyword::Type::WHILE:
         compileWhile();
-        tokenizer_->nextToken();
         break;
       case Keyword::Type::DO:
         compileDo();
@@ -220,9 +218,6 @@ void CompilationEngine::compileIf() {
   compileStatementCondition(if_tag);
   compileScopedStatements(if_tag);
 
-  // get the next token to determine whether it is an else.
-  tokenizer_->nextToken();
-
   if (currentTokenIsExpectedKeyword(Keyword::Type::ELSE)) {
     writeTerminatedTokenAndTag();
 
@@ -230,8 +225,6 @@ void CompilationEngine::compileIf() {
     compileScopedStatements("elseStatement");
   }
 
-  // we get the next token to stay consistent as we retrieved the else before.
-  tokenizer_->nextToken();
   writeTerminatedCloseTag(if_tag);
   return;
 }
@@ -328,6 +321,24 @@ void CompilationEngine::compileExpressionList() {
     }
   }
   writeTerminatedCloseTag(expression_list_tag);
+  return;
+}
+
+void CompilationEngine::compileSubroutineBody() {
+  const std::string subroutine_tag = "subroutineBody";
+  writeTerminatedOpenTag(subroutine_tag);
+
+  handleOpeningParenthesis('{', subroutine_tag);
+
+  while (currentTokenIsExpectedKeyword(Keyword::Type::VAR)) {
+    compileVarDec();
+    tokenizer_->nextToken();
+  }
+  compileStatements();
+
+  handleClosingParenthesis('}', subroutine_tag);
+
+  writeTerminatedCloseTag(subroutine_tag);
   return;
 }
 
