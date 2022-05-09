@@ -296,10 +296,51 @@ void CompilationEngine::compileDo() {
 void CompilationEngine::compileTerm() {
   const std::string term_tag = "term";
   writeTerminatedOpenTag(term_tag);
-  expectTerm();
 
-  // Write the term and its appropriate tags.
-  writeTerminatedTokenAndTag();
+  if (tokenizer_->getTokenType() == TokenType::SYMBOL) {
+    if (IsUnaryOp(tokenizer_->getSymbol())) {
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+      compileTerm();
+    } else if (tokenizer_->getSymbol() = '(') {
+      handleOpeningParenthesis('(', term_tag);
+      compileExpression();
+      handleClosingParenthesis(')', term_tag);
+    } else {
+      throw InvalidTerm(tokenizer_->tokenToString());
+    }
+  } else if (currentTokenIsSimpleTerm()) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+  } else {
+    // we must have an identifier. Either a simple variable name, an array
+    // element, or a subroutine call.
+    expectIdentifier();
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+
+    // After here, if it is just a variable name then none of the conditions
+    // are true, and we just skip to the end.
+
+    if (currentTokenIsExpectedSymbol('[')) {
+      // In this case we have an array element.
+      handleOpeningParenthesis('[', term_tag);
+      compileExpression();
+      handleClosingParenthesis(']', term_tag);
+    } else if (currentTokenIsExpectedSymbol('(')) {
+      // We have a subroutine call of the type `methodName(expressionList)`.
+      handleOpeningParenthesis('(', term_tag);
+      compileExpressionList();
+      handleClosingParenthesis(')', term_tag);
+    } else if (currentTokenIsExpectedSymbol('.')) {
+      // We have a subroutine call of the type
+      // `className.methodName(expressionList)`. In this case we write the `.`
+      // but then note that `methodName(expressionList)` is a subroutine call.
+      writeTerminatedTokenAndTag();
+      tokenizer_->nextToken();
+      compileSubroutineCall();
+    }
+  }
 
   writeTerminatedCloseTag(term_tag);
   return;
@@ -308,7 +349,18 @@ void CompilationEngine::compileTerm() {
 void CompilationEngine::compileExpression() {
   const std::string expression_tag = "expression";
   writeTerminatedOpenTag(expression_tag);
+
+  // We start with a term.
   compileTerm();
+
+  // Then we check for a binary op to tell us there are more terms in the
+  // expression.
+  while (currentTokenIsBinaryOp()) {
+    writeTerminatedTokenAndTag();
+    tokenizer_->nextToken();
+    compileTerm();
+  }
+
   writeTerminatedCloseTag(expression_tag);
   return;
 }
@@ -330,8 +382,6 @@ void CompilationEngine::compileExpressionList() {
   // expect an expression.
   compileExpression();
 
-  tokenizer_->nextToken();
-
   // Check for more elements in the expression list. Either we have hit the end
   // of the list (signified by `)`) or we get a `,` signifying more parameters.
   while (!currentTokenIsExpectedSymbol(')')) {
@@ -342,7 +392,6 @@ void CompilationEngine::compileExpressionList() {
 
       // Expect an expression.
       compileExpression();
-      tokenizer_->nextToken();
     } else {
       throw ExpectedClosingParenthesis(
         tokenizer_->tokenToString(), ")", expression_list_tag);
@@ -413,31 +462,18 @@ void CompilationEngine::compileSubroutineCall() {
   tokenizer_->nextToken();
 
   // this means we are in the second case.
-  if (currentTokenIsExpectedSymbol('.')) {
+  while (currentTokenIsExpectedSymbol('.')) {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
 
-    // expect an identifier for the subroutine
-    expectIdentifier();
-    writeTerminatedTokenAndTag();
-
-    tokenizer_->nextToken();
+    compileSubroutineCall();
   }
 
   // Now we expect the start of the expression list.
-  if (!currentTokenIsExpectedSymbol('(')) {
-    throw ExpectedOpeningParenthesis(
-      tokenizer_->tokenToString(), "(", call_tag);
-  }
-  writeTerminatedTokenAndTag();
+  handleOpeningParenthesis('(', call_tag);
   compileExpressionList();
+  handleClosingParenthesis(')', call_tag);
 
-  // Now we expect the end of the expression list.
-  if (!currentTokenIsExpectedSymbol(')')) {
-    throw ExpectedClosingParenthesis(
-      tokenizer_->tokenToString(), ")", call_tag);
-  }
-  writeTerminatedTokenAndTag();
   return;
 }
 
@@ -568,15 +604,14 @@ void CompilationEngine::expectIdentifier() {
   throw MissingIdentifier(tokenizer_->tokenToString());
 }
 
-void CompilationEngine::expectTerm() {
+bool CompilationEngine::currentTokenIsSimpleTerm() {
   if ((tokenizer_->getTokenType() == TokenType::STRING_CONST) ||
       (tokenizer_->getTokenType() == TokenType::INT_CONST) ||
-      (tokenizer_->getTokenType() == TokenType::IDENTIFIER) ||
       ((tokenizer_->getTokenType() == TokenType::KEYWORD) &&
        (Keyword::IsKeywordConstant(tokenizer_->getKeyword())))) {
-    return;
+    return true;
   }
-  throw InvalidTerm(tokenizer_->tokenToString());
+  return false;
 }
 
 void CompilationEngine::expectSubroutineDecKeyword() {
@@ -588,6 +623,14 @@ void CompilationEngine::expectSubroutineDecKeyword() {
     }
   }
   throw InvalidSubroutineDecKeyword(tokenizer_->tokenToString());
+}
+
+bool CompilationEngine::currentTokenIsBinaryOp() {
+  if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
+      (IsBinaryOp(tokenizer_->getSymbol()))) {
+    return true;
+  }
+  return false;
 }
 
 void CompilationEngine::handleTypeAndIdentifierPair() {

@@ -114,9 +114,6 @@ private:
   // Handles the expection of the compiler receiving a valid identifier.
   void expectIdentifier();
 
-  // Handles the expectation of the compiler receiving a valid term.
-  void expectTerm();
-
   // Handles the expectation of a subroutine declaration keyword. That is, one
   // of `constructor`, `function`, `method`.
   void expectSubroutineDecKeyword();
@@ -159,6 +156,15 @@ private:
   // Returns whether the current token pointed to by the tokenizer is a
   // class var keyword, one of: `static` or `field`.
   bool currentTokenIsClassVarKeyword();
+
+  // Returns whether the current token pointed to by the tokenizer is a simple
+  // term. That is, an integer constant, a string constant, or a keyword
+  // constant - one of: `true`, `false`, `null`, or `this`.
+  bool currentTokenIsSimpleTerm();
+
+  // Returns whether the current token pointed to by the tokenizer is a binary
+  // operand.
+  bool currentTokenIsBinaryOp();
 
   // Writes `num_tabs_` tabs to the `xml_stream_`.
   void writeTabs();
