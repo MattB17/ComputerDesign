@@ -6,13 +6,10 @@
 #include "exceptions.h"
 #include "util.h"
 
-CompilationEngine::CompilationEngine(std::string jack_file)
-  : tokenizer_(std::make_unique<Tokenizer>(jack_file)), num_tabs_(0)
-{
-  xml_stream_.open(jackFileToXmlFile(jack_file));
-}
+CompilationEngine::CompilationEngine() : num_tabs_(0) {}
 
-void CompilationEngine::compile() {
+void CompilationEngine::compile(std::string jack_file) {
+  setJackFile(jack_file);
   bool moreClasses = tokenizer_->nextToken();
   while (moreClasses) {
     compileClass();
@@ -144,20 +141,25 @@ void CompilationEngine::compileStatements() {
   while (currentTokenIsStatementKeyword()) {
     switch (tokenizer_->getKeyword()) {
       case Keyword::Type::LET:
+        std::cout << "Compiling let statement" << std::endl;
         compileLet();
         tokenizer_->nextToken();
         break;
       case Keyword::Type::IF:
+        std::cout << "Compiling if statement" << std::endl;
         compileIf();
         break;
       case Keyword::Type::WHILE:
+        std::cout << "Compiling while statement" << std::endl;
         compileWhile();
         break;
       case Keyword::Type::DO:
+        std::cout << "Compiling do statement" << std::endl;
         compileDo();
         tokenizer_->nextToken();
         break;
       default:
+        std::cout << "Compiling return statement" << std::endl;
         compileReturn();
         tokenizer_->nextToken();
     }
@@ -178,7 +180,6 @@ void CompilationEngine::compileReturn() {
   // we haven't hit statement end so we have the form `return expression;`
   if (!currentTokenIsExpectedSymbol(';')) {
     compileExpression();
-    tokenizer_->nextToken();
   }
 
   // now we expect statement end.
@@ -210,7 +211,6 @@ void CompilationEngine::compileLet() {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
     compileExpression();
-    tokenizer_->nextToken();
     handleClosingParenthesis(']', let_tag);
   }
 
@@ -224,8 +224,6 @@ void CompilationEngine::compileLet() {
 
   // handle the expression on the right of the `=`.
   compileExpression();
-
-  tokenizer_->nextToken();
 
   // now we expect statement end.
   handleStatementEnd(let_tag);
@@ -284,8 +282,6 @@ void CompilationEngine::compileDo() {
   tokenizer_->nextToken();
   compileSubroutineCall();
 
-  tokenizer_->nextToken();
-
   // Expect end of statement.
   handleStatementEnd(do_tag);
 
@@ -302,7 +298,7 @@ void CompilationEngine::compileTerm() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       compileTerm();
-    } else if (tokenizer_->getSymbol() = '(') {
+    } else if (tokenizer_->getSymbol() == '(') {
       handleOpeningParenthesis('(', term_tag);
       compileExpression();
       handleClosingParenthesis(')', term_tag);
@@ -366,9 +362,6 @@ void CompilationEngine::compileExpression() {
 }
 
 void CompilationEngine::compileExpressionList() {
-  // It is assumed that the opening bracket is the first symbol so we advance
-  // the tokenizer to inside the parameter list.
-  tokenizer_->nextToken();
 
   const std::string expression_list_tag = "expressionList";
   writeTerminatedOpenTag(expression_list_tag);
@@ -451,6 +444,12 @@ void CompilationEngine::compileSubroutineBody() {
   return;
 }
 
+void CompilationEngine::setJackFile(std::string jack_file) {
+  tokenizer_ = std::make_unique<Tokenizer>(jack_file);
+  num_tabs_ = 0;
+  xml_stream_.open(jackFileToXmlFile(jack_file));
+}
+
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
 // `varName.subroutineName(expressionList)`.
 void CompilationEngine::compileSubroutineCall() {
@@ -462,15 +461,17 @@ void CompilationEngine::compileSubroutineCall() {
   tokenizer_->nextToken();
 
   // this means we are in the second case.
-  while (currentTokenIsExpectedSymbol('.')) {
+  if (currentTokenIsExpectedSymbol('.')) {
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
 
     compileSubroutineCall();
+    return;
   }
 
   // Now we expect the start of the expression list.
   handleOpeningParenthesis('(', call_tag);
+  std::cout << "Starting expression list" << std::endl;
   compileExpressionList();
   handleClosingParenthesis(')', call_tag);
 
@@ -499,7 +500,6 @@ void CompilationEngine::compileStatementCondition(
   const std::string compile_tag) {
   handleOpeningParenthesis('(', compile_tag);
   compileExpression();
-  tokenizer_->nextToken();
   handleClosingParenthesis(')', compile_tag);
   return;
 }

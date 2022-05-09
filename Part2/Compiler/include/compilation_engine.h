@@ -12,7 +12,7 @@
 
 class CompilationEngine {
 public:
-  CompilationEngine(std::string jack_file);
+  CompilationEngine();
   CompilationEngine(const CompilationEngine&) = delete;
   CompilationEngine &operator=(const CompilationEngine&) = delete;
   CompilationEngine(CompilationEngine&&) = delete;
@@ -20,7 +20,7 @@ public:
   ~CompilationEngine() {}
 
   // Runs the compilation process. Translating the jack file to an XML file.
-  void compile();
+  void compile(std::string jack_file);
 
   // Runs the compilation process for an entire class.
   void compileClass();
@@ -68,6 +68,9 @@ public:
   void compileSubroutineBody();
 
 private:
+  // Sets the jack file currently being compiled.
+  void setJackFile(std::string jack_file);
+
   // compiles a subroutine call.
   void compileSubroutineCall();
 
