@@ -170,7 +170,7 @@ private:
   bool currentTokenIsBinaryOp();
 
   // Writes `num_tabs_` tabs to the `xml_stream_`.
-  void writeTabs();
+  void writeSpaces();
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
@@ -178,8 +178,8 @@ private:
   // A stream representing the to which the compilation engine writes output.
   std::ofstream xml_stream_;
 
-  // The number of tabs (or level of nesting) for the xml tags.
-  int num_tabs_;
+  // The number of spaces (or level of nesting) for the xml tags.
+  int num_spaces_;
 };
 
 #endif  // COMPILATION_ENGINE_H

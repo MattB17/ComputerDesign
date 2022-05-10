@@ -14,6 +14,13 @@ static std::unordered_set<char> const otherSymbols = {
   '{', '}', '(', ')', '[', ']', '.', ',', ';'
 };
 
+static std::unordered_map<char, std::string> const xmlSymbolMap = {
+  {'<', "&lt;"},
+  {'>', "&gt;"},
+  {'"', "&quot;"},
+  {'&', "&amp;"}
+};
+
 static bool IsSymbol(const char curr_char) {
   return ((otherSymbols.find(curr_char) != otherSymbols.end()) ||
           (binaryOps.find(curr_char) != binaryOps.end()) ||
@@ -26,6 +33,14 @@ static bool IsUnaryOp(const char curr_char) {
 
 static bool IsBinaryOp(const char curr_char) {
   return (binaryOps.find(curr_char) != binaryOps.end());
+}
+
+static std::string SymbolToString(const char curr_char) {
+  auto xml_pair = xmlSymbolMap.find(curr_char);
+  if (xml_pair != xmlSymbolMap.end()) {
+    return xml_pair->second;
+  }
+  return std::string(1, curr_char);
 }
 
 #endif  // SYMBOL_H

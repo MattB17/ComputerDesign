@@ -34,7 +34,7 @@ public:
   const TokenType getTokenType() { return token_type_; }
 
   // Gets the current token as a string.
-  std::string tokenToString() { return token_stream_.str(); }
+  std::string tokenToString();
 
   // Returns the keyword corresponding to the current token.
   // Should only be called if the token type is KEYWORD.

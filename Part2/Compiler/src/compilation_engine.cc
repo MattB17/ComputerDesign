@@ -6,7 +6,7 @@
 #include "exceptions.h"
 #include "util.h"
 
-CompilationEngine::CompilationEngine() : num_tabs_(0) {}
+CompilationEngine::CompilationEngine() : num_spaces_(0) {}
 
 void CompilationEngine::compile(std::string jack_file) {
   setJackFile(jack_file);
@@ -447,7 +447,7 @@ void CompilationEngine::compileSubroutineBody() {
 
 void CompilationEngine::setJackFile(std::string jack_file) {
   tokenizer_ = std::make_unique<Tokenizer>(jack_file);
-  num_tabs_ = 0;
+  num_spaces_ = 0;
   xml_stream_.open(jackFileToXmlFile(jack_file));
 }
 
@@ -525,7 +525,7 @@ void CompilationEngine::writeTokenWithTag() {
       tag = "identifier";
       break;
     case TokenType::INT_CONST:
-      tag = "intConstant";
+      tag = "integerConstant";
       break;
     case TokenType::STRING_CONST:
       tag = "stringConstant";
@@ -547,21 +547,21 @@ void CompilationEngine::writeCloseTag(const std::string tag) {
 }
 
 void CompilationEngine::writeTerminatedTokenAndTag() {
-  writeTabs();
+  writeSpaces();
   writeTokenWithTag();
   xml_stream_ << '\n';
 }
 
 void CompilationEngine::writeTerminatedOpenTag(const std::string tag) {
-  writeTabs();
+  writeSpaces();
   writeOpenTag(tag);
   xml_stream_ << '\n';
-  num_tabs_++;
+  num_spaces_ = num_spaces_ + 2;
 }
 
 void CompilationEngine::writeTerminatedCloseTag(const std::string tag) {
-  num_tabs_--;
-  writeTabs();
+  num_spaces_ = num_spaces_ - 2;
+  writeSpaces();
   writeCloseTag(tag);
   xml_stream_ << '\n';
 }
@@ -708,8 +708,8 @@ bool CompilationEngine::currentTokenIsStatementKeyword() {
   return false;
 }
 
-void CompilationEngine::writeTabs() {
-  for (int i = 0; i < num_tabs_; i++) {
-    xml_stream_ << '\t';
+void CompilationEngine::writeSpaces() {
+  for (int i = 0; i < num_spaces_; i++) {
+    xml_stream_ << ' ';
   }
 }

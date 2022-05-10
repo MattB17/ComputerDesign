@@ -105,6 +105,14 @@ bool Tokenizer::nextToken() {
   return true;
 }
 
+std::string Tokenizer::tokenToString() {
+  if (token_type_ == TokenType::SYMBOL) {
+    const char symbol_char = token_stream_.str().c_str()[0];
+    return SymbolToString(symbol_char);
+  }
+  return token_stream_.str();
+}
+
 const Keyword::Type Tokenizer::getKeyword() {
   return Keyword::GetKeywordFromString(token_stream_.str());
 }
