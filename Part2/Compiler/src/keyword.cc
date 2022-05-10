@@ -8,6 +8,7 @@ std::unordered_map<std::string, Keyword::Type> const Keyword::keyword_map_ =
     {"constructor", Type::CONSTRUCTOR},
     {"int", Type::INT},
     {"bool", Type::BOOLEAN},
+    {"boolean", Type::BOOLEAN},
     {"char", Type::CHAR},
     {"void", Type::VOID},
     {"var", Type::VAR},

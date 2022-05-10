@@ -1,6 +1,5 @@
 #include "compilation_engine.h"
 
-#include <iostream>
 #include <string>
 
 #include "exceptions.h"
@@ -142,25 +141,20 @@ void CompilationEngine::compileStatements() {
   while (currentTokenIsStatementKeyword()) {
     switch (tokenizer_->getKeyword()) {
       case Keyword::Type::LET:
-        std::cout << "Compiling let statement" << std::endl;
         compileLet();
         tokenizer_->nextToken();
         break;
       case Keyword::Type::IF:
-        std::cout << "Compiling if statement" << std::endl;
         compileIf();
         break;
       case Keyword::Type::WHILE:
-        std::cout << "Compiling while statement" << std::endl;
         compileWhile();
         break;
       case Keyword::Type::DO:
-        std::cout << "Compiling do statement" << std::endl;
         compileDo();
         tokenizer_->nextToken();
         break;
       default:
-        std::cout << "Compiling return statement" << std::endl;
         compileReturn();
         tokenizer_->nextToken();
     }
@@ -472,7 +466,6 @@ void CompilationEngine::compileSubroutineCall() {
 
   // Now we expect the start of the expression list.
   handleOpeningParenthesis('(', call_tag);
-  std::cout << "Starting expression list" << std::endl;
   compileExpressionList();
   handleClosingParenthesis(')', call_tag);
 
