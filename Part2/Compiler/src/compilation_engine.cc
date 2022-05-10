@@ -15,6 +15,7 @@ void CompilationEngine::compile(std::string jack_file) {
     compileClass();
     moreClasses = (tokenizer_->getTokenType() != TokenType::UNKNOWN);
   }
+  xml_stream_.close();
 }
 
 void CompilationEngine::compileClass() {

@@ -35,7 +35,7 @@ static std::string jackFileToXmlFile(std::string jack_file) {
   return ss.str();
 }
 
-static std::string endsInExtension(std::string file_path, std::string ext) {
+static bool endsInExtension(std::string file_path, std::string ext) {
   size_t extension_pos = file_path.find_last_of(ext);
   return (extension_pos == file_path.size() - 1);
 }
