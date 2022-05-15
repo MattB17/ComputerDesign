@@ -7,6 +7,16 @@
 #include "keyword.h"
 #include "util.h"
 
+class RedefinitionOfSymbol : public std::runtime_error {
+public:
+  RedefinitionOfSymbol(std::string symbol_name);
+};
+
+class UndefinedSymbol : public std::runtime_error {
+public:
+  UndefinedSymbol(std::string symbol_name);
+}
+
 class ExpectedSymbol : public std::runtime_error {
 public:
   ExpectedSymbol(std::string received_token,
