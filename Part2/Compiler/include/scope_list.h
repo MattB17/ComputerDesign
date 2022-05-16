@@ -5,6 +5,10 @@
 // However, this could be used for another language with an arbitrary number
 // of scopes.
 #include <memory>
+#include <string>
+
+#include "segment.h"
+#include "symbol_table.h"
 
 class ScopeNode {
 public:
@@ -35,6 +39,11 @@ public:
   void newScope();
 
   void removeCurrentScope();
+
+  void addVariable(std::string var_name, std::string var_type,
+                   Segment var_segment, int var_offset);
+
+  SymbolData getVariableData(std::string var_name);
 private:
   ScopeNode* curr_scope_;
 }

@@ -1,3 +1,4 @@
+#include "exception.h"
 #include "symbol_table.h"
 
 void SymbolTable::addSymbol(std::string symbol_name, std::string symbol_type,
