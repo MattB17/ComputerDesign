@@ -4,7 +4,9 @@
 // The Jack language only has 2 scopes: class level and subroutine level.
 // However, this could be used for another language with an arbitrary number
 // of scopes.
-#include <memory>
+#ifndef SCOPE_LIST_H
+#define SCOPE_LIST_H
+
 #include <string>
 
 #include "segment.h"
@@ -17,13 +19,13 @@ public:
   ScopeNode &operator=(const ScopeNode&) = delete;
   ScopeNode(ScopeNode&&) = delete;
   ScopeNode &operator=(ScopeNode&&) = delete;
-  ~ScopeNode() {}
+  ~ScopeNode();
 
-  std::unique_ptr<SymbolTable> getSymbolTable() { return symbol_table_; }
+  SymbolTable* getSymbolTable() { return symbol_table_; }
   ScopeNode* getParentScope() { return parent_scope_; }
   void setParentScope(ScopeNode* parent_scope) { parent_scope_ = parent_scope; }
 private:
-  std::unique_ptr<SymbolTable> symbol_table_;
+  SymbolTable* symbol_table_;
   ScopeNode* parent_scope_;
 };
 
@@ -40,10 +42,12 @@ public:
 
   void removeCurrentScope();
 
-  void addVariable(std::string var_name, std::string var_type,
-                   Segment var_segment, int var_offset);
+  void addVariable(
+    std::string var_name, std::string var_type, Segment var_segment);
 
   SymbolData getVariableData(std::string var_name);
 private:
   ScopeNode* curr_scope_;
-}
+};
+
+#endif  // SCOPE_LIST_H

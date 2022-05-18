@@ -1,4 +1,6 @@
 // An enum storing the kinds of variables that can be declared in Jack.
+#ifndef SEGMENT_H
+#define SEGMENT_H
 
 enum class Segment {
   FIELD = 0,
@@ -7,3 +9,5 @@ enum class Segment {
   LOCAL = 3,
   UNKNOWN = 4
 };
+
+#endif  // SEGMENT_H

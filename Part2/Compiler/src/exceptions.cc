@@ -2,7 +2,8 @@
 
 InvalidDeclaration::InvalidDeclaration(std::string var_name)
   : std::runtime_error("Declaration of " + var_name + " is invalid. Variable "
-                       "declarations must be done inside a class.");
+                       "declarations must be done inside a class.")
+{}
 
 RedefinitionOfSymbol::RedefinitionOfSymbol(std::string symbol_name)
   : std::runtime_error("Redefinition of variable " + symbol_name + ". " +

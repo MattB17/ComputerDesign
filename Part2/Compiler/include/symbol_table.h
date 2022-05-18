@@ -1,4 +1,7 @@
 // A class to store the variables in a particular scope.
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
+
 #include <string>
 #include <unordered_map>
 
@@ -12,19 +15,22 @@ struct SymbolData {
 
 class SymbolTable {
 public:
-  SymbolTable() {}
+  SymbolTable();
   SymbolTable(const SymbolTable&) = delete;
   SymbolTable &operator=(const SymbolTable&) = delete;
   SymbolTable(SymbolTable&&) = delete;
   SymbolTable &operator=(SymbolTable&&) = delete;
   ~SymbolTable() {}
 
-  void addSymbol(std::string symbol_name, std::string symbol_type,
-                 Segment symbol_segment, int symbol_offset);
+  void addSymbol(
+    std::string symbol_name, std::string symbol_type, Segment symbol_segment);
 
   bool hasSymbol(std::string symbol_name);
 
   SymbolData getSymbolData(std::string symbol_name);
 private:
   std::unordered_map<std::string, SymbolData> symbol_map_;
+  std::unordered_map<Segment, int> segment_counts_;
 };
+
+#endif  // SYMBOL_TABLE_H

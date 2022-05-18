@@ -1,15 +1,24 @@
-#include "exception.h"
+#include "exceptions.h"
 #include "symbol_table.h"
 
-void SymbolTable::addSymbol(std::string symbol_name, std::string symbol_type,
-                            Segment symbol_segment, int symbol_offset) {
+SymbolTable::SymbolTable() {
+  segment_counts_ = {{Segment::FIELD, 0},
+                     {Segment::STATIC, 0},
+                     {Segment::LOCAL, 0},
+                     {Segment::ARGUMENT, 0}};
+}
+
+void SymbolTable::addSymbol(
+  std::string symbol_name, std::string symbol_type, Segment symbol_segment) {
   // check for redefinition of symbol.
   if (symbol_map_.find(symbol_name) != symbol_map_.end()) {
     throw RedefinitionOfSymbol(symbol_name);
   }
 
   // otherwise, add it to the symbol table.
-  symbol_map_[symbol_name] = {symbol_type, symbol_segment, symbol_offset};
+  symbol_map_[symbol_name] = {
+    symbol_type, symbol_segment, segment_counts_[symbol_segment]};
+  segment_counts_[symbol_segment]++;
 }
 
 bool SymbolTable::hasSymbol(std::string symbol_name) {
