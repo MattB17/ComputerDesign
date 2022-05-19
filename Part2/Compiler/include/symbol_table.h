@@ -15,7 +15,7 @@ struct SymbolData {
 
 class SymbolTable {
 public:
-  SymbolTable();
+  SymbolTable() {}
   SymbolTable(const SymbolTable&) = delete;
   SymbolTable &operator=(const SymbolTable&) = delete;
   SymbolTable(SymbolTable&&) = delete;
@@ -35,6 +35,36 @@ private:
 
   std::unordered_map<std::string, SymbolData> symbol_map_;
   std::unordered_map<Segment, int> segment_counts_;
+};
+
+// Specialization of a symbol table to handle class variables.
+class ClassTable : public SymbolTable {
+public:
+  ClassTable();
+  ClassTable(const ClassTable&) = delete;
+  ClassTable &operator=(const ClassTable&) = delete;
+  ClassTable(ClassTable&&) = delete;
+  ClassTable &operator=(ClassTable&&) = delete;
+  virtual ~ClassTable() {}
+
+  void addFieldVar(std::string var_name, std::string var_type);
+
+  void addStaticVar(std::string var_name, std::string var_type);
+};
+
+// Specialization of a symbol table to handle subroutine variables.
+class SubroutineTable : public SymbolTable {
+public:
+  SubroutineTable();
+  SubroutineTable(const SubroutineTable&) = delete;
+  SubroutineTable &operator=(const SubroutineTable&) = delete;
+  SubroutineTable(SubroutineTable&&) = delete;
+  SubroutineTable &operator=(SubroutineTable&&) = delete;
+  ~SubroutineTable() {}
+
+  void addArgumentVar(std::string var_name, std::string var_type);
+
+  void addLocalVar(std::string var_name, std::string var_type);
 };
 
 #endif  // SYMBOL_TABLE_H

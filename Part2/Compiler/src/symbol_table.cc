@@ -1,13 +1,6 @@
 #include "exceptions.h"
 #include "symbol_table.h"
 
-SymbolTable::SymbolTable() {
-  segment_counts_ = {{Segment::FIELD, 0},
-                     {Segment::STATIC, 0},
-                     {Segment::LOCAL, 0},
-                     {Segment::ARGUMENT, 0}};
-}
-
 int SymbolTable::getSegmentCount(Segment segment) {
   auto itr = segment_counts_.find(segment);
   if (itr == segment_counts_.end()) {
@@ -51,4 +44,31 @@ void SymbolTable::addSymbol(
   symbol_map_[symbol_name] = {
     symbol_type, symbol_segment, segment_counts_[symbol_segment]};
   segment_counts_[symbol_segment]++;
+}
+
+ClassTable::ClassTable() : SymbolTable() {
+  segment_counts_ = {{Segment::FIELD, 0},
+                     {Segment::STATIC, 0}};
+}
+
+void ClassTable::addFieldVar(std::string var_name, std::string var_type) {
+  addSymbol(var_name, var_type, Segment::FIELD);
+}
+
+void ClassTable::addStaticVar(std::string var_name, std::string var_type) {
+  addSymbol(var_name, var_type, Segment::STATIC);
+}
+
+SubroutineTable::SubroutineTable() : SymbolTable() {
+  segment_counts_ = {{Segment::ARGUMENT, 0},
+                     {Segment::LOCAL, 0}};
+}
+
+void SubroutineTable::addArgumentVar(
+  std::string var_name, std::string var_type) {
+  addSymbol(var_name, var_type, Segment::ARGUMENT);
+}
+
+void SubroutineTable::addLocalVar(std::string var_name, std::string var_type) {
+  addSymbol(var_name, var_type, Segment::LOCAL);
 }
