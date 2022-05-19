@@ -8,7 +8,7 @@
 #include "segment.h"
 
 struct SymbolData {
-  std::string type;
+  std::string symbol_type;
   Segment segment;
   int offset;
 };
@@ -22,13 +22,17 @@ public:
   SymbolTable &operator=(SymbolTable&&) = delete;
   ~SymbolTable() {}
 
+  int getSegmentCount(Segment segment);
+
+  Segment getVarKind(std::string var_name);
+
+  std::string getVarType(std::string var_name);
+
+  int getVarIndex(std::string var_name);
+private:
   void addSymbol(
     std::string symbol_name, std::string symbol_type, Segment symbol_segment);
 
-  bool hasSymbol(std::string symbol_name);
-
-  SymbolData getSymbolData(std::string symbol_name);
-private:
   std::unordered_map<std::string, SymbolData> symbol_map_;
   std::unordered_map<Segment, int> segment_counts_;
 };

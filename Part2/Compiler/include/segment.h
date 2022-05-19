@@ -7,7 +7,7 @@ enum class Segment {
   STATIC = 1,
   ARGUMENT = 2,
   LOCAL = 3,
-  UNKNOWN = 4
+  NONE = 4
 };
 
 #endif  // SEGMENT_H
