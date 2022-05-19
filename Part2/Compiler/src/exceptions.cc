@@ -1,18 +1,8 @@
 #include "exceptions.h"
 
-InvalidDeclaration::InvalidDeclaration(std::string var_name)
-  : std::runtime_error("Declaration of " + var_name + " is invalid. Variable "
-                       "declarations must be done inside a class.")
-{}
-
 RedefinitionOfSymbol::RedefinitionOfSymbol(std::string symbol_name)
   : std::runtime_error("Redefinition of variable " + symbol_name + ". " +
                        symbol_name + " already exists in the current scope.")
-{}
-
-UndefinedSymbol::UndefinedSymbol(std::string symbol_name)
-  : std::runtime_error("Tried to access variable " + symbol_name + " but " +
-                       symbol_name + " has not been declared.")
 {}
 
 ExpectedSymbol::ExpectedSymbol(std::string received_token,

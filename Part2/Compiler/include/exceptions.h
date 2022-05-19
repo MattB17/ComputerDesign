@@ -7,19 +7,9 @@
 #include "keyword.h"
 #include "util.h"
 
-class InvalidDeclaration : public std::runtime_error {
-public:
-  InvalidDeclaration(std::string var_name);
-};
-
 class RedefinitionOfSymbol : public std::runtime_error {
 public:
   RedefinitionOfSymbol(std::string symbol_name);
-};
-
-class UndefinedSymbol : public std::runtime_error {
-public:
-  UndefinedSymbol(std::string symbol_name);
 };
 
 class ExpectedSymbol : public std::runtime_error {
