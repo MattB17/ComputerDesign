@@ -43,7 +43,7 @@ void ScopeList::define(
       }
       class_scope_->addStaticVar(var_name, var_type);
       break;
-    case default:
+    default:
       throw InvalidDeclarationStatement(var_name);
   }
 }
@@ -55,7 +55,7 @@ int ScopeList::varCount(Segment segment) {
     }
     return subroutine_scope_->getSegmentCount(segment);
   }
-  if ((segment = Segment::FIELD) || (segment == Segment::STATIC)) {
+  if ((segment == Segment::FIELD) || (segment == Segment::STATIC)) {
     return class_scope_->getSegmentCount(segment);
   }
   throw InvalidSegmentType();

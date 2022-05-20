@@ -25,7 +25,7 @@ public:
   int getSegmentCount(Segment segment);
 
   SymbolData getSymbolData(std::string var_name);
-private:
+protected:
   void addSymbol(
     std::string symbol_name, std::string symbol_type, Segment symbol_segment);
 

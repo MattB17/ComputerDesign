@@ -3,6 +3,7 @@
 #include <string>
 
 #include "exceptions.h"
+#include "segment.h"
 #include "util.h"
 
 CompilationEngine::CompilationEngine() : num_spaces_(0) {}
@@ -18,6 +19,8 @@ void CompilationEngine::compile(std::string jack_file) {
 }
 
 void CompilationEngine::compileClass() {
+  scope_list_ = std::make_unique<ScopeList>();
+
   const std::string class_tag = "class";
   writeTerminatedOpenTag(class_tag);
 
@@ -55,21 +58,26 @@ void CompilationEngine::compileClass() {
 }
 
 void CompilationEngine::compileVarDec() {
+  Segment var_segment = Segment::LOCAL;
+
   const std::string var_tag = "varDec";
   writeTerminatedOpenTag(var_tag);
 
   // Write the `var` token. We know this is the current token as this is the
   // precondition for entering this method.
   writeTerminatedTokenAndTag();
-
   tokenizer_->nextToken();
 
-  //Expect a type and identifier pair (type and parameter).
-  handleTypeAndIdentifierPair();
+  // Retrieve the variable type and name.
+  std::string var_type = getType();
+  std::string var_name = getVarName();
+
+  // Add the variable definition to the symbol table.
+  scope_list_->define(var_name, var_type, var_segment);
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
-  compileAdditionalVarDecs(var_tag);
+  compileAdditionalVarDecs(var_type, var_segment, var_tag);
 
   handleStatementEnd(var_tag);
 
@@ -85,14 +93,19 @@ void CompilationEngine::compileClassVarDec() {
   // variable declaration keyword because we check for that before entering
   // this function.
   writeTerminatedTokenAndTag();
+  Segment var_segment = GetSegmentFromClassVarKeyword(tokenizer_->getKeyword());
   tokenizer_->nextToken();
 
-  // Expects a type and identifier pair (type and parameter pair).
-  handleTypeAndIdentifierPair();
+  // Retrieve the variable type and name.
+  std::string var_type = getType();
+  std::string var_name = getVarName();
+
+  // Add the variable definition to the symbol table.
+  scope_list_->define(var_name, var_type, var_segment);
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
-  compileAdditionalVarDecs(class_var_tag);
+  compileAdditionalVarDecs(var_type, var_segment, class_var_tag);
 
   handleStatementEnd(class_var_tag);
 
@@ -473,16 +486,16 @@ void CompilationEngine::compileSubroutineCall() {
 }
 
 void CompilationEngine::compileAdditionalVarDecs(
-  const std::string compile_tag) {
+  std::string var_type, Segment var_segment, const std::string compile_tag) {
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
-      // Expect a variable name and write its tag.
-      expectIdentifier();
-      writeTerminatedTokenAndTag();
-      tokenizer_->nextToken();
+      std::string var_name = getVarName();
+
+      // Add the variable to the symbol table.
+      scope_list_->define(var_name, var_type, var_segment);
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString(), compile_tag);
     }
@@ -634,6 +647,22 @@ void CompilationEngine::handleTypeAndIdentifierPair() {
   expectIdentifier();
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
+}
+
+std::string CompilationEngine::getType() {
+  expectType();
+  writeTerminatedTokenAndTag();
+  std::string var_type = tokenizer_->tokenToString();
+  tokenizer_->nextToken();
+  return var_type;
+}
+
+std::string CompilationEngine::getVarName() {
+  expectIdentifier();
+  writeTerminatedTokenAndTag();
+  std::string var_name = tokenizer_->tokenToString();
+  tokenizer_->nextToken();
+  return var_name;
 }
 
 void CompilationEngine::handleStatementEnd(const std::string compile_tag) {

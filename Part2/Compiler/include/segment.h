@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "keyword.h"
+
 enum class Segment {
   FIELD = 0,
   STATIC = 1,
@@ -25,6 +27,13 @@ static std::string SegmentToString(Segment segment) {
     default:
       return "none";
   }
+}
+
+static Segment GetSegmentFromClassVarKeyword(Keyword::Type var_keyword) {
+  if (var_keyword == Keyword::Type::FIELD) {
+    return Segment::FIELD;
+  }
+  return Segment::STATIC;
 }
 
 #endif  // SEGMENT_H

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "scope_list.h"
 #include "tokenizer.h"
 
 class CompilationEngine {
@@ -75,9 +76,11 @@ private:
   void compileSubroutineCall();
 
   // Compiles additional variables listed in a variable declaration statement.
-  // `compile_tag` is a string representing the name of the statement being
-  // compiled.
-  void compileAdditionalVarDecs(const std::string compile_tag);
+  // `var_type` and `var_segment` represent the variable segment and type,
+  // respectively, of the variables being compiled. `compile_tag` is a string
+  // representing the name of the statement being compiled.
+  void compileAdditionalVarDecs(
+    std::string var_type, Segment var_segment, const std::string compile_tag);
 
   // Compiles the condition of an if or while statement. The condition has the
   // form `(expression)` as in `if (expression) { ... }`.
@@ -130,6 +133,15 @@ private:
   // next 2 tokens are not a type and an identifier respectively.
   void handleTypeAndIdentifierPair();
 
+  // Retrieves a type from the current token and advances the tokenizer. If the
+  // current token does not represent a valid type, an error is raised.
+  std::string getType();
+
+  // Retrieves a variable name for the current token and advances the tokenizer.
+  // If the current token does not represent a valid identifier, an error is
+  // raised.
+  std::string getVarName();
+
   // Handles the end of a statement. That is, expects and outputs the token `;`.
   // If the token is not found, an error is generated.
   void handleStatementEnd(const std::string compile_tag);
@@ -174,6 +186,9 @@ private:
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
+
+  // Handles the scope hierarchy throughout compilation of a class.
+  std::unique_ptr<ScopeList> scope_list_;
 
   // A stream representing the to which the compilation engine writes output.
   std::ofstream xml_stream_;
