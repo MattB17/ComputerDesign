@@ -9,28 +9,12 @@ int SymbolTable::getSegmentCount(Segment segment) {
   return itr->second;
 }
 
-Segment SymbolTable::getVarKind(std::string var_name) {
+SymbolData SymbolTable::getSymbolData(std::string var_name) {
   auto itr = symbol_map_.find(var_name);
   if (itr == symbol_map_.end()) {
-    return Segment::NONE;
+    return {"", Segment::NONE, -1};
   }
-  return itr->second.segment;
-}
-
-std::string SymbolTable::getVarType(std::string var_name) {
-  auto itr = symbol_map_.find(var_name);
-  if (itr == symbol_map_.end()) {
-    return "";
-  }
-  return itr->second.symbol_type;
-}
-
-int SymbolTable::getVarIndex(std::string var_name) {
-  auto itr = symbol_map_.find(var_name);
-  if (itr == symbol_map_.end()) {
-    return -1;
-  }
-  return itr->second.offset;
+  return itr->second;
 }
 
 void SymbolTable::addSymbol(

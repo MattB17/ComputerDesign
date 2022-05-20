@@ -47,3 +47,26 @@ void ScopeList::define(
       throw InvalidDeclarationStatement(var_name);
   }
 }
+
+int ScopeList::varCount(Segment segment) {
+  if ((segment == Segment::ARGUMENT) || (segment == Segment::LOCAL)) {
+    if (subroutine_scope_ == nullptr) {
+      throw InvalidScope();
+    }
+    return subroutine_scope_->getSegmentCount(segment);
+  }
+  if ((segment = Segment::FIELD) || (segment == Segment::STATIC)) {
+    return class_scope_->getSegmentCount(segment);
+  }
+  throw InvalidSegmentType();
+}
+
+SymbolData ScopeList::getVarData(std::string var_name) {
+  if (subroutine_scope_ != nullptr) {
+    SymbolData var_data = subroutine_scope_->getSymbolData(var_name);
+    if (var_data.segment != Segment::NONE) {
+      return var_data;
+    }
+  }
+  return class_scope_->getSymbolData(var_name);
+}

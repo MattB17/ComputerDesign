@@ -28,6 +28,10 @@ public:
 
   void define(std::string var_name, std::string var_type, Segment var_segment);
 
+  int varCount(Segment segment);
+
+  SymbolData getVarData(std::string var_name);
+
 private:
   std::unique_ptr<ClassTable> class_scope_;
   std::unique_ptr<SubroutineTable> subroutine_scope_;

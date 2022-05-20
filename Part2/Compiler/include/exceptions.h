@@ -32,6 +32,18 @@ public:
   InvalidDeclarationStatement(std::string var_name);
 };
 
+class InvalidScope : public std::exception {
+  virtual const char* what() const throw() {
+    return "Cannot access subroutine level information at class level scope.";
+  }
+};
+
+class InvalidSegmentType : public std::exception {
+  virtual const char* what() const throw() {
+    return "Valid segments are ARGUMENT, LOCAL, FIELD, or STATIC.";
+  }
+};
+
 class RedefinitionOfSymbol : public std::runtime_error {
 public:
   RedefinitionOfSymbol(std::string symbol_name);

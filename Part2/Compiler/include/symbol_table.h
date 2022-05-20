@@ -24,11 +24,7 @@ public:
 
   int getSegmentCount(Segment segment);
 
-  Segment getVarKind(std::string var_name);
-
-  std::string getVarType(std::string var_name);
-
-  int getVarIndex(std::string var_name);
+  SymbolData getSymbolData(std::string var_name);
 private:
   void addSymbol(
     std::string symbol_name, std::string symbol_type, Segment symbol_segment);
