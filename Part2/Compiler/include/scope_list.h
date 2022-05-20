@@ -24,6 +24,10 @@ public:
   ScopeList &operator=(ScopeList&&) = delete;
   ~ScopeList() {}
 
+  void startSubroutine();
+
+  void define(std::string var_name, std::string var_type, Segment var_segment);
+
 private:
   std::unique_ptr<ClassTable> class_scope_;
   std::unique_ptr<SubroutineTable> subroutine_scope_;

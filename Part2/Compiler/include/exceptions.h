@@ -7,6 +7,31 @@
 #include "keyword.h"
 #include "util.h"
 
+class InvalidArgumentVarDeclaration : public std::runtime_error {
+public:
+  InvalidArgumentVarDeclaration(std::string var_name);
+};
+
+class InvalidLocalVarDeclaration : public std::runtime_error {
+public:
+  InvalidLocalVarDeclaration(std::string var_name);
+};
+
+class InvalidFieldVarDeclaration : public std::runtime_error {
+public:
+  InvalidFieldVarDeclaration(std::string var_name);
+};
+
+class InvalidStaticVarDeclaration : public std::runtime_error {
+public:
+  InvalidStaticVarDeclaration(std::string var_name);
+};
+
+class InvalidDeclarationStatement : public std::runtime_error {
+public:
+  InvalidDeclarationStatement(std::string var_name);
+};
+
 class RedefinitionOfSymbol : public std::runtime_error {
 public:
   RedefinitionOfSymbol(std::string symbol_name);

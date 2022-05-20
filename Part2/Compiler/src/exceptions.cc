@@ -1,5 +1,34 @@
 #include "exceptions.h"
 
+InvalidArgumentVarDeclaration::InvalidArgumentVarDeclaration(
+  std::string var_name) : std::runtime_error(
+    var_name + " declared as an argument variable at class level scope.")
+{}
+
+InvalidLocalVarDeclaration::InvalidLocalVarDeclaration(std::string var_name)
+  : std::runtime_error(var_name + " declared as a local variable at a class "
+                       "level scope.")
+{}
+
+InvalidFieldVarDeclaration::InvalidFieldVarDeclaration(std::string var_name)
+  : std::runtime_error(
+    "Class field " + var_name + " declared inside a subroutine. Class fields "
+    "must be defined at the class scope.")
+{}
+
+InvalidStaticVarDeclaration::InvalidStaticVarDeclaration(std::string var_name)
+  : std::runtime_error(
+    "Static variable " + var_name + " declared inside a subroutine. Static "
+    "variables must be defined at the class scope.")
+{}
+
+InvalidDeclarationStatement::InvalidDeclarationStatement(std::string var_name)
+  : std::runtime_error(
+    "Invalid declaration for " + var_name + ". Variables must either be "
+    "declared as subroutine arguments or in statements starting with one of "
+    "the keywords: `var`, `field`, or `static`.")
+{}
+
 RedefinitionOfSymbol::RedefinitionOfSymbol(std::string symbol_name)
   : std::runtime_error("Redefinition of variable " + symbol_name + ". " +
                        symbol_name + " already exists in the current scope.")
