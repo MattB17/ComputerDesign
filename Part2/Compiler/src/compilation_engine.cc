@@ -68,12 +68,9 @@ void CompilationEngine::compileVarDec() {
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
 
-  // Retrieve the variable type and name.
+  // Retrieve the variable type and define the variable.
   std::string var_type = getType();
-  std::string var_name = getVarName();
-
-  // Add the variable definition to the symbol table.
-  scope_list_->define(var_name, var_type, var_segment);
+  handleVariableDefinition(var_type, var_segment);
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
@@ -96,12 +93,9 @@ void CompilationEngine::compileClassVarDec() {
   Segment var_segment = GetSegmentFromClassVarKeyword(tokenizer_->getKeyword());
   tokenizer_->nextToken();
 
-  // Retrieve the variable type and name.
+  // Retrieve the variable type and define the variable.
   std::string var_type = getType();
-  std::string var_name = getVarName();
-
-  // Add the variable definition to the symbol table.
-  scope_list_->define(var_name, var_type, var_segment);
+  handleVariableDefinition(var_type, var_segment);
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
@@ -114,6 +108,8 @@ void CompilationEngine::compileClassVarDec() {
 }
 
 void CompilationEngine::compileParameterList() {
+  Segment var_segment = Segment::ARGUMENT;
+
   const std::string parameter_list_tag = "parameterList";
   writeTerminatedOpenTag(parameter_list_tag);
 
@@ -123,9 +119,9 @@ void CompilationEngine::compileParameterList() {
     return;
   }
 
-  // Expect a type and identifier (type and variable name) as the parameter
-  // list is not empty.
-  handleTypeAndIdentifierPair();
+  // Get variable type and name as the parameter list is not empty.
+  std::string var_type = getType();
+  handleVariableDefinition(var_type, var_segment);
 
   // Check for more elements in the parameter list. Either we have hit the end
   // of the list (signified by `)`) or we get a `,` signifying more parameters.
@@ -135,8 +131,9 @@ void CompilationEngine::compileParameterList() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
-      // Expect a type and identifier (type and variable name).
-      handleTypeAndIdentifierPair();
+      // Get type and name of next variable in the parameter list.
+      var_type = getType();
+      handleVariableDefinition(var_type, var_segment);
     } else {
       throw ExpectedClosingParenthesis(
         tokenizer_->tokenToString(), ")", parameter_list_tag);
@@ -403,6 +400,8 @@ void CompilationEngine::compileExpressionList() {
 }
 
 void CompilationEngine::compileSubroutineDec() {
+  scope_list_->startSubroutine();
+
   const std::string subroutine_tag = "subroutineDec";
   writeTerminatedOpenTag(subroutine_tag);
 
@@ -492,10 +491,7 @@ void CompilationEngine::compileAdditionalVarDecs(
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
-      std::string var_name = getVarName();
-
-      // Add the variable to the symbol table.
-      scope_list_->define(var_name, var_type, var_segment);
+      handleVariableDefinition(var_type, var_segment);
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString(), compile_tag);
     }
@@ -640,13 +636,10 @@ bool CompilationEngine::currentTokenIsBinaryOp() {
   return false;
 }
 
-void CompilationEngine::handleTypeAndIdentifierPair() {
-  expectType();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
-  expectIdentifier();
-  writeTerminatedTokenAndTag();
-  tokenizer_->nextToken();
+void CompilationEngine::handleVariableDefinition(
+  std::string var_type, Segment var_segment) {
+  std::string var_name = getVarName();
+  scope_list_->define(var_name, var_type, var_segment);
 }
 
 std::string CompilationEngine::getType() {

@@ -129,9 +129,10 @@ private:
   // a valid identifier representing a class.
   void expectFunctionReturnType();
 
-  // Handles a type followed by an identifier. An exception is thrown if the
-  // next 2 tokens are not a type and an identifier respectively.
-  void handleTypeAndIdentifierPair();
+  // Retrieves a variable name from the current token and adds the variable
+  // definition to the symbol table under segment `var_segment` and with type
+  // `var_type`.
+  void handleVariableDefinition(std::string var_type, Segment var_segment);
 
   // Retrieves a type from the current token and advances the tokenizer. If the
   // current token does not represent a valid type, an error is raised.
