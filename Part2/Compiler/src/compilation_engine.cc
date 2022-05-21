@@ -1,5 +1,7 @@
 #include "compilation_engine.h"
 
+#include <iostream>
+#include <sstream>
 #include <string>
 
 #include "exceptions.h"
@@ -463,23 +465,33 @@ void CompilationEngine::setJackFile(std::string jack_file) {
 }
 
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
-// `varName.subroutineName(expressionList)`.
+// `className.subroutineName(expressionList)`.
 void CompilationEngine::compileSubroutineCall() {
   const std::string call_tag = "subroutineCall";
   // expect an identifier (either `subroutineName` or `varName`).
   expectIdentifier();
-  writeTerminatedTokenAndTag();
-
+  std::string identifier_name = tokenizer_->tokenToString();
   tokenizer_->nextToken();
 
-  // this means we are in the second case.
+  // This means we are in the second case. So we write out the class tag and
+  // then compile the rest. Note that the part after `.` also has the form of
+  // a subroutine call so we can recurse.
   if (currentTokenIsExpectedSymbol('.')) {
+    // Write className / varName first.
+    writeTerminatedClassTag(/*class_name=*/identifier_name);
+
+    // Then write the `.`.
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
 
+    // Then recurse.
     compileSubroutineCall();
     return;
   }
+
+  // Otherwise, we have a plain subroutine call. So we write the subroutine name
+  // and then compile the expression list.
+  writeTerminatedSubroutineTag(/*subroutine_name=*/identifier_name);
 
   // Now we expect the start of the expression list.
   handleOpeningParenthesis('(', call_tag);
@@ -529,8 +541,8 @@ void CompilationEngine::writeTokenWithTag() {
       tag = "symbol";
       break;
     case TokenType::IDENTIFIER:
-      writeVarTag(/*var_name=*/tokenizer_->tokenToString());
-      return;
+      tag = "identifier";
+      break;
     case TokenType::INT_CONST:
       tag = "integerConstant";
       break;
@@ -545,7 +557,8 @@ void CompilationEngine::writeTokenWithTag() {
 
 void CompilationEngine::writeTagForToken(std::string tag, std::string token) {
   writeOpenTag(tag);
-  xml_stream_ << " " << tokenizer_->tokenToString() << " ";
+  std::cout << token << std::endl;
+  xml_stream_ << " " << token << " ";
   writeCloseTag(tag);
 }
 
@@ -578,7 +591,10 @@ void CompilationEngine::writeTerminatedVarTag(std::string var_name) {
   if (var_data.segment == Segment::NONE) {
     throw UndeclaredVariable(var_name);
   }
-  writeTerminatedTagForToken(SegmentToString(var_data.segment), var_name);
+  std::stringstream ss;
+  ss << var_name << " " << var_data.offset;
+  writeTerminatedTagForToken(
+    /*tag=*/SegmentToString(var_data.segment), /*token=*/ss.str());
 }
 
 void CompilationEngine::writeVarTag(std::string var_name) {
@@ -586,7 +602,10 @@ void CompilationEngine::writeVarTag(std::string var_name) {
   if (var_data.segment == Segment::NONE) {
     throw UndeclaredVariable(var_name);
   }
-  writeTagForToken(SegmentToString(var_data.segment()), var_name);
+  std::stringstream ss;
+  ss << var_name << " " << var_data.offset;
+  writeTagForToken(
+    /*tag=*/SegmentToString(var_data.segment), /*token=*/ss.str());
 }
 
 void CompilationEngine::writeTerminatedTokenAndTag() {
@@ -686,8 +705,15 @@ void CompilationEngine::handleVariableDefinition(
 
 std::string CompilationEngine::getType() {
   expectType();
-  writeTerminatedTokenAndTag();
   std::string var_type = tokenizer_->tokenToString();
+  // The type is either a simple type or a class.
+  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    // we have a simple type so just compile the type.
+    writeTerminatedTokenAndTag();
+  } else {
+    // We have already validated the type so it must be a class.
+    writeTerminatedClassTag(var_type);
+  }
   tokenizer_->nextToken();
   return var_type;
 }

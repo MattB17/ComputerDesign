@@ -99,6 +99,9 @@ private:
   // Writes the XML closing tag for `tag`.
   void writeCloseTag(const std::string tag);
 
+  // Writes `token` to the XML stream with `tag`.
+  void writeTagForToken(std::string tag, std::string token);
+
   // Writes `token` to the XML stream with `tag` and appends the newline
   // character.
   void writeTerminatedTagForToken(std::string tag, std::string token);
@@ -115,6 +118,11 @@ private:
   // tag and appends the newline character. It is assumed that `var_name` has
   // already been defined and can be found in the scope list.
   void writeTerminatedVarTag(std::string var_name);
+
+  // Writes `var_name` to the XML stream with the appropriate variable segment
+  // tag. It is assumed that `var_name` has already been defined and can be
+  // found in the scope list.
+  void writeVarTag(std::string var_name);
 
   // Writes the current token to the XML stream with the appropriate tag and
   // appends the newline character.
