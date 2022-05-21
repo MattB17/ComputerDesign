@@ -7,6 +7,11 @@
 #include "keyword.h"
 #include "util.h"
 
+class UndeclaredVariable : public std::runtime_error {
+public:
+  UndeclaredVariable(std::string var_name);
+};
+
 class InvalidArgumentVarDeclaration : public std::runtime_error {
 public:
   InvalidArgumentVarDeclaration(std::string var_name);

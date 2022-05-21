@@ -1,5 +1,10 @@
 #include "exceptions.h"
 
+UndeclaredVariable::UndeclaredVariable(std::string var_name)
+  : std::runtime_error(var_name + " used before declaration. Must declare "
+                       "variable before it is used.")
+{}
+
 InvalidArgumentVarDeclaration::InvalidArgumentVarDeclaration(
   std::string var_name) : std::runtime_error(
     var_name + " declared as an argument variable at class level scope.")

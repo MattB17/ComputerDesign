@@ -548,6 +548,32 @@ void CompilationEngine::writeCloseTag(const std::string tag) {
   xml_stream_ << "</" << tag << ">";
 }
 
+void CompilationEngine::writeTerminatedTagForToken(
+  std::string tag, std::string token) {
+  writeSpaces();
+  writeOpenTag(tag);
+  xml_stream_ << " " << token << " ";
+  writeCloseTag(tag);
+  xml_stream_ << '\n';
+}
+
+void CompilationEngine::writeTerminatedClassTag(std::string class_name) {
+  writeTerminatedTagForToken("className", class_name);
+}
+
+void CompilationEngine::writeTerminatedSubroutineTag(
+  std::string subroutine_name) {
+  writeTerminatedTagForToken("subroutineName", subroutine_name);
+}
+
+void CompilationEngine::writeTerminatedVarTag(std::string var_name) {
+  SymbolData var_data = scope_list_->getVarData(var_name);
+  if (var_data.segment == Segment::NONE) {
+    throw UndeclaredVariable(var_name);
+  }
+  writeTerminatedTagForToken(SegmentToString(var_data.segment), var_name);
+}
+
 void CompilationEngine::writeTerminatedTokenAndTag() {
   writeSpaces();
   writeTokenWithTag();

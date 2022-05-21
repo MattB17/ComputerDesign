@@ -99,6 +99,22 @@ private:
   // Writes the XML closing tag for `tag`.
   void writeCloseTag(const std::string tag);
 
+  // Writes `token` to the XML stream with `tag` and appends the newline
+  // character.
+  void writeTerminatedTagForToken(std::string tag, std::string token);
+
+  // Writes `class_name` to the XML stream with the class name tag and appends
+  // the newline character.
+  void writeTerminatedClassTag(std::string class_name);
+
+  // Writes `subroutine_name` to the XML stream with the subroutine name tag and
+  // appends the newline character.
+  void writeTerminatedSubroutineTag(std::string subroutine_name);
+
+  // Writes `var_name` to the XML stream with the appropriate variable segment
+  // tag and appends the newline character.
+  void writeTerminatedVarTag(std::string var_name);
+
   // Writes the current token to the XML stream with the appropriate tag and
   // appends the newline character.
   void writeTerminatedTokenAndTag();
