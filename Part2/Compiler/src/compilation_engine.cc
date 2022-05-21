@@ -31,8 +31,7 @@ void CompilationEngine::compileClass() {
 
   // expect an identifier for the class name.
   expectIdentifier();
-  writeTerminatedTokenAndTag();
-
+  writeTerminatedClassTag(/*class_name=*/tokenizer_->tokenToString());
   tokenizer_->nextToken();
 
   // opening bracket to start the class definition.
@@ -205,10 +204,9 @@ void CompilationEngine::compileLet() {
 
   tokenizer_->nextToken();
 
-  // expect a valid identifier for the varname
+  // expect a valid identifier for the variable name.
   expectIdentifier();
-  writeTerminatedTokenAndTag();
-
+  writeTerminatedVarTag(/*var_name=*/tokenizer_->tokenToString());
   tokenizer_->nextToken();
 
   // If we encounter `[` then we know we are in the second case.
@@ -317,26 +315,33 @@ void CompilationEngine::compileTerm() {
     // we must have an identifier. Either a simple variable name, an array
     // element, or a subroutine call.
     expectIdentifier();
-    writeTerminatedTokenAndTag();
+    std::string identifier_name = tokenizer_->tokenToString();
     tokenizer_->nextToken();
 
     // After here, if it is just a variable name then none of the conditions
     // are true, and we just skip to the end.
 
     if (currentTokenIsExpectedSymbol('[')) {
-      // In this case we have an array element.
+      // In this case we have an array element. Start by writing the array
+      // variable name, then handle the array index.
+      writeTerminatedVarTag(/*var_name=*/identifier_name);
       handleOpeningParenthesis('[', term_tag);
       compileExpression();
       handleClosingParenthesis(']', term_tag);
     } else if (currentTokenIsExpectedSymbol('(')) {
       // We have a subroutine call of the type `methodName(expressionList)`.
+      // So we write the subroutine name and then proceed with handling the
+      // brackets and expression list.
+      writeTerminatedSubroutineTag(/*subroutine_name=*/identifier_name);
       handleOpeningParenthesis('(', term_tag);
       compileExpressionList();
       handleClosingParenthesis(')', term_tag);
     } else if (currentTokenIsExpectedSymbol('.')) {
       // We have a subroutine call of the type
-      // `className.methodName(expressionList)`. In this case we write the `.`
-      // but then note that `methodName(expressionList)` is a subroutine call.
+      // `className.methodName(expressionList)`. We write the class name first
+      // and then we write the `.`. Then note that `methodName(expressionList)`
+      // has the form of a subroutine call.
+      writeTerminatedClassTag(/*class_name=*/identifier_name);
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       compileSubroutineCall();
@@ -415,7 +420,7 @@ void CompilationEngine::compileSubroutineDec() {
 
   // expect a valid identifier for the subroutine name.
   expectIdentifier();
-  writeTerminatedTokenAndTag();
+  writeTerminatedSubroutineTag(/*subroutine_name=*/tokenizer_->tokenToString());
   tokenizer_->nextToken();
 
   // Now we expect a parameter list enclosed in `(` and `)`.
@@ -524,8 +529,8 @@ void CompilationEngine::writeTokenWithTag() {
       tag = "symbol";
       break;
     case TokenType::IDENTIFIER:
-      tag = "identifier";
-      break;
+      writeVarTag(/*var_name=*/tokenizer_->tokenToString());
+      return;
     case TokenType::INT_CONST:
       tag = "integerConstant";
       break;
@@ -535,6 +540,10 @@ void CompilationEngine::writeTokenWithTag() {
     default:
       tag = "unknown";
   }
+  writeTagForToken(tag, tokenizer_->tokenToString());
+}
+
+void CompilationEngine::writeTagForToken(std::string tag, std::string token) {
   writeOpenTag(tag);
   xml_stream_ << " " << tokenizer_->tokenToString() << " ";
   writeCloseTag(tag);
@@ -551,9 +560,7 @@ void CompilationEngine::writeCloseTag(const std::string tag) {
 void CompilationEngine::writeTerminatedTagForToken(
   std::string tag, std::string token) {
   writeSpaces();
-  writeOpenTag(tag);
-  xml_stream_ << " " << token << " ";
-  writeCloseTag(tag);
+  writeTagForToken(tag, token);
   xml_stream_ << '\n';
 }
 
@@ -572,6 +579,14 @@ void CompilationEngine::writeTerminatedVarTag(std::string var_name) {
     throw UndeclaredVariable(var_name);
   }
   writeTerminatedTagForToken(SegmentToString(var_data.segment), var_name);
+}
+
+void CompilationEngine::writeVarTag(std::string var_name) {
+  SymbolData var_data = scope_list_->getVarData(var_name);
+  if (var_data.segment == Segment::NONE) {
+    throw UndeclaredVariable(var_name);
+  }
+  writeTagForToken(SegmentToString(var_data.segment()), var_name);
 }
 
 void CompilationEngine::writeTerminatedTokenAndTag() {
@@ -666,6 +681,7 @@ void CompilationEngine::handleVariableDefinition(
   std::string var_type, Segment var_segment) {
   std::string var_name = getVarName();
   scope_list_->define(var_name, var_type, var_segment);
+  writeTerminatedVarTag(var_name);
 }
 
 std::string CompilationEngine::getType() {
@@ -678,7 +694,6 @@ std::string CompilationEngine::getType() {
 
 std::string CompilationEngine::getVarName() {
   expectIdentifier();
-  writeTerminatedTokenAndTag();
   std::string var_name = tokenizer_->tokenToString();
   tokenizer_->nextToken();
   return var_name;

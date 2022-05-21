@@ -112,7 +112,8 @@ private:
   void writeTerminatedSubroutineTag(std::string subroutine_name);
 
   // Writes `var_name` to the XML stream with the appropriate variable segment
-  // tag and appends the newline character.
+  // tag and appends the newline character. It is assumed that `var_name` has
+  // already been defined and can be found in the scope list.
   void writeTerminatedVarTag(std::string var_name);
 
   // Writes the current token to the XML stream with the appropriate tag and
