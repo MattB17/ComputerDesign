@@ -106,23 +106,21 @@ private:
   // character.
   void writeTerminatedTagForToken(std::string tag, std::string token);
 
-  // Writes `class_name` to the XML stream with the class name tag and appends
-  // the newline character.
-  void writeTerminatedClassTag(std::string class_name);
-
-  // Writes `subroutine_name` to the XML stream with the subroutine name tag and
-  // appends the newline character.
-  void writeTerminatedSubroutineTag(std::string subroutine_name);
+  // Writes `var_name` to the XML stream with the appropriate variable segment
+  // tag and appends the newline character. If `expect_definition` is true, then
+  // it is expected that `var_name` is in the scope_list. Otherwise,
+  // `default_is_class` signifies whether `var_name` should be treated as a
+  // class or as a subroutine if not found in the scope list.
+  void writeTerminatedVarTag(
+    std::string var_name, bool expect_definition, bool default_is_class=true);
 
   // Writes `var_name` to the XML stream with the appropriate variable segment
-  // tag and appends the newline character. It is assumed that `var_name` has
-  // already been defined and can be found in the scope list.
-  void writeTerminatedVarTag(std::string var_name);
-
-  // Writes `var_name` to the XML stream with the appropriate variable segment
-  // tag. It is assumed that `var_name` has already been defined and can be
-  // found in the scope list.
-  void writeVarTag(std::string var_name);
+  // tag. If `expect_definition` is true, then it is expected that `var_name`
+  // is in the scope list. Otherwise, `default_is_class` signifies whether
+  // `var_name` should be treated as a class or as a subroutine if not found in
+  // the scope list.
+  void writeVarTag(
+    std::string var_name, bool expect_definition, bool default_is_class=true);
 
   // Writes the current token to the XML stream with the appropriate tag and
   // appends the newline character.
