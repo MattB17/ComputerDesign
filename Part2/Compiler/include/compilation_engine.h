@@ -144,7 +144,8 @@ private:
   void expectIdentifier();
 
   // Handles the expectation of a subroutine declaration keyword. That is, one
-  // of `constructor`, `function`, `method`.
+  // of `constructor`, `function`, `method`. If the keyword is `method` then
+  // `this` is added as the first argument to the subroutine symbol table.
   void expectSubroutineDecKeyword();
 
   // Handles the expectation of the compiler receiving a valid function return
@@ -156,6 +157,9 @@ private:
   // definition to the symbol table under segment `var_segment` and with type
   // `var_type`.
   void handleVariableDefinition(std::string var_type, Segment var_segment);
+
+  // Handles the outputing of a variable and its tag to the output XML stream.
+  void handleVarOutput(std::string var_name, SymbolData var_data);
 
   // Retrieves a type from the current token and advances the tokenizer. If the
   // current token does not represent a valid type, an error is raised.
@@ -210,6 +214,9 @@ private:
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
+
+  // The name of the current class being compiled.
+  std::string curr_class_;
 
   // Handles the scope hierarchy throughout compilation of a class.
   std::unique_ptr<ScopeList> scope_list_;

@@ -33,8 +33,8 @@ void CompilationEngine::compileClass() {
 
   // expect an identifier for the class name.
   expectIdentifier();
-  writeTerminatedTagForToken(
-    /*tag=*/"className", /*class_name=*/tokenizer_->tokenToString());
+  curr_class_ = tokenizer_->tokenToString();
+  writeTerminatedTagForToken(/*tag=*/"className", /*class_name=*/curr_class_);
   tokenizer_->nextToken();
 
   // opening bracket to start the class definition.
@@ -425,7 +425,16 @@ void CompilationEngine::compileSubroutineDec() {
   tokenizer_->nextToken();
 
   expectFunctionReturnType();
-  writeTerminatedTokenAndTag();
+  // We have a valid function return type, so it is either a primitive type,
+  // void, or a class name. That is, an identifier or keyword.
+  if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
+    // We have a class name.
+    writeTerminatedTagForToken(
+      /*tag=*/"className", /*token=*/tokenizer_->tokenToString());
+  } else {
+    // We have a primitive type or void, so just compile the the keyword.
+    writeTerminatedTokenAndTag();
+  }
   tokenizer_->nextToken();
 
   // expect a valid identifier for the subroutine name.
@@ -548,6 +557,17 @@ void CompilationEngine::writeTokenWithTag() {
   std::string tag;
   switch (tokenizer_->getTokenType()) {
     case TokenType::KEYWORD:
+      // If the keyword is `this` and it is in the symbol table then we are
+      // in a method and so `this` is a variable, not a keyword.
+      if (tokenizer_->getKeyword() == Keyword::Type::THIS) {
+        std::string var_name = tokenizer_->tokenToString();
+        SymbolData var_data = scope_list_->getVarData(var_name);
+        if (var_data.segment != Segment::NONE) {
+          handleVarOutput(var_name, var_data);
+          return;
+        }
+      }
+      // Otherwise, just a normal keyword.
       tag = "keyword";
       break;
     case TokenType::SYMBOL:
@@ -614,6 +634,11 @@ void CompilationEngine::writeVarTag(
     }
     return;
   }
+  handleVarOutput(var_name, var_data);
+}
+
+void CompilationEngine::handleVarOutput(
+  std::string var_name, SymbolData var_data) {
   std::stringstream ss;
   ss << var_name << " " << var_data.offset;
   writeTagForToken(
@@ -692,8 +717,13 @@ bool CompilationEngine::currentTokenIsSimpleTerm() {
 void CompilationEngine::expectSubroutineDecKeyword() {
   if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
     if ((tokenizer_->getKeyword() == Keyword::Type::CONSTRUCTOR) ||
-        (tokenizer_->getKeyword() == Keyword::Type::FUNCTION) ||
-        (tokenizer_->getKeyword() == Keyword::Type::METHOD)) {
+        (tokenizer_->getKeyword() == Keyword::Type::FUNCTION)) {
+      return;
+    } else if (tokenizer_->getKeyword() == Keyword::Type::METHOD) {
+      // Add this as the first argument to the subroutine symbol table.
+      scope_list_->define(/*var_name=*/"this",
+                          /*var_type=*/curr_class_,
+                          /*var_segment=*/Segment::ARGUMENT);
       return;
     }
   }
