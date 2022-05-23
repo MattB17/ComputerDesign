@@ -10,6 +10,7 @@
 
 #include "scope_list.h"
 #include "tokenizer.h"
+#include "vm_writer.h"
 
 class CompilationEngine {
 public:
@@ -214,6 +215,9 @@ private:
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
+
+  // The VM Writer used to write compiled VM code to the appropriate VM file.
+  std::unique_ptr<VMWriter> vm_writer_;
 
   // The name of the current class being compiled.
   std::string curr_class_;

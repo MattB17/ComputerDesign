@@ -2,6 +2,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+#include <unordered_map>
 #include <unordered_set>
 
 static std::unordered_set<char> const unaryOps = {'-', '~'};

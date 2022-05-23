@@ -478,8 +478,9 @@ void CompilationEngine::compileSubroutineBody() {
 
 void CompilationEngine::setJackFile(std::string jack_file) {
   tokenizer_ = std::make_unique<Tokenizer>(jack_file);
+  vm_writer_ = std::make_unique<VMWriter>(jack_file);
   num_spaces_ = 0;
-  xml_stream_.open(jackFileToXmlFile(jack_file));
+  xml_stream_.open(jackFileToOutputFile(jack_file, ".xml"));
 }
 
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or

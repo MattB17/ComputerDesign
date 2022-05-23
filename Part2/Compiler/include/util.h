@@ -27,11 +27,12 @@ static bool isSpaceChar(char curr_char) {
   return std::isspace(static_cast<unsigned char>(curr_char));
 }
 
-static std::string jackFileToXmlFile(std::string jack_file) {
+static std::string jackFileToOutputFile(
+  std::string jack_file, std::string output_ext) {
   size_t extension_pos = jack_file.find_last_of(".jack");
   std::string file_name = jack_file.substr(0, extension_pos - 4);
   std::stringstream ss;
-  ss << file_name << ".xml";
+  ss << file_name << output_ext;
   return ss.str();
 }
 

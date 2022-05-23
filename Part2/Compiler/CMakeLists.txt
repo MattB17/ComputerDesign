@@ -18,6 +18,7 @@ add_executable(
   src/keyword.cc
   src/exceptions.cc
   src/tokenizer.cc
+  src/vm_writer.cc
   src/symbol_table.cc
   src/scope_list.cc
   src/compilation_engine.cc
