@@ -5,6 +5,9 @@
 #include <fstream>
 #include <string>
 
+#include "segment.h"
+#include "symbol.h"
+
 class VMWriter {
 public:
   VMWriter(std::string jack_file);
@@ -13,6 +16,18 @@ public:
   VMWriter(VMWriter&&) = delete;
   VMWriter &operator=(VMWriter&&) = delete;
   ~VMWriter() {}
+
+  void writePush(Segment memory_segment, int idx);
+
+  void writePop(Segment memory_segment, int idx);
+
+  void writeArithmetic(OpCommand op_command);
+
+  void writeCall(std::string function_name, int n_args);
+
+  void writeFunction(std::string function_name, int n_locals);
+
+  void writeReturn();
 
   void close();
 private:
