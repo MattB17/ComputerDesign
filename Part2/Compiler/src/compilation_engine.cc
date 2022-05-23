@@ -563,7 +563,7 @@ void CompilationEngine::writeTokenWithTag() {
       if (tokenizer_->getKeyword() == Keyword::Type::THIS) {
         std::string var_name = tokenizer_->tokenToString();
         SymbolData var_data = scope_list_->getVarData(var_name);
-        if (var_data.segment != Segment::NONE) {
+        if (var_data.segment != Segment::UNKNOWN) {
           handleVarOutput(var_name, var_data);
           return;
         }
@@ -622,7 +622,7 @@ void CompilationEngine::writeTerminatedVarTag(
 void CompilationEngine::writeVarTag(
   std::string var_name, bool expect_definition, bool default_is_class) {
   SymbolData var_data = scope_list_->getVarData(var_name);
-  if (var_data.segment == Segment::NONE) {
+  if (var_data.segment == Segment::UNKNOWN) {
     if (expect_definition) {
       throw UndeclaredVariable(var_name);
     }

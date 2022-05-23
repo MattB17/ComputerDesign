@@ -29,7 +29,7 @@ void ScopeList::define(
       }
       subroutine_scope_->addLocalVar(var_name, var_type);
       break;
-    case Segment::FIELD:
+    case Segment::THIS:
       // if it is not null, we are inside a subroutine.
       if (subroutine_scope_ != nullptr) {
         throw InvalidFieldVarDeclaration(var_name);
@@ -55,7 +55,7 @@ int ScopeList::varCount(Segment segment) {
     }
     return subroutine_scope_->getSegmentCount(segment);
   }
-  if ((segment == Segment::FIELD) || (segment == Segment::STATIC)) {
+  if ((segment == Segment::THIS) || (segment == Segment::STATIC)) {
     return class_scope_->getSegmentCount(segment);
   }
   throw InvalidSegmentType();
@@ -64,7 +64,7 @@ int ScopeList::varCount(Segment segment) {
 SymbolData ScopeList::getVarData(std::string var_name) {
   if (subroutine_scope_ != nullptr) {
     SymbolData var_data = subroutine_scope_->getSymbolData(var_name);
-    if (var_data.segment != Segment::NONE) {
+    if (var_data.segment != Segment::UNKNOWN) {
       return var_data;
     }
   }

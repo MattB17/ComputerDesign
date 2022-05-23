@@ -12,7 +12,7 @@ int SymbolTable::getSegmentCount(Segment segment) {
 SymbolData SymbolTable::getSymbolData(std::string var_name) {
   auto itr = symbol_map_.find(var_name);
   if (itr == symbol_map_.end()) {
-    return {"", Segment::NONE, -1};
+    return {"", Segment::UNKNOWN, -1};
   }
   return itr->second;
 }
@@ -31,12 +31,12 @@ void SymbolTable::addSymbol(
 }
 
 ClassTable::ClassTable() : SymbolTable() {
-  segment_counts_ = {{Segment::FIELD, 0},
+  segment_counts_ = {{Segment::THIS, 0},
                      {Segment::STATIC, 0}};
 }
 
 void ClassTable::addFieldVar(std::string var_name, std::string var_type) {
-  addSymbol(var_name, var_type, Segment::FIELD);
+  addSymbol(var_name, var_type, Segment::THIS);
 }
 
 void ClassTable::addStaticVar(std::string var_name, std::string var_type) {

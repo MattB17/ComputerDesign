@@ -7,31 +7,43 @@
 #include "keyword.h"
 
 enum class Segment {
-  FIELD = 0,
-  STATIC = 1,
-  ARGUMENT = 2,
-  LOCAL = 3,
-  NONE = 4
+  CONSTANT = 0,
+  ARGUMENT = 1,
+  LOCAL = 2,
+  STATIC = 3,
+  THIS = 4,
+  THAT = 5,
+  POINTER = 6,
+  TEMP = 7,
+  UNKNOWN = 8
 };
 
 static std::string SegmentToString(Segment segment) {
   switch (segment) {
-    case Segment::FIELD:
-      return "field";
-    case Segment::STATIC:
-      return "static";
+    case Segment::CONSTANT:
+      return "constant";
     case Segment::ARGUMENT:
       return "argument";
     case Segment::LOCAL:
       return "local";
+    case Segment::STATIC:
+      return "static";
+    case Segment::THIS:
+      return "this";
+    case Segment::THAT:
+      return "that";
+    case Segment::POINTER:
+      return "pointer";
+    case Segment::TEMP:
+      return "temp";
     default:
-      return "none";
+      return "unknown";
   }
 }
 
 static Segment GetSegmentFromClassVarKeyword(Keyword::Type var_keyword) {
   if (var_keyword == Keyword::Type::FIELD) {
-    return Segment::FIELD;
+    return Segment::THIS;
   }
   return Segment::STATIC;
 }
