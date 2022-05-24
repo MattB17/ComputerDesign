@@ -191,7 +191,10 @@ void CompilationEngine::compileReturn() {
   if (!currentTokenIsExpectedSymbol(';')) {
     compileExpression();
   } else {
-    vm_writer_->writePush(Segment::CONSTANT, 0);
+    // In this case we just have a simple `return;` statement. But even void
+    // methods need to return something so we push 0 onto the stack, expecting
+    // the caller will pop it off.
+    vm_writer_->writePush(Segment::CONSTANT, /*idx=*/0);
   }
 
   // now we expect statement end.
@@ -290,13 +293,21 @@ void CompilationEngine::compileDo() {
 
   // write keyword do.
   writeTerminatedTokenAndTag();
-
-  // compile the subroutine call.
   tokenizer_->nextToken();
-  compileSubroutineCall();
+
+  // compile the subroutine call. We put the subroutine name into
+  // `function_name`, calculate the number of expressions it is called on,
+  // and then compile the subroutine call statement to VM code.
+  std::stringstream function_name;
+  int n_locals = compileSubroutineCall(&function_name);
+  vm_writer_->writeCall(function_name.str(), n_locals);
 
   // Expect end of statement.
   handleStatementEnd(do_tag);
+
+  // With a do call we don't use the return value of the function but it is
+  // expected that it was pushed onto the stack, so we need to pop it off.
+  vm_writer_->writePop(Segment::TEMP, /*idx=*/0);
 
   writeTerminatedCloseTag(do_tag);
   return;
@@ -361,7 +372,9 @@ void CompilationEngine::compileTerm() {
                             /*default_is_class=*/true);
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
-      compileSubroutineCall();
+
+      std::stringstream function_name;
+      compileSubroutineCall(&function_name);
     } else {
       // it's just a simple identifier for a variable name.
       writeTerminatedVarTag(
@@ -398,18 +411,19 @@ void CompilationEngine::compileExpression() {
   return;
 }
 
-void CompilationEngine::compileExpressionList() {
-
+int CompilationEngine::compileExpressionList() {
+  int num_expressions = 0;
   const std::string expression_list_tag = "expressionList";
   writeTerminatedOpenTag(expression_list_tag);
 
   // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
     writeTerminatedCloseTag(expression_list_tag);
-    return;
+    return num_expressions;
   }
 
   // expect an expression.
+  num_expressions++;
   compileExpression();
 
   // Check for more elements in the expression list. Either we have hit the end
@@ -421,6 +435,7 @@ void CompilationEngine::compileExpressionList() {
       tokenizer_->nextToken();
 
       // Expect an expression.
+      num_expressions++;
       compileExpression();
     } else {
       throw ExpectedClosingParenthesis(
@@ -428,7 +443,7 @@ void CompilationEngine::compileExpressionList() {
     }
   }
   writeTerminatedCloseTag(expression_list_tag);
-  return;
+  return num_expressions;
 }
 
 void CompilationEngine::compileSubroutineDec() {
@@ -505,7 +520,8 @@ void CompilationEngine::setJackFile(std::string jack_file) {
 
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
 // `className.subroutineName(expressionList)`.
-void CompilationEngine::compileSubroutineCall() {
+int CompilationEngine::compileSubroutineCall(
+  std::stringstream* function_name) {
   const std::string call_tag = "subroutineCall";
   // expect an identifier (either `subroutineName` or `varName`).
   expectIdentifier();
@@ -521,13 +537,14 @@ void CompilationEngine::compileSubroutineCall() {
                           /*expect_definition=*/false,
                           /*default_is_class=*/true);
 
+    (*function_name) << identifier_name << '.';
+
     // Then write the `.`.
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
 
     // Then recurse.
-    compileSubroutineCall();
-    return;
+    return compileSubroutineCall(function_name);
   }
 
   // Otherwise, we have a plain subroutine call. So we write the subroutine name
@@ -536,12 +553,14 @@ void CompilationEngine::compileSubroutineCall() {
                         /*expect_definition=*/false,
                         /*default_is_class=*/false);
 
+  (*function_name) << identifier_name;
+
   // Now we expect the start of the expression list.
   handleOpeningParenthesis('(', call_tag);
-  compileExpressionList();
+  int n_locals = compileExpressionList();
   handleClosingParenthesis(')', call_tag);
 
-  return;
+  return n_locals;
 }
 
 void CompilationEngine::compileAdditionalVarDecs(

@@ -61,8 +61,9 @@ public:
   // compiles an expression
   void compileExpression();
 
-  // compiles an expression list.
-  void compileExpressionList();
+  // compiles an expression list and returns the number of expressions in the
+  // list.
+  int compileExpressionList();
 
   // Compiles a subroutine declaration.
   void compileSubroutineDec();
@@ -74,8 +75,9 @@ private:
   // Sets the jack file currently being compiled.
   void setJackFile(std::string jack_file);
 
-  // compiles a subroutine call.
-  void compileSubroutineCall();
+  // compiles a subroutine call and returns the number of arguments supplied
+  // to the subroutine call.
+  int compileSubroutineCall(std::stringstream* function_name);
 
   // Compiles additional variables listed in a variable declaration statement.
   // `var_type` and `var_segment` represent the variable segment and type,

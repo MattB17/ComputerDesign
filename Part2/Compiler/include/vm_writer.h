@@ -23,9 +23,9 @@ public:
 
   void writeArithmetic(OpCommand op_command);
 
-  void writeCall(std::string function_name, int n_args);
+  void writeCall(std::string function_name, int n_locals);
 
-  void writeFunction(std::string function_name, int n_locals);
+  void writeFunction(std::string function_name, int n_args);
 
   void writeReturn();
 
