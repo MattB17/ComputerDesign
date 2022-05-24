@@ -218,8 +218,8 @@ void CompilationEngine::compileLet() {
 
   // expect a valid identifier for the variable name.
   expectIdentifier();
-  writeTerminatedVarTag(
-    /*var_name=*/tokenizer_->tokenToString(), /*expect_definition=*/true);
+  std::string var_name = tokenizer_->tokenToString();
+  writeTerminatedVarTag(var_name, /*expect_definition=*/true);
   tokenizer_->nextToken();
 
   // If we encounter `[` then we know we are in the second case.
@@ -238,8 +238,14 @@ void CompilationEngine::compileLet() {
   }
   tokenizer_->nextToken();
 
-  // handle the expression on the right of the `=`.
+  // handle the expression on the right of the `=`. The VM commands for the
+  // expression will store the result of the expression on the stack.
   compileExpression();
+
+  // Then we pop the result of the expression off the stack and into the
+  // variable on the left of the `=`.
+  SymbolData var_data = scope_list_->getVarData(var_name);
+  vm_writer_->writePop(var_data.segment, /*idx=*/var_data.offset);
 
   // now we expect statement end.
   handleStatementEnd(let_tag);
@@ -360,8 +366,9 @@ void CompilationEngine::compileTerm() {
                             /*expect_definition=*/false,
                             /*default_is_class=*/false);
       handleOpeningParenthesis('(', term_tag);
-      compileExpressionList();
+      int n_locals = compileExpressionList();
       handleClosingParenthesis(')', term_tag);
+      vm_writer_->writeCall(identifier_name, n_locals);
     } else if (currentTokenIsExpectedSymbol('.')) {
       // We have a subroutine call of the type
       // `className.methodName(expressionList)`. We write the class name first
@@ -373,12 +380,18 @@ void CompilationEngine::compileTerm() {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
+      // Add the class name and `.` to the stream, then compile the rest of
+      // the subroutine call.
       std::stringstream function_name;
-      compileSubroutineCall(&function_name);
+      function_name << identifier_name << '.';
+      int n_locals = compileSubroutineCall(&function_name);
+      vm_writer_->writeCall(function_name.str(), n_locals);
     } else {
       // it's just a simple identifier for a variable name.
       writeTerminatedVarTag(
         /*var_name=*/identifier_name, /*expect_definition=*/true);
+      SymbolData var_data = scope_list_->getVarData(identifier_name);
+      vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
     }
   }
 
