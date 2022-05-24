@@ -109,7 +109,8 @@ void CompilationEngine::compileClassVarDec() {
   return;
 }
 
-void CompilationEngine::compileParameterList() {
+int CompilationEngine::compileParameterList() {
+  int num_params = 0;
   Segment var_segment = Segment::ARGUMENT;
 
   const std::string parameter_list_tag = "parameterList";
@@ -118,10 +119,11 @@ void CompilationEngine::compileParameterList() {
   // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
     writeTerminatedCloseTag(parameter_list_tag);
-    return;
+    return num_params;
   }
 
   // Get variable type and name as the parameter list is not empty.
+  num_params++;
   std::string var_type = getType();
   handleVariableDefinition(var_type, var_segment);
 
@@ -134,6 +136,7 @@ void CompilationEngine::compileParameterList() {
       tokenizer_->nextToken();
 
       // Get type and name of next variable in the parameter list.
+      num_params++;
       var_type = getType();
       handleVariableDefinition(var_type, var_segment);
     } else {
@@ -142,7 +145,7 @@ void CompilationEngine::compileParameterList() {
     }
   }
   writeTerminatedCloseTag(parameter_list_tag);
-  return;
+  return num_params;
 }
 
 void CompilationEngine::compileStatements() {
@@ -187,12 +190,15 @@ void CompilationEngine::compileReturn() {
   // we haven't hit statement end so we have the form `return expression;`
   if (!currentTokenIsExpectedSymbol(';')) {
     compileExpression();
+  } else {
+    vm_writer_->writePush(Segment::CONSTANT, 0);
   }
 
   // now we expect statement end.
   handleStatementEnd(return_tag);
 
   writeTerminatedCloseTag(return_tag);
+  vm_writer_->writeReturn();
   return;
 }
 
@@ -450,14 +456,17 @@ void CompilationEngine::compileSubroutineDec() {
 
   // expect a valid identifier for the subroutine name.
   expectIdentifier();
+  std::string function_name = constructFunctionNameFromCurrToken();
   writeTerminatedTagForToken(
-    /*tag=*/"subroutineName", /*token=*/tokenizer_->tokenToString());
+    /*tag=*/"subroutineName", /*token=*/function_name);
   tokenizer_->nextToken();
 
   // Now we expect a parameter list enclosed in `(` and `)`.
   handleOpeningParenthesis('(', subroutine_tag);
-  compileParameterList();
+  int n_args = compileParameterList();
   handleClosingParenthesis(')', subroutine_tag);
+
+  vm_writer_->writeFunction(function_name, n_args);
 
   // Lastly we compile the body of the subroutine.
   compileSubroutineBody();
@@ -749,6 +758,12 @@ bool CompilationEngine::currentTokenIsBinaryOp() {
     return true;
   }
   return false;
+}
+
+std::string CompilationEngine::constructFunctionNameFromCurrToken() {
+  std::stringstream ss;
+  ss << curr_class_ << '.' << tokenizer_->tokenToString();
+  return ss.str();
 }
 
 void CompilationEngine::handleVariableDefinition(

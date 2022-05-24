@@ -33,8 +33,9 @@ public:
   // Compiles a static variable declaration, or a field declaration.
   void compileClassVarDec();
 
-  // compiles a list of parameters.
-  void compileParameterList();
+  // compiles a list of parameters, and returns the number of parameters in the
+  // list.
+  int compileParameterList();
 
   // compiles a collection of statements.
   void compileStatements();
@@ -209,6 +210,10 @@ private:
   // Returns whether the current token pointed to by the tokenizer is a binary
   // operand.
   bool currentTokenIsBinaryOp();
+
+  // Uses the current token to generate the function name for a subroutine. The
+  // name is the class name, followed by `.`, followed by the subroutine name.
+  std::string constructFunctionNameFromCurrToken();
 
   // Writes `num_tabs_` tabs to the `xml_stream_`.
   void writeSpaces();
