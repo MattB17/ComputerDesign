@@ -18,10 +18,24 @@ enum class OpCommand {
   UNKNOWN = 9
 };
 
-static std::unordered_set<char> const unaryOps = {'-', '~'};
+static std::unordered_map<char, OpCommand> const unaryOpsMap = {
+  {'-', OpCommand::NEG},
+  {'~', OpCommand::NOT}
+};
 
-static std::unordered_set<char> const binaryOps = {
-  '+', '-', '*', '/', '&', '|', '<', '>', '='
+static std::unordered_map<char, OpCommand> const simpleBinaryOpsMap = {
+  {'+', OpCommand::ADD},
+  {'-', OpCommand::SUB},
+  {'&', OpCommand::AND},
+  {'|', OpCommand::OR},
+  {'<', OpCommand::LT},
+  {'>', OpCommand::GT},
+  {'=', OpCommand::EQ}
+};
+
+static std::unordered_map<char, std::string> const mathOpsMap = {
+  {'*', "Math.multiply"},
+  {'/', "Math.divide"}
 };
 
 static std::unordered_set<char> const otherSymbols = {
@@ -35,18 +49,35 @@ static std::unordered_map<char, std::string> const xmlSymbolMap = {
   {'&', "&amp;"}
 };
 
+static bool IsUnaryOp(const char curr_char) {
+  return (unaryOpsMap.find(curr_char) != unaryOpsMap.end());
+}
+
+static bool IsSimpleBinaryOp(const char curr_char) {
+  return (simpleBinaryOpsMap.find(curr_char) != simpleBinaryOpsMap.end());
+}
+
+static bool IsMathOp(const char curr_char) {
+  return (mathOpsMap.find(curr_char) != mathOpsMap.end());
+}
+
 static bool IsSymbol(const char curr_char) {
   return ((otherSymbols.find(curr_char) != otherSymbols.end()) ||
-          (binaryOps.find(curr_char) != binaryOps.end()) ||
-          (unaryOps.find(curr_char) != unaryOps.end()));
+          IsUnaryOp(curr_char) ||
+          IsSimpleBinaryOp(curr_char) ||
+          IsMathOp(curr_char));
 }
 
-static bool IsUnaryOp(const char curr_char) {
-  return (unaryOps.find(curr_char) != unaryOps.end());
+static OpCommand GetUnaryOpCommand(const char curr_char) {
+  return unaryOpsMap.find(curr_char)->second;
 }
 
-static bool IsBinaryOp(const char curr_char) {
-  return (binaryOps.find(curr_char) != binaryOps.end());
+static OpCommand GetSimpleBinaryOpCommand(const char curr_char) {
+  return simpleBinaryOpsMap.find(curr_char)->second;
+}
+
+static std::string GetMathOpFunction(const char curr_char) {
+  return mathOpsMap.find(curr_char)->second;
 }
 
 static std::string SymbolToString(const char curr_char) {

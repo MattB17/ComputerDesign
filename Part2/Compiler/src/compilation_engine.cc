@@ -302,9 +302,11 @@ void CompilationEngine::compileTerm() {
 
   if (tokenizer_->getTokenType() == TokenType::SYMBOL) {
     if (IsUnaryOp(tokenizer_->getSymbol())) {
+      char unary_op = tokenizer_->getSymbol();
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       compileTerm();
+      vm_writer_->writeArithmetic(GetUnaryOpCommand(unary_op));
     } else if (tokenizer_->getSymbol() == '(') {
       handleOpeningParenthesis('(', term_tag);
       compileExpression();
@@ -313,6 +315,9 @@ void CompilationEngine::compileTerm() {
       throw InvalidTerm(tokenizer_->tokenToString());
     }
   } else if (currentTokenIsSimpleTerm()) {
+    if (tokenizer_->getTokenType() == TokenType::INT_CONST) {
+      vm_writer_->writePush(Segment::CONSTANT, tokenizer_->getIntVal());
+    }
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
@@ -372,9 +377,15 @@ void CompilationEngine::compileExpression() {
   // Then we check for a binary op to tell us there are more terms in the
   // expression.
   while (currentTokenIsBinaryOp()) {
+    char binary_op = tokenizer_->getSymbol();
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
     compileTerm();
+    if (IsMathOp(binary_op)) {
+      vm_writer_->writeCall(GetMathOpFunction(binary_op), 2);
+    } else {
+      vm_writer_->writeArithmetic(GetSimpleBinaryOpCommand(binary_op));
+    }
   }
 
   writeTerminatedCloseTag(expression_tag);
@@ -733,7 +744,8 @@ void CompilationEngine::expectSubroutineDecKeyword() {
 
 bool CompilationEngine::currentTokenIsBinaryOp() {
   if ((tokenizer_->getTokenType() == TokenType::SYMBOL) &&
-      (IsBinaryOp(tokenizer_->getSymbol()))) {
+      ((IsSimpleBinaryOp(tokenizer_->getSymbol())) ||
+       (IsMathOp(tokenizer_->getSymbol())))) {
     return true;
   }
   return false;
