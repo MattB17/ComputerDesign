@@ -110,6 +110,10 @@ private:
   // character.
   void writeTerminatedTagForToken(std::string tag, std::string token);
 
+  // Gets the associated `SymbolData` for `var_name` from the scope list. An
+  // error is generated if the variable is not in the scope list.
+  SymbolData getVarData(std::string var_name);
+
   // Writes `var_name` to the XML stream with the appropriate variable segment
   // tag and appends the newline character. If `expect_definition` is true, then
   // it is expected that `var_name` is in the scope_list. Otherwise,
@@ -220,6 +224,8 @@ private:
   // Writes `num_tabs_` tabs to the `xml_stream_`.
   void writeSpaces();
 
+  std::string constructOutputLabel(std::string label);
+
   // The tokenizer used to retrieve tokens from the jack file being compiled.
   std::unique_ptr<Tokenizer> tokenizer_;
 
@@ -237,6 +243,9 @@ private:
 
   // The number of spaces (or level of nesting) for the xml tags.
   int num_spaces_;
+
+  // The count of the number of labels used in the current compilation.
+  int label_count_;
 };
 
 #endif  // COMPILATION_ENGINE_H

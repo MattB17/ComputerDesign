@@ -23,6 +23,12 @@ public:
 
   void writeArithmetic(OpCommand op_command);
 
+  void writeLabel(std::string label);
+
+  void writeGoTo(std::string label);
+
+  void writeIfGoTo(std::string label);
+
   void writeCall(std::string function_name, int n_locals);
 
   void writeFunction(std::string function_name, int n_args);

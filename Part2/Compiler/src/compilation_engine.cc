@@ -244,7 +244,7 @@ void CompilationEngine::compileLet() {
 
   // Then we pop the result of the expression off the stack and into the
   // variable on the left of the `=`.
-  SymbolData var_data = scope_list_->getVarData(var_name);
+  SymbolData var_data = getVarData(var_name);
   vm_writer_->writePop(var_data.segment, /*idx=*/var_data.offset);
 
   // now we expect statement end.
@@ -278,6 +278,9 @@ void CompilationEngine::compileIf() {
 }
 
 void CompilationEngine::compileWhile() {
+  std::string while_label = constructOutputLabel("WHILE_LOOP");
+  std::string end_label = constructOutputLabel("ENDLOOP");
+  vm_writer_->writeLabel(while_label);
   const std::string while_tag = "whileStatement";
   writeTerminatedOpenTag(while_tag);
 
@@ -287,9 +290,25 @@ void CompilationEngine::compileWhile() {
   tokenizer_->nextToken();
 
   compileStatementCondition(while_tag);
+
+  // We have compiled the statement condition so it is the top element on the
+  // stack. Now we not it, and if the not is true it means the condition is
+  // false so we go to the end of the loop.
+  vm_writer_->writeArithmetic(OpCommand::NOT);
+  vm_writer_->writeIfGoTo(end_label);
+
   compileScopedStatements(while_tag);
 
+  // At the end of the while statements, we go back to the top of the loop,
+  // unconditionally.
+  vm_writer_->writeGoTo(while_label);
+
   writeTerminatedCloseTag(while_tag);
+
+  // After the while loop, need to write the end label so we can skip entering
+  // the iteration when the condition is false.
+  vm_writer_->writeLabel(end_label);
+  label_count_++;
   return;
 }
 
@@ -390,7 +409,7 @@ void CompilationEngine::compileTerm() {
       // it's just a simple identifier for a variable name.
       writeTerminatedVarTag(
         /*var_name=*/identifier_name, /*expect_definition=*/true);
-      SymbolData var_data = scope_list_->getVarData(identifier_name);
+      SymbolData var_data = getVarData(identifier_name);
       vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
     }
   }
@@ -527,6 +546,7 @@ void CompilationEngine::compileSubroutineBody() {
 void CompilationEngine::setJackFile(std::string jack_file) {
   tokenizer_ = std::make_unique<Tokenizer>(jack_file);
   vm_writer_ = std::make_unique<VMWriter>(jack_file);
+  label_count_ = 0;
   num_spaces_ = 0;
   xml_stream_.open(jackFileToOutputFile(jack_file, ".xml"));
 }
@@ -669,6 +689,14 @@ void CompilationEngine::writeTerminatedVarTag(
   writeSpaces();
   writeVarTag(var_name, expect_definition, default_is_class);
   xml_stream_ << '\n';
+}
+
+SymbolData CompilationEngine::getVarData(std::string var_name) {
+  SymbolData var_data = scope_list_->getVarData(var_name);
+  if (var_data.segment == Segment::UNKNOWN) {
+    throw UndeclaredVariable(var_name);
+  }
+  return var_data;
 }
 
 void CompilationEngine::writeVarTag(
@@ -896,4 +924,10 @@ void CompilationEngine::writeSpaces() {
   for (int i = 0; i < num_spaces_; i++) {
     xml_stream_ << ' ';
   }
+}
+
+std::string CompilationEngine::constructOutputLabel(std::string label) {
+  std::stringstream output_label;
+  output_label << label << label_count_;
+  return output_label.str();
 }
