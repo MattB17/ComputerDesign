@@ -8,8 +8,6 @@
 #include "segment.h"
 #include "util.h"
 
-CompilationEngine::CompilationEngine() : num_spaces_(0) {}
-
 void CompilationEngine::compile(std::string jack_file) {
   setJackFile(jack_file);
   bool moreClasses = tokenizer_->nextToken();
@@ -17,14 +15,13 @@ void CompilationEngine::compile(std::string jack_file) {
     compileClass();
     moreClasses = (tokenizer_->getTokenType() != TokenType::UNKNOWN);
   }
-  xml_stream_.close();
+  vm_writer_.close();
 }
 
 void CompilationEngine::compileClass() {
   scope_list_ = std::make_unique<ScopeList>();
 
   const std::string class_tag = "class";
-  writeTerminatedOpenTag(class_tag);
 
   expectKeyword(Keyword::Type::CLASS);
   writeTerminatedTokenAndTag();
@@ -34,7 +31,6 @@ void CompilationEngine::compileClass() {
   // expect an identifier for the class name.
   expectIdentifier();
   curr_class_ = tokenizer_->tokenToString();
-  writeTerminatedTagForToken(/*tag=*/"className", /*class_name=*/curr_class_);
   tokenizer_->nextToken();
 
   // opening bracket to start the class definition.
@@ -54,8 +50,6 @@ void CompilationEngine::compileClass() {
 
   // lastly we compile the closing parenthesis
   handleClosingParenthesis('}', class_tag);
-
-  writeTerminatedCloseTag(class_tag);
   return;
 }
 
@@ -64,10 +58,9 @@ int CompilationEngine::compileVarDec() {
   Segment var_segment = Segment::LOCAL;
 
   const std::string var_tag = "varDec";
-  writeTerminatedOpenTag(var_tag);
 
-  // Write the `var` token. We know this is the current token as this is the
-  // precondition for entering this method.
+  // We know `var` is the current token as this is the precondition for
+  // entering this method. So just advance past it.
   writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
 
@@ -81,18 +74,14 @@ int CompilationEngine::compileVarDec() {
   n_vars += compileAdditionalVarDecs(var_type, var_segment, var_tag);
 
   handleStatementEnd(var_tag);
-
-  writeTerminatedCloseTag(var_tag);
   return n_vars;
 }
 
 void CompilationEngine::compileClassVarDec() {
   const std::string class_var_tag = "classVarDec";
-  writeTerminatedOpenTag(class_var_tag);
 
-  // Adds a tag for a class variable declaration. We already know it is a class
-  // variable declaration keyword because we check for that before entering
-  // this function.
+  // We already know it is a class variable declaration keyword because we check
+  // for that before entering this function.
   writeTerminatedTokenAndTag();
   Segment var_segment = GetSegmentFromClassVarKeyword(tokenizer_->getKeyword());
   tokenizer_->nextToken();
@@ -106,20 +95,15 @@ void CompilationEngine::compileClassVarDec() {
   compileAdditionalVarDecs(var_type, var_segment, class_var_tag);
 
   handleStatementEnd(class_var_tag);
-
-  writeTerminatedCloseTag(class_var_tag);
   return;
 }
 
 void CompilationEngine::compileParameterList() {
   Segment var_segment = Segment::ARGUMENT;
-
   const std::string parameter_list_tag = "parameterList";
-  writeTerminatedOpenTag(parameter_list_tag);
 
   // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
-    writeTerminatedCloseTag(parameter_list_tag);
     return;
   }
 
@@ -130,9 +114,9 @@ void CompilationEngine::compileParameterList() {
   // Check for more elements in the parameter list. Either we have hit the end
   // of the list (signified by `)`) or we get a `,` signifying more parameters.
   while (!currentTokenIsExpectedSymbol(')')) {
-    // we have another parameter
+    // We have another parameter.
     if (currentTokenIsExpectedSymbol(',')) {
-      writeTerminatedTokenAndTag();
+      // Advance past the comma.
       tokenizer_->nextToken();
 
       // Get type and name of next variable in the parameter list.
@@ -143,15 +127,13 @@ void CompilationEngine::compileParameterList() {
         tokenizer_->tokenToString(), ")", parameter_list_tag);
     }
   }
-  writeTerminatedCloseTag(parameter_list_tag);
   return;
 }
 
 void CompilationEngine::compileStatements() {
   const std::string statements_tag = "statements";
-  writeTerminatedOpenTag(statements_tag);
 
-  // loop through statements, compiling each one.
+  // Loop through statements, compiling each one.
   while (currentTokenIsStatementKeyword()) {
     switch (tokenizer_->getKeyword()) {
       case Keyword::Type::LET:
@@ -173,20 +155,17 @@ void CompilationEngine::compileStatements() {
         tokenizer_->nextToken();
     }
   }
-  writeTerminatedCloseTag(statements_tag);
   return;
 }
 
 void CompilationEngine::compileReturn() {
   const std::string return_tag = "returnStatement";
-  writeTerminatedOpenTag(return_tag);
 
-  // write keyword return.
-  writeTerminatedTokenAndTag();
-
+  // We know the first word is return as that is the precondition for entering
+  // this method. So we just advance past it.
   tokenizer_->nextToken();
 
-  // we haven't hit statement end so we have the form `return expression;`
+  // We haven't hit statement end so we have the form `return expression;`
   if (!currentTokenIsExpectedSymbol(';')) {
     compileExpression();
   } else {
@@ -198,8 +177,6 @@ void CompilationEngine::compileReturn() {
 
   // now we expect statement end.
   handleStatementEnd(return_tag);
-
-  writeTerminatedCloseTag(return_tag);
   vm_writer_->writeReturn();
   return;
 }
@@ -208,31 +185,30 @@ void CompilationEngine::compileReturn() {
 // `let varName[expression] = expression;`.
 void CompilationEngine::compileLet() {
   const std::string let_tag = "letStatement";
-  writeTerminatedOpenTag(let_tag);
 
-  // write keyword let.
-  writeTerminatedTokenAndTag();
-
+  // We know the first word is `let` as that is the precondition for entering
+  // this method. So just advance past it.
   tokenizer_->nextToken();
 
   // expect a valid identifier for the variable name.
   expectIdentifier();
   std::string var_name = tokenizer_->tokenToString();
-  writeTerminatedVarTag(var_name, /*expect_definition=*/true);
   tokenizer_->nextToken();
 
   // If we encounter `[` then we know we are in the second case.
   if (currentTokenIsExpectedSymbol('[')) {
-    writeTerminatedTokenAndTag();
+    // Advance past the bracket.
     tokenizer_->nextToken();
+
+    // Compile the expression inside.
     compileExpression();
+
+    // Handle the closing paranthesis.
     handleClosingParenthesis(']', let_tag);
   }
 
-  // handle the equal sign
-  if (currentTokenIsExpectedSymbol('=')) {
-    writeTerminatedTokenAndTag();
-  } else {
+  // Expect the equal sign.
+  if (!currentTokenIsExpectedSymbol('=')) {
     throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
   }
   tokenizer_->nextToken();
@@ -248,8 +224,6 @@ void CompilationEngine::compileLet() {
 
   // now we expect statement end.
   handleStatementEnd(let_tag);
-
-  writeTerminatedCloseTag(let_tag);
   return;
 }
 
@@ -258,11 +232,9 @@ void CompilationEngine::compileIf() {
   std::string endif_label = constructOutputLabel("ENDIF");
   std::string endelse_label = constructOutputLabel("ENDELSE");
   const std::string if_tag = "ifStatement";
-  writeTerminatedOpenTag(if_tag);
 
-  // write keyword if.
-  writeTerminatedTokenAndTag();
-
+  // We know the first word is `if` as this is the precondition for entering
+  // this method. So just advance past it.
   tokenizer_->nextToken();
 
   compileStatementCondition(if_tag);
@@ -283,7 +255,6 @@ void CompilationEngine::compileIf() {
     // code, signifying that this is where we jump if the if condition is false.
     vm_writer_->writeGoTo(endelse_label);
     vm_writer_->writeLabel(endif_label);
-    writeTerminatedTokenAndTag();
 
     tokenizer_->nextToken();
     compileScopedStatements("elseStatement");
@@ -296,8 +267,6 @@ void CompilationEngine::compileIf() {
     // as this is the point we jump to if the if condition is false.
     vm_writer_->writeLabel(endif_label);
   }
-
-  writeTerminatedCloseTag(if_tag);
   return;
 }
 
@@ -307,11 +276,9 @@ void CompilationEngine::compileWhile() {
   std::string end_label = constructOutputLabel("ENDLOOP");
   vm_writer_->writeLabel(while_label);
   const std::string while_tag = "whileStatement";
-  writeTerminatedOpenTag(while_tag);
 
-  // write keyword while.
-  writeTerminatedTokenAndTag();
-
+  // We know the first word is `while` as that is the precondition for entering
+  // this method. So just advance past it.
   tokenizer_->nextToken();
 
   compileStatementCondition(while_tag);
@@ -328,8 +295,6 @@ void CompilationEngine::compileWhile() {
   // unconditionally.
   vm_writer_->writeGoTo(while_label);
 
-  writeTerminatedCloseTag(while_tag);
-
   // After the while loop, need to write the end label so we can skip entering
   // the iteration when the condition is false.
   vm_writer_->writeLabel(end_label);
@@ -338,10 +303,9 @@ void CompilationEngine::compileWhile() {
 
 void CompilationEngine::compileDo() {
   const std::string do_tag = "doStatement";
-  writeTerminatedOpenTag(do_tag);
 
-  // write keyword do.
-  writeTerminatedTokenAndTag();
+  // We know the first word is `do` as this is the precondition for entering
+  // this method. So just advance past it.
   tokenizer_->nextToken();
 
   // compile the subroutine call. We put the subroutine name into
@@ -358,18 +322,17 @@ void CompilationEngine::compileDo() {
   // expected that it was pushed onto the stack, so we need to pop it off.
   vm_writer_->writePop(Segment::TEMP, /*idx=*/0);
 
-  writeTerminatedCloseTag(do_tag);
   return;
 }
 
 void CompilationEngine::compileTerm() {
   const std::string term_tag = "term";
-  writeTerminatedOpenTag(term_tag);
 
   if (tokenizer_->getTokenType() == TokenType::SYMBOL) {
     if (IsUnaryOp(tokenizer_->getSymbol())) {
+      // Keep track of the unary operator, compile the term, then add the VM
+      // command for the unary operator.
       char unary_op = tokenizer_->getSymbol();
-      writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
       compileTerm();
       vm_writer_->writeArithmetic(GetUnaryOpCommand(unary_op));
@@ -387,7 +350,6 @@ void CompilationEngine::compileTerm() {
     if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
       compileKeywordConstant();
     }
-    writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
   } else {
     // we must have an identifier. Either a simple variable name, an array
@@ -399,8 +361,6 @@ void CompilationEngine::compileTerm() {
     if (currentTokenIsExpectedSymbol('[')) {
       // In this case we have an array element. Start by writing the array
       // variable name, then handle the array index.
-      writeTerminatedVarTag(
-        /*var_name=*/identifier_name, /*expect_definition=*/true);
       handleOpeningParenthesis('[', term_tag);
       compileExpression();
       handleClosingParenthesis(']', term_tag);
@@ -408,22 +368,14 @@ void CompilationEngine::compileTerm() {
       // We have a subroutine call of the type `methodName(expressionList)`.
       // So we write the subroutine name and then proceed with handling the
       // brackets and expression list.
-      writeTerminatedVarTag(/*var_name=*/identifier_name,
-                            /*expect_definition=*/false,
-                            /*default_is_class=*/false);
       handleOpeningParenthesis('(', term_tag);
       int n_locals = compileExpressionList();
       handleClosingParenthesis(')', term_tag);
       vm_writer_->writeCall(identifier_name, n_locals);
     } else if (currentTokenIsExpectedSymbol('.')) {
       // We have a subroutine call of the type
-      // `className.methodName(expressionList)`. We write the class name first
-      // and then we write the `.`. Then note that `methodName(expressionList)`
-      // has the form of a subroutine call.
-      writeTerminatedVarTag(/*var_name=*/identifier_name,
-                            /*expect_definition=*/false,
-                            /*default_is_class=*/true);
-      writeTerminatedTokenAndTag();
+      // `className.methodName(expressionList)`. Note that
+      // `methodName(expressionList)` has the form of a subroutine call.
       tokenizer_->nextToken();
 
       // Add the class name and `.` to the stream, then compile the rest of
@@ -433,21 +385,15 @@ void CompilationEngine::compileTerm() {
       int n_locals = compileSubroutineCall(&function_name);
       vm_writer_->writeCall(function_name.str(), n_locals);
     } else {
-      // it's just a simple identifier for a variable name.
-      writeTerminatedVarTag(
-        /*var_name=*/identifier_name, /*expect_definition=*/true);
       SymbolData var_data = getVarData(identifier_name);
       vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
     }
   }
-
-  writeTerminatedCloseTag(term_tag);
   return;
 }
 
 void CompilationEngine::compileExpression() {
   const std::string expression_tag = "expression";
-  writeTerminatedOpenTag(expression_tag);
 
   // We start with a term.
   compileTerm();
@@ -456,7 +402,6 @@ void CompilationEngine::compileExpression() {
   // expression.
   while (currentTokenIsBinaryOp()) {
     char binary_op = tokenizer_->getSymbol();
-    writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
     compileTerm();
     if (IsMathOp(binary_op)) {
@@ -465,19 +410,15 @@ void CompilationEngine::compileExpression() {
       vm_writer_->writeArithmetic(GetSimpleBinaryOpCommand(binary_op));
     }
   }
-
-  writeTerminatedCloseTag(expression_tag);
   return;
 }
 
 int CompilationEngine::compileExpressionList() {
   int num_expressions = 0;
   const std::string expression_list_tag = "expressionList";
-  writeTerminatedOpenTag(expression_list_tag);
 
   // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
-    writeTerminatedCloseTag(expression_list_tag);
     return num_expressions;
   }
 
@@ -490,7 +431,7 @@ int CompilationEngine::compileExpressionList() {
   while (!currentTokenIsExpectedSymbol(')')) {
     // we have another expression.
     if (currentTokenIsExpectedSymbol(',')) {
-      writeTerminatedTokenAndTag();
+      // Advance past the `,`.
       tokenizer_->nextToken();
 
       // Expect an expression.
@@ -501,7 +442,6 @@ int CompilationEngine::compileExpressionList() {
         tokenizer_->tokenToString(), ")", expression_list_tag);
     }
   }
-  writeTerminatedCloseTag(expression_list_tag);
   return num_expressions;
 }
 
@@ -509,30 +449,16 @@ void CompilationEngine::compileSubroutineDec() {
   scope_list_->startSubroutine();
 
   const std::string subroutine_tag = "subroutineDec";
-  writeTerminatedOpenTag(subroutine_tag);
 
   expectSubroutineDecKeyword();
-  writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
 
   expectFunctionReturnType();
-  // We have a valid function return type, so it is either a primitive type,
-  // void, or a class name. That is, an identifier or keyword.
-  if (tokenizer_->getTokenType() == TokenType::IDENTIFIER) {
-    // We have a class name.
-    writeTerminatedTagForToken(
-      /*tag=*/"className", /*token=*/tokenizer_->tokenToString());
-  } else {
-    // We have a primitive type or void, so just compile the the keyword.
-    writeTerminatedTokenAndTag();
-  }
   tokenizer_->nextToken();
 
-  // expect a valid identifier for the subroutine name.
+  // Expect a valid identifier for the subroutine name.
   expectIdentifier();
   std::string function_name = constructFunctionNameFromCurrToken();
-  writeTerminatedTagForToken(
-    /*tag=*/"subroutineName", /*token=*/function_name);
   tokenizer_->nextToken();
 
   // Now we expect a parameter list enclosed in `(` and `)`.
@@ -542,14 +468,11 @@ void CompilationEngine::compileSubroutineDec() {
 
   // Lastly we compile the body of the subroutine.
   compileSubroutineBody(function_name);
-
-  writeTerminatedCloseTag(subroutine_tag);
   return;
 }
 
 void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
   const std::string subroutine_tag = "subroutineBody";
-  writeTerminatedOpenTag(subroutine_tag);
 
   handleOpeningParenthesis('{', subroutine_tag);
 
@@ -568,8 +491,6 @@ void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
   }
 
   handleClosingParenthesis('}', subroutine_tag);
-
-  writeTerminatedCloseTag(subroutine_tag);
   return;
 }
 
@@ -577,8 +498,6 @@ void CompilationEngine::setJackFile(std::string jack_file) {
   tokenizer_ = std::make_unique<Tokenizer>(jack_file);
   vm_writer_ = std::make_unique<VMWriter>(jack_file);
   label_count_ = 0;
-  num_spaces_ = 0;
-  xml_stream_.open(jackFileToOutputFile(jack_file, ".xml"));
 }
 
 // A subroutine call has one of 2 forms: `subroutineName(expressionList)` or
@@ -586,6 +505,7 @@ void CompilationEngine::setJackFile(std::string jack_file) {
 int CompilationEngine::compileSubroutineCall(
   std::stringstream* function_name) {
   const std::string call_tag = "subroutineCall";
+
   // expect an identifier (either `subroutineName` or `varName`).
   expectIdentifier();
   std::string identifier_name = tokenizer_->tokenToString();
@@ -595,30 +515,18 @@ int CompilationEngine::compileSubroutineCall(
   // then compile the rest. Note that the part after `.` also has the form of
   // a subroutine call so we can recurse.
   if (currentTokenIsExpectedSymbol('.')) {
-    // Write className / varName first.
-    writeTerminatedVarTag(/*var_name=*/identifier_name,
-                          /*expect_definition=*/false,
-                          /*default_is_class=*/true);
-
+    // Stream the class name and the `.`.
     (*function_name) << identifier_name << '.';
 
-    // Then write the `.`.
-    writeTerminatedTokenAndTag();
+    // Advance past the `.`.
     tokenizer_->nextToken();
 
     // Then recurse.
     return compileSubroutineCall(function_name);
   }
 
-  // Otherwise, we have a plain subroutine call. So we write the subroutine name
-  // and then compile the expression list.
-  writeTerminatedVarTag(/*var_name=*/identifier_name,
-                        /*expect_definition=*/false,
-                        /*default_is_class=*/false);
-
+  // Otherwise, we have a plain subroutine call. So compile the expression list.
   (*function_name) << identifier_name;
-
-  // Now we expect the start of the expression list.
   handleOpeningParenthesis('(', call_tag);
   int n_locals = compileExpressionList();
   handleClosingParenthesis(')', call_tag);
@@ -631,7 +539,6 @@ int CompilationEngine::compileAdditionalVarDecs(
   int n_additional_vars = 0;
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
-      writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
       handleVariableDefinition(var_type, var_segment);
@@ -672,124 +579,12 @@ void CompilationEngine::compileKeywordConstant() {
   }
 }
 
-void CompilationEngine::writeTokenWithTag() {
-  std::string tag;
-  switch (tokenizer_->getTokenType()) {
-    case TokenType::KEYWORD:
-      // If the keyword is `this` and it is in the symbol table then we are
-      // in a method and so `this` is a variable, not a keyword.
-      if (tokenizer_->getKeyword() == Keyword::Type::THIS) {
-        std::string var_name = tokenizer_->tokenToString();
-        SymbolData var_data = scope_list_->getVarData(var_name);
-        if (var_data.segment != Segment::UNKNOWN) {
-          handleVarOutput(var_name, var_data);
-          return;
-        }
-      }
-      // Otherwise, just a normal keyword.
-      tag = "keyword";
-      break;
-    case TokenType::SYMBOL:
-      tag = "symbol";
-      break;
-    case TokenType::IDENTIFIER:
-      writeVarTag(
-        /*var_name=*/tokenizer_->tokenToString(), /*expect_definition=*/true);
-      return;
-    case TokenType::INT_CONST:
-      tag = "integerConstant";
-      break;
-    case TokenType::STRING_CONST:
-      tag = "stringConstant";
-      break;
-    default:
-      tag = "unknown";
-  }
-  writeTagForToken(tag, tokenizer_->tokenToString());
-}
-
-void CompilationEngine::writeTagForToken(std::string tag, std::string token) {
-  writeOpenTag(tag);
-  std::cout << token << std::endl;
-  xml_stream_ << " " << token << " ";
-  writeCloseTag(tag);
-}
-
-void CompilationEngine::writeOpenTag(const std::string tag) {
-  xml_stream_ << "<" << tag << ">";
-}
-
-void CompilationEngine::writeCloseTag(const std::string tag) {
-  xml_stream_ << "</" << tag << ">";
-}
-
-void CompilationEngine::writeTerminatedTagForToken(
-  std::string tag, std::string token) {
-  writeSpaces();
-  writeTagForToken(tag, token);
-  xml_stream_ << '\n';
-}
-
-void CompilationEngine::writeTerminatedVarTag(
-  std::string var_name, bool expect_definition, bool default_is_class) {
-  writeSpaces();
-  writeVarTag(var_name, expect_definition, default_is_class);
-  xml_stream_ << '\n';
-}
-
 SymbolData CompilationEngine::getVarData(std::string var_name) {
   SymbolData var_data = scope_list_->getVarData(var_name);
   if (var_data.segment == Segment::UNKNOWN) {
     throw UndeclaredVariable(var_name);
   }
   return var_data;
-}
-
-void CompilationEngine::writeVarTag(
-  std::string var_name, bool expect_definition, bool default_is_class) {
-  SymbolData var_data = scope_list_->getVarData(var_name);
-  if (var_data.segment == Segment::UNKNOWN) {
-    if (expect_definition) {
-      throw UndeclaredVariable(var_name);
-    }
-    // Otherwise, we don't expect it to be defined. As it is not defined, it
-    // is either a class name or subroutine name.
-    if (default_is_class) {
-      writeTagForToken(/*tag=*/"className", /*token=*/var_name);
-    } else {
-      writeTagForToken(/*tag=*/"subroutineName", /*token=*/var_name);
-    }
-    return;
-  }
-  handleVarOutput(var_name, var_data);
-}
-
-void CompilationEngine::handleVarOutput(
-  std::string var_name, SymbolData var_data) {
-  std::stringstream ss;
-  ss << var_name << " " << var_data.offset;
-  writeTagForToken(
-    /*tag=*/SegmentToString(var_data.segment), /*token=*/ss.str());
-}
-
-void CompilationEngine::writeTerminatedTokenAndTag() {
-  writeSpaces();
-  writeTokenWithTag();
-  xml_stream_ << '\n';
-}
-
-void CompilationEngine::writeTerminatedOpenTag(const std::string tag) {
-  writeSpaces();
-  writeOpenTag(tag);
-  xml_stream_ << '\n';
-  num_spaces_ = num_spaces_ + 2;
-}
-
-void CompilationEngine::writeTerminatedCloseTag(const std::string tag) {
-  num_spaces_ = num_spaces_ - 2;
-  writeSpaces();
-  writeCloseTag(tag);
-  xml_stream_ << '\n';
 }
 
 void CompilationEngine::expectKeyword(Keyword::Type k) {
@@ -964,12 +759,6 @@ bool CompilationEngine::currentTokenIsStatementKeyword() {
     }
   }
   return false;
-}
-
-void CompilationEngine::writeSpaces() {
-  for (int i = 0; i < num_spaces_; i++) {
-    xml_stream_ << ' ';
-  }
 }
 
 std::string CompilationEngine::constructOutputLabel(std::string label) {

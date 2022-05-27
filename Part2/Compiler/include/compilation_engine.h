@@ -14,7 +14,7 @@
 
 class CompilationEngine {
 public:
-  CompilationEngine();
+  CompilationEngine() {}
   CompilationEngine(const CompilationEngine&) = delete;
   CompilationEngine &operator=(const CompilationEngine&) = delete;
   CompilationEngine(CompilationEngine&&) = delete;
@@ -99,51 +99,9 @@ private:
   // Compiles a keyword constant to VM code.
   void compileKeywordConstant();
 
-  // Writes the current token to the XML stream with the appropriate tag.
-  void writeTokenWithTag();
-
-  // Writes the XML opening tag for `tag`.
-  void writeOpenTag(const std::string tag);
-
-  // Writes the XML closing tag for `tag`.
-  void writeCloseTag(const std::string tag);
-
-  // Writes `token` to the XML stream with `tag`.
-  void writeTagForToken(std::string tag, std::string token);
-
-  // Writes `token` to the XML stream with `tag` and appends the newline
-  // character.
-  void writeTerminatedTagForToken(std::string tag, std::string token);
-
   // Gets the associated `SymbolData` for `var_name` from the scope list. An
   // error is generated if the variable is not in the scope list.
   SymbolData getVarData(std::string var_name);
-
-  // Writes `var_name` to the XML stream with the appropriate variable segment
-  // tag and appends the newline character. If `expect_definition` is true, then
-  // it is expected that `var_name` is in the scope_list. Otherwise,
-  // `default_is_class` signifies whether `var_name` should be treated as a
-  // class or as a subroutine if not found in the scope list.
-  void writeTerminatedVarTag(
-    std::string var_name, bool expect_definition, bool default_is_class=true);
-
-  // Writes `var_name` to the XML stream with the appropriate variable segment
-  // tag. If `expect_definition` is true, then it is expected that `var_name`
-  // is in the scope list. Otherwise, `default_is_class` signifies whether
-  // `var_name` should be treated as a class or as a subroutine if not found in
-  // the scope list.
-  void writeVarTag(
-    std::string var_name, bool expect_definition, bool default_is_class=true);
-
-  // Writes the current token to the XML stream with the appropriate tag and
-  // appends the newline character.
-  void writeTerminatedTokenAndTag();
-
-  // Writes the XML opening tag for `tag` and appends the newline character.
-  void writeTerminatedOpenTag(const std::string tag);
-
-  // Writes the XML closing tag for `tag` and appends the newline character.
-  void writeTerminatedCloseTag(const std::string tag);
 
   // Handles the expectation that the compiler expects to receive keyword `k`.
   // If `k` is not the next token, an exception is thrown.
@@ -170,9 +128,6 @@ private:
   // definition to the symbol table under segment `var_segment` and with type
   // `var_type`.
   void handleVariableDefinition(std::string var_type, Segment var_segment);
-
-  // Handles the outputing of a variable and its tag to the output XML stream.
-  void handleVarOutput(std::string var_name, SymbolData var_data);
 
   // Retrieves a type from the current token and advances the tokenizer. If the
   // current token does not represent a valid type, an error is raised.
@@ -226,9 +181,7 @@ private:
   // name is the class name, followed by `.`, followed by the subroutine name.
   std::string constructFunctionNameFromCurrToken();
 
-  // Writes `num_tabs_` tabs to the `xml_stream_`.
-  void writeSpaces();
-
+  // Constructs an output label from `label`, accounting for the `label_count_`.
   std::string constructOutputLabel(std::string label);
 
   // The tokenizer used to retrieve tokens from the jack file being compiled.
@@ -242,12 +195,6 @@ private:
 
   // Handles the scope hierarchy throughout compilation of a class.
   std::unique_ptr<ScopeList> scope_list_;
-
-  // A stream representing the to which the compilation engine writes output.
-  std::ofstream xml_stream_;
-
-  // The number of spaces (or level of nesting) for the xml tags.
-  int num_spaces_;
 
   // The count of the number of labels used in the current compilation.
   int label_count_;
