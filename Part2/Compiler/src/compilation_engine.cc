@@ -51,8 +51,7 @@ void CompilationEngine::compileClass() {
   return;
 }
 
-int CompilationEngine::compileVarDec() {
-  int n_vars = 0;
+void CompilationEngine::compileVarDec() {
   Segment var_segment = Segment::LOCAL;
 
   const std::string var_tag = "varDec";
@@ -64,14 +63,13 @@ int CompilationEngine::compileVarDec() {
   // Retrieve the variable type and define the variable.
   std::string var_type = getType();
   handleVariableDefinition(var_type, var_segment);
-  n_vars++;
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
-  n_vars += compileAdditionalVarDecs(var_type, var_segment, var_tag);
+  compileAdditionalVarDecs(var_type, var_segment, var_tag);
 
   handleStatementEnd(var_tag);
-  return n_vars;
+  return;
 }
 
 void CompilationEngine::compileClassVarDec() {
@@ -472,14 +470,13 @@ void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
 
   handleOpeningParenthesis('{', subroutine_tag);
 
-  // The number of local variables for the function.
-  int n_locals = 0;
-
   while (currentTokenIsExpectedKeyword(Keyword::Type::VAR)) {
-    n_locals += compileVarDec();
+    compileVarDec();
     tokenizer_->nextToken();
   }
 
+  // The number of local variables for the function.
+  int n_locals = scope_list_->varCount(Segment::LOCAL);
   vm_writer_->writeFunction(subroutine_name, n_locals);
 
   if (currentTokenIsStatementKeyword()) {
@@ -530,7 +527,7 @@ int CompilationEngine::compileSubroutineCall(
   return n_locals;
 }
 
-int CompilationEngine::compileAdditionalVarDecs(
+void CompilationEngine::compileAdditionalVarDecs(
   std::string var_type, Segment var_segment, const std::string compile_tag) {
   int n_additional_vars = 0;
   while (!currentTokenIsExpectedSymbol(';')) {

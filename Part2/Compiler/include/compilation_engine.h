@@ -27,9 +27,8 @@ public:
   // Runs the compilation process for an entire class.
   void compileClass();
 
-  // Compiles a variable declaration statement and returns the number of
-  // variables defined in the statement.
-  int compileVarDec();
+  // Compiles a variable declaration statement.
+  void compileVarDec();
 
   // Compiles a static variable declaration, or a field declaration.
   void compileClassVarDec();
@@ -78,14 +77,13 @@ private:
 
   // compiles a subroutine call and returns the number of arguments supplied
   // to the subroutine call.
-  int compileSubroutineCall(std::stringstream* function_name);
+  void compileSubroutineCall(std::stringstream* function_name);
 
-  // Compiles additional variables listed in a variable declaration statement
-  // and returns the number of additional variables in the statement.
+  // Compiles additional variables listed in a variable declaration statement.
   // `var_type` and `var_segment` represent the variable segment and type,
   // respectively, of the variables being compiled. `compile_tag` is a string
   // representing the name of the statement being compiled.
-  int compileAdditionalVarDecs(
+  void compileAdditionalVarDecs(
     std::string var_type, Segment var_segment, const std::string compile_tag);
 
   // Compiles the condition of an if or while statement. The condition has the
