@@ -32,12 +32,12 @@ void VMWriter::writeIfGoTo(std::string label) {
   vm_stream_ << "if-goto " << label << '\n';
 }
 
-void VMWriter::writeCall(std::string function_name, int n_locals) {
-  vm_stream_ << "call " << function_name << " " << n_locals << '\n';
+void VMWriter::writeCall(std::string function_name, int n_args) {
+  vm_stream_ << "call " << function_name << " " << n_args << '\n';
 }
 
-void VMWriter::writeFunction(std::string function_name, int n_args) {
-  vm_stream_ << "function " << function_name << " " << n_args << '\n';
+void VMWriter::writeFunction(std::string function_name, int n_locals) {
+  vm_stream_ << "function " << function_name << " " << n_locals << '\n';
 }
 
 void VMWriter::writeReturn() {

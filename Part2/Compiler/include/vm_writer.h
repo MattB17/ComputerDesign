@@ -29,9 +29,9 @@ public:
 
   void writeIfGoTo(std::string label);
 
-  void writeCall(std::string function_name, int n_locals);
+  void writeCall(std::string function_name, int n_args);
 
-  void writeFunction(std::string function_name, int n_args);
+  void writeFunction(std::string function_name, int n_locals);
 
   void writeReturn();
 

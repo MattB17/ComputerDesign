@@ -27,15 +27,16 @@ public:
   // Runs the compilation process for an entire class.
   void compileClass();
 
-  // Compiles a variable declaration statement.
-  void compileVarDec();
+  // Compiles a variable declaration statement and returns the number of
+  // variables defined in the statement.
+  int compileVarDec();
 
   // Compiles a static variable declaration, or a field declaration.
   void compileClassVarDec();
 
-  // compiles a list of parameters, and returns the number of parameters in the
-  // list.
-  int compileParameterList();
+  // compiles a list of parameters, adding each to the symbol table as an
+  // argument for the subroutine.
+  void compileParameterList();
 
   // compiles a collection of statements.
   void compileStatements();
@@ -68,8 +69,8 @@ public:
   // Compiles a subroutine declaration.
   void compileSubroutineDec();
 
-  // compiles the body of a subroutine.
-  void compileSubroutineBody();
+  // compiles the body of the subroutine `subroutine_name`.
+  void compileSubroutineBody(std::string subroutine_name);
 
 private:
   // Sets the jack file currently being compiled.
@@ -79,11 +80,12 @@ private:
   // to the subroutine call.
   int compileSubroutineCall(std::stringstream* function_name);
 
-  // Compiles additional variables listed in a variable declaration statement.
+  // Compiles additional variables listed in a variable declaration statement
+  // and returns the number of additional variables in the statement.
   // `var_type` and `var_segment` represent the variable segment and type,
   // respectively, of the variables being compiled. `compile_tag` is a string
   // representing the name of the statement being compiled.
-  void compileAdditionalVarDecs(
+  int compileAdditionalVarDecs(
     std::string var_type, Segment var_segment, const std::string compile_tag);
 
   // Compiles the condition of an if or while statement. The condition has the

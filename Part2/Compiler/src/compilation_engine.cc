@@ -59,7 +59,8 @@ void CompilationEngine::compileClass() {
   return;
 }
 
-void CompilationEngine::compileVarDec() {
+int CompilationEngine::compileVarDec() {
+  int n_vars = 0;
   Segment var_segment = Segment::LOCAL;
 
   const std::string var_tag = "varDec";
@@ -73,15 +74,16 @@ void CompilationEngine::compileVarDec() {
   // Retrieve the variable type and define the variable.
   std::string var_type = getType();
   handleVariableDefinition(var_type, var_segment);
+  n_vars++;
 
   // Check if we have reached the end of the statement. If not, we have a `,`
   // signifying additional variable names of the same type.
-  compileAdditionalVarDecs(var_type, var_segment, var_tag);
+  n_vars += compileAdditionalVarDecs(var_type, var_segment, var_tag);
 
   handleStatementEnd(var_tag);
 
   writeTerminatedCloseTag(var_tag);
-  return;
+  return n_vars;
 }
 
 void CompilationEngine::compileClassVarDec() {
@@ -109,8 +111,7 @@ void CompilationEngine::compileClassVarDec() {
   return;
 }
 
-int CompilationEngine::compileParameterList() {
-  int num_params = 0;
+void CompilationEngine::compileParameterList() {
   Segment var_segment = Segment::ARGUMENT;
 
   const std::string parameter_list_tag = "parameterList";
@@ -119,11 +120,10 @@ int CompilationEngine::compileParameterList() {
   // We have an empty parameter list `()`.
   if (currentTokenIsExpectedSymbol(')')) {
     writeTerminatedCloseTag(parameter_list_tag);
-    return num_params;
+    return;
   }
 
   // Get variable type and name as the parameter list is not empty.
-  num_params++;
   std::string var_type = getType();
   handleVariableDefinition(var_type, var_segment);
 
@@ -136,7 +136,6 @@ int CompilationEngine::compileParameterList() {
       tokenizer_->nextToken();
 
       // Get type and name of next variable in the parameter list.
-      num_params++;
       var_type = getType();
       handleVariableDefinition(var_type, var_segment);
     } else {
@@ -145,7 +144,7 @@ int CompilationEngine::compileParameterList() {
     }
   }
   writeTerminatedCloseTag(parameter_list_tag);
-  return num_params;
+  return;
 }
 
 void CompilationEngine::compileStatements() {
@@ -538,28 +537,31 @@ void CompilationEngine::compileSubroutineDec() {
 
   // Now we expect a parameter list enclosed in `(` and `)`.
   handleOpeningParenthesis('(', subroutine_tag);
-  int n_args = compileParameterList();
+  compileParameterList();
   handleClosingParenthesis(')', subroutine_tag);
 
-  vm_writer_->writeFunction(function_name, n_args);
-
   // Lastly we compile the body of the subroutine.
-  compileSubroutineBody();
+  compileSubroutineBody(function_name);
 
   writeTerminatedCloseTag(subroutine_tag);
   return;
 }
 
-void CompilationEngine::compileSubroutineBody() {
+void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
   const std::string subroutine_tag = "subroutineBody";
   writeTerminatedOpenTag(subroutine_tag);
 
   handleOpeningParenthesis('{', subroutine_tag);
 
+  // The number of local variables for the function.
+  int n_locals = 0;
+
   while (currentTokenIsExpectedKeyword(Keyword::Type::VAR)) {
-    compileVarDec();
+    n_locals += compileVarDec();
     tokenizer_->nextToken();
   }
+
+  vm_writer_->writeFunction(subroutine_name, n_locals);
 
   if (currentTokenIsStatementKeyword()) {
     compileStatements();
@@ -624,19 +626,21 @@ int CompilationEngine::compileSubroutineCall(
   return n_locals;
 }
 
-void CompilationEngine::compileAdditionalVarDecs(
+int CompilationEngine::compileAdditionalVarDecs(
   std::string var_type, Segment var_segment, const std::string compile_tag) {
+  int n_additional_vars = 0;
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       writeTerminatedTokenAndTag();
       tokenizer_->nextToken();
 
       handleVariableDefinition(var_type, var_segment);
+      n_additional_vars++;
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString(), compile_tag);
     }
   }
-  return;
+  return n_additional_vars;
 }
 
 void CompilationEngine::compileStatementCondition(
