@@ -255,7 +255,9 @@ void CompilationEngine::compileLet() {
 }
 
 void CompilationEngine::compileIf() {
+  label_count_++;
   std::string endif_label = constructOutputLabel("ENDIF");
+  std::string endelse_label = constructOutputLabel("ENDELSE");
   const std::string if_tag = "ifStatement";
   writeTerminatedOpenTag(if_tag);
 
@@ -276,7 +278,6 @@ void CompilationEngine::compileIf() {
   compileScopedStatements(if_tag);
 
   if (currentTokenIsExpectedKeyword(Keyword::Type::ELSE)) {
-    std::string endelse_label = constructOutputLabel("ENDELSE");
     // We have an else clause, so write before the else we write a goto to the
     // end of the else (as part of the if part), so that if we did enter the
     // if, then we skip the else. Then we write the endif label before the else
@@ -298,11 +299,11 @@ void CompilationEngine::compileIf() {
   }
 
   writeTerminatedCloseTag(if_tag);
-  label_count_++;
   return;
 }
 
 void CompilationEngine::compileWhile() {
+  label_count_++;
   std::string while_label = constructOutputLabel("WHILE_LOOP");
   std::string end_label = constructOutputLabel("ENDLOOP");
   vm_writer_->writeLabel(while_label);
@@ -333,7 +334,6 @@ void CompilationEngine::compileWhile() {
   // After the while loop, need to write the end label so we can skip entering
   // the iteration when the condition is false.
   vm_writer_->writeLabel(end_label);
-  label_count_++;
   return;
 }
 
@@ -384,6 +384,9 @@ void CompilationEngine::compileTerm() {
   } else if (currentTokenIsSimpleTerm()) {
     if (tokenizer_->getTokenType() == TokenType::INT_CONST) {
       vm_writer_->writePush(Segment::CONSTANT, tokenizer_->getIntVal());
+    }
+    if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+      compileKeywordConstant();
     }
     writeTerminatedTokenAndTag();
     tokenizer_->nextToken();
@@ -967,6 +970,6 @@ void CompilationEngine::writeSpaces() {
 
 std::string CompilationEngine::constructOutputLabel(std::string label) {
   std::stringstream output_label;
-  output_label << label << label_count_;
+  output_label << label << (label_count_ - 1);
   return output_label.str();
 }
