@@ -94,6 +94,9 @@ private:
   // `{` and `}`.
   void compileScopedStatements(const std::string compile_tag);
 
+  // Compiles a keyword constant to VM code.
+  void compileKeywordConstant();
+
   // Writes the current token to the XML stream with the appropriate tag.
   void writeTokenWithTag();
 

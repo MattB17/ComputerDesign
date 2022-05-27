@@ -255,6 +255,7 @@ void CompilationEngine::compileLet() {
 }
 
 void CompilationEngine::compileIf() {
+  std::string endif_label = constructOutputLabel("ENDIF");
   const std::string if_tag = "ifStatement";
   writeTerminatedOpenTag(if_tag);
 
@@ -264,16 +265,40 @@ void CompilationEngine::compileIf() {
   tokenizer_->nextToken();
 
   compileStatementCondition(if_tag);
+
+  // We have compiled the statement condition so it is the top element on the
+  // stack. Now we not it, and if the not is true it means the condition is
+  // false so we go to the end of the if.
+  vm_writer_->writeArithmetic(OpCommand::NOT);
+  vm_writer_->writeIfGoTo(endif_label);
+
+  // Now compile the statements inside the if.
   compileScopedStatements(if_tag);
 
   if (currentTokenIsExpectedKeyword(Keyword::Type::ELSE)) {
+    std::string endelse_label = constructOutputLabel("ENDELSE");
+    // We have an else clause, so write before the else we write a goto to the
+    // end of the else (as part of the if part), so that if we did enter the
+    // if, then we skip the else. Then we write the endif label before the else
+    // code, signifying that this is where we jump if the if condition is false.
+    vm_writer_->writeGoTo(endelse_label);
+    vm_writer_->writeLabel(endif_label);
     writeTerminatedTokenAndTag();
 
     tokenizer_->nextToken();
     compileScopedStatements("elseStatement");
+
+    // After we compile all the statements of the else, we add the endelse label
+    // to signify this is where we jump to if we skip the else statements.
+    vm_writer_->writeLabel(endelse_label);
+  } else {
+    // Otherwise, we just have a simple if statement, so write the endif label
+    // as this is the point we jump to if the if condition is false.
+    vm_writer_->writeLabel(endif_label);
   }
 
   writeTerminatedCloseTag(if_tag);
+  label_count_++;
   return;
 }
 
@@ -624,6 +649,20 @@ void CompilationEngine::compileScopedStatements(const std::string compile_tag) {
   compileStatements();
   handleClosingParenthesis('}', compile_tag);
   return;
+}
+
+void CompilationEngine::compileKeywordConstant() {
+  switch (tokenizer_->getKeyword()) {
+    case Keyword::Type::TRUE:
+      vm_writer_->writePush(Segment::CONSTANT, 1);
+      vm_writer_->writeArithmetic(OpCommand::NEG);
+      return;
+    case Keyword::Type::FALSE:
+      vm_writer_->writePush(Segment::CONSTANT, 0);
+      return;
+    default:
+      return;
+  }
 }
 
 void CompilationEngine::writeTokenWithTag() {
