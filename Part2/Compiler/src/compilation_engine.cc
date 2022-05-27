@@ -444,7 +444,7 @@ void CompilationEngine::compileSubroutineDec() {
 
   const std::string subroutine_tag = "subroutineDec";
 
-  expectSubroutineDecKeyword();
+  handleSubroutineDecKeyword();
   tokenizer_->nextToken();
 
   expectFunctionReturnType();
@@ -629,10 +629,9 @@ bool CompilationEngine::currentTokenIsSimpleTerm() {
   return false;
 }
 
-void CompilationEngine::expectSubroutineDecKeyword() {
+void CompilationEngine::handleSubroutineDecKeyword() {
   if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
-    if ((tokenizer_->getKeyword() == Keyword::Type::CONSTRUCTOR) ||
-        (tokenizer_->getKeyword() == Keyword::Type::FUNCTION)) {
+    if (tokenizer_->getKeyword() == Keyword::Type::FUNCTION) {
       return;
     } else if (tokenizer_->getKeyword() == Keyword::Type::METHOD) {
       // Add this as the first argument to the subroutine symbol table.
@@ -640,6 +639,17 @@ void CompilationEngine::expectSubroutineDecKeyword() {
                           /*var_type=*/curr_class_,
                           /*var_segment=*/Segment::ARGUMENT);
       return;
+    } else if (tokenizer_->getKeyword() == Keyword::Type::CONSTRUCTOR) {
+      // Push the number of class attributes onto the stack and allocate
+      // the amount of memory needed for those attributes.
+      int n_attributes = scope_list_->varCount(Segment::THIS);
+      vm_writer_->writePush(Segment::CONSTANT, n_attributes);
+      vm_writer_->writeCall("Memory.alloc", 1);
+
+      // After calling `Memory.alloc`, the base address of the allocated memory
+      // segment is returned and placed at the top of the stack. So we pop this
+      // off and place it in the address of pointer 0, referring to THIS
+      vm_writer_->writePop(Segment::POINTER, 0);
     }
   }
   throw InvalidSubroutineDecKeyword(tokenizer_->tokenToString());

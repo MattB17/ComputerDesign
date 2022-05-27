@@ -114,8 +114,10 @@ private:
 
   // Handles the expectation of a subroutine declaration keyword. That is, one
   // of `constructor`, `function`, `method`. If the keyword is `method` then
-  // `this` is added as the first argument to the subroutine symbol table.
-  void expectSubroutineDecKeyword();
+  // `this` is added as the first argument to the subroutine symbol table. If
+  // the keyword is `constructor` then allocating enough memory for the object
+  // and setting the appropriate base address for this are handled.
+  void handleSubroutineDecKeyword();
 
   // Handles the expectation of the compiler receiving a valid function return
   // type. A function return type is either `void`, `int`, `char`, `bool`, or
