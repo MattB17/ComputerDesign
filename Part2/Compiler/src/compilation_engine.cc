@@ -15,7 +15,7 @@ void CompilationEngine::compile(std::string jack_file) {
     compileClass();
     moreClasses = (tokenizer_->getTokenType() != TokenType::UNKNOWN);
   }
-  vm_writer_.close();
+  vm_writer_->close();
 }
 
 void CompilationEngine::compileClass() {
@@ -24,8 +24,6 @@ void CompilationEngine::compileClass() {
   const std::string class_tag = "class";
 
   expectKeyword(Keyword::Type::CLASS);
-  writeTerminatedTokenAndTag();
-
   tokenizer_->nextToken();
 
   // expect an identifier for the class name.
@@ -61,7 +59,6 @@ int CompilationEngine::compileVarDec() {
 
   // We know `var` is the current token as this is the precondition for
   // entering this method. So just advance past it.
-  writeTerminatedTokenAndTag();
   tokenizer_->nextToken();
 
   // Retrieve the variable type and define the variable.
@@ -82,7 +79,6 @@ void CompilationEngine::compileClassVarDec() {
 
   // We already know it is a class variable declaration keyword because we check
   // for that before entering this function.
-  writeTerminatedTokenAndTag();
   Segment var_segment = GetSegmentFromClassVarKeyword(tokenizer_->getKeyword());
   tokenizer_->nextToken();
 
@@ -671,20 +667,11 @@ void CompilationEngine::handleVariableDefinition(
   std::string var_type, Segment var_segment) {
   std::string var_name = getVarName();
   scope_list_->define(var_name, var_type, var_segment);
-  writeTerminatedVarTag(var_name, /*expect_definition=*/true);
 }
 
 std::string CompilationEngine::getType() {
   expectType();
   std::string var_type = tokenizer_->tokenToString();
-  // The type is either a simple type or a class.
-  if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
-    // we have a simple type so just compile the type.
-    writeTerminatedTokenAndTag();
-  } else {
-    // We have already validated the type so it must be a class.
-    writeTerminatedTagForToken(/*tag=*/"className", /*token=*/var_type);
-  }
   tokenizer_->nextToken();
   return var_type;
 }
@@ -700,31 +687,26 @@ void CompilationEngine::handleStatementEnd(const std::string compile_tag) {
   if (!currentTokenIsExpectedSymbol(';')) {
     throw ExpectedStatementEnd(tokenizer_->tokenToString(), compile_tag);
   }
-  writeTerminatedTokenAndTag();
   return;
 }
 
 void CompilationEngine::handleOpeningParenthesis(
   char parenthesis, const std::string compile_tag) {
-  if (currentTokenIsExpectedSymbol(parenthesis)) {
-    writeTerminatedTokenAndTag();
-    tokenizer_->nextToken();
-  } else {
+  if (!currentTokenIsExpectedSymbol(parenthesis)) {
     throw ExpectedOpeningParenthesis(
       tokenizer_->tokenToString(), std::string(1, parenthesis), compile_tag);
   }
+  tokenizer_->nextToken();
   return;
 }
 
 void CompilationEngine::handleClosingParenthesis(
   char parenthesis, const std::string compile_tag) {
-  if (currentTokenIsExpectedSymbol(parenthesis)) {
-    writeTerminatedTokenAndTag();
-    tokenizer_->nextToken();
-  } else {
+  if (!currentTokenIsExpectedSymbol(parenthesis)) {
     throw ExpectedClosingParenthesis(
       tokenizer_->tokenToString(), std::string(1, parenthesis), compile_tag);
   }
+  tokenizer_->nextToken();
   return;
 }
 
