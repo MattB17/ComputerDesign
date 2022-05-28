@@ -469,18 +469,13 @@ void CompilationEngine::compileSubroutineDec() {
   compileParameterList();
   handleClosingParenthesis(')', subroutine_tag);
 
-  // If the current subroutine is a constructor, we need to add memory
-  // allocation code after the `function` VM command, which takes place in the
-  // `compileSubroutineBody` method.
-  bool is_constructor = (dec_keyword == Keyword::Type::CONSTRUCTOR);
-
   // Lastly we compile the body of the subroutine.
-  compileSubroutineBody(function_name, is_constructor);
+  compileSubroutineBody(function_name, dec_keyword);
   return;
 }
 
 void CompilationEngine::compileSubroutineBody(
-  std::string subroutine_name, bool is_constructor) {
+  std::string subroutine_name, Keyword::Type dec_keyword) {
   const std::string subroutine_tag = "subroutineBody";
 
   handleOpeningParenthesis('{', subroutine_tag);
@@ -494,9 +489,18 @@ void CompilationEngine::compileSubroutineBody(
   int n_locals = scope_list_->varCount(Segment::LOCAL);
   vm_writer_->writeFunction(subroutine_name, n_locals);
 
-  // If the current subroutine is a constructor, we need to write memory
-  // allocation VM code.
-  if (is_constructor) {
+  compileSubroutineInitCode(dec_keyword);
+
+  if (currentTokenIsStatementKeyword()) {
+    compileStatements();
+  }
+
+  handleClosingParenthesis('}', subroutine_tag);
+  return;
+}
+
+void CompilationEngine::compileSubroutineInitCode(Keyword::Type dec_keyword) {
+  if (dec_keyword == Keyword::Type::CONSTRUCTOR) {
     // Push the number of class attributes onto the stack and allocate the
     // amount of memory needed for those attributes.
     int n_attributes = scope_list_->varCount(Segment::THIS);
@@ -507,14 +511,12 @@ void CompilationEngine::compileSubroutineBody(
     // segment is returned and place at the top of the stack. So we pop this
     // off and place it in the address of pointer 0, referring to THIS.
     vm_writer_->writePop(Segment::POINTER, 0);
+  } else if (dec_keyword == Keyword::Type::METHOD) {
+    // Push argument 0 (representing `this`) onto the stack and pop it into the
+    // THIS segment so that we now anchor it on the correct object.
+    vm_writer_->writePush(Segment::ARGUMENT, 0);
+    vm_writer_->writePop(Segment::POINTER, 0);
   }
-
-  if (currentTokenIsStatementKeyword()) {
-    compileStatements();
-  }
-
-  handleClosingParenthesis('}', subroutine_tag);
-  return;
 }
 
 void CompilationEngine::setJackFile(std::string jack_file) {
@@ -548,9 +550,16 @@ int CompilationEngine::compileSubroutineCall(
   } else {
     // We have a plain subroutine call. If the stream is currently empty then
     // it is calling a subroutine in the same class. Otherwise, the call arises
-    // from a let statement, so the call has already been added.
+    // from a let statement, so the call has already been added. Note that
+    // the subroutine implicitly refers to the current object, which is this.
+    // (ie. if the call is `subroutine(x, y)` inside the `Obj` class then
+    // the call is implicitly `this.subroutine(x, y)` which should be translated
+    // to `Obj.subroutine(this, x, y)`).
     if (function_name->rdbuf()->in_avail() == 0) {
       (*function_name) << curr_class_ << '.';
+      // Pushing the first argument `this` onto the stack.
+      vm_writer_->writePush(Segment::POINTER, 0);
+      n_args += 1;
     }
   }
 

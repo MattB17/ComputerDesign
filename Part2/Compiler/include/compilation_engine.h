@@ -68,9 +68,17 @@ public:
   // Compiles a subroutine declaration.
   void compileSubroutineDec();
 
-  // compiles the body of the subroutine `subroutine_name`. `is_constructor`
-  // identifies whether the subroutine is a constructor.
-  void compileSubroutineBody(std::string subroutine_name, bool is_constructor);
+  // Compiles the body of the subroutine `subroutine_name`. `dec_keyword`
+  // identifies the type of subroutine being compiled (function, method, or
+  // constructor).
+  void compileSubroutineBody(
+    std::string subroutine_name, Keyword::Type dec_keyword);
+
+  // Compiles the initialization code for a subroutine of type `dec_keyword`. If
+  // it is a constructor, the initialization code allocates enough space for the
+  // class's fields. If it is a method, the initialization code anchors the THIS
+  // segment for the current object.
+  void compileSubroutineInitCode(Keyword::Type dec_keyword);
 
 private:
   // Sets the jack file currently being compiled.
