@@ -306,8 +306,8 @@ void CompilationEngine::compileDo() {
   // `function_name`, calculate the number of expressions it is called on,
   // and then compile the subroutine call statement to VM code.
   std::stringstream function_name;
-  int n_locals = compileSubroutineCall(&function_name);
-  vm_writer_->writeCall(function_name.str(), n_locals);
+  int n_args = compileSubroutineCall(&function_name);
+  vm_writer_->writeCall(function_name.str(), n_args);
 
   // Expect end of statement.
   handleStatementEnd(do_tag);
@@ -376,8 +376,8 @@ void CompilationEngine::compileTerm() {
       // the subroutine call.
       std::stringstream function_name;
       function_name << identifier_name << '.';
-      int n_locals = compileSubroutineCall(&function_name);
-      vm_writer_->writeCall(function_name.str(), n_locals);
+      int n_args = compileSubroutineCall(&function_name);
+      vm_writer_->writeCall(function_name.str(), n_args);
     } else {
       SymbolData var_data = getVarData(identifier_name);
       vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
@@ -444,7 +444,7 @@ void CompilationEngine::compileSubroutineDec() {
 
   const std::string subroutine_tag = "subroutineDec";
 
-  handleSubroutineDecKeyword();
+  Keyword::Type dec_keyword = getSubroutineDecKeyword();
   tokenizer_->nextToken();
 
   expectFunctionReturnType();
@@ -455,17 +455,31 @@ void CompilationEngine::compileSubroutineDec() {
   std::string function_name = constructFunctionNameFromCurrToken();
   tokenizer_->nextToken();
 
+  // If the current subroutine is a method we need to add `this` to the
+  // subroutine level symbol table as the first argument.
+  if (dec_keyword == Keyword::Type::METHOD) {
+    scope_list_->define(/*var_name=*/"this",
+                        /*var_type=*/curr_class_,
+                        /*var_segment=*/Segment::ARGUMENT);
+  }
+
   // Now we expect a parameter list enclosed in `(` and `)`.
   handleOpeningParenthesis('(', subroutine_tag);
   compileParameterList();
   handleClosingParenthesis(')', subroutine_tag);
 
+  // If the current subroutine is a constructor, we need to add memory
+  // allocation code after the `function` VM command, which takes place in the
+  // `compileSubroutineBody` method.
+  bool is_constructor = (dec_keyword == Keyword::Type::CONSTRUCTOR);
+
   // Lastly we compile the body of the subroutine.
-  compileSubroutineBody(function_name);
+  compileSubroutineBody(function_name, is_constructor);
   return;
 }
 
-void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
+void CompilationEngine::compileSubroutineBody(
+  std::string subroutine_name, bool is_constructor) {
   const std::string subroutine_tag = "subroutineBody";
 
   handleOpeningParenthesis('{', subroutine_tag);
@@ -478,6 +492,21 @@ void CompilationEngine::compileSubroutineBody(std::string subroutine_name) {
   // The number of local variables for the function.
   int n_locals = scope_list_->varCount(Segment::LOCAL);
   vm_writer_->writeFunction(subroutine_name, n_locals);
+
+  // If the current subroutine is a constructor, we need to write memory
+  // allocation VM code.
+  if (is_constructor) {
+    // Push the number of class attributes onto the stack and allocate the
+    // amount of memory needed for those attributes.
+    int n_attributes = scope_list_->varCount(Segment::THIS);
+    vm_writer_->writePush(Segment::CONSTANT, n_attributes);
+    vm_writer_->writeCall("Memory.alloc", 1);
+
+    // After calling `Memory.alloc`, the base address of the allocated memory
+    // segment is returned and place at the top of the stack. So we pop this
+    // off and place it in the address of pointer 0, referring to THIS.
+    vm_writer_->writePop(Segment::POINTER, 0);
+  }
 
   if (currentTokenIsStatementKeyword()) {
     compileStatements();
@@ -521,26 +550,24 @@ int CompilationEngine::compileSubroutineCall(
   // Otherwise, we have a plain subroutine call. So compile the expression list.
   (*function_name) << identifier_name;
   handleOpeningParenthesis('(', call_tag);
-  int n_locals = compileExpressionList();
+  int n_args = compileExpressionList();
   handleClosingParenthesis(')', call_tag);
 
-  return n_locals;
+  return n_args;
 }
 
 void CompilationEngine::compileAdditionalVarDecs(
   std::string var_type, Segment var_segment, const std::string compile_tag) {
-  int n_additional_vars = 0;
   while (!currentTokenIsExpectedSymbol(';')) {
     if (currentTokenIsExpectedSymbol(',')) {
       tokenizer_->nextToken();
 
       handleVariableDefinition(var_type, var_segment);
-      n_additional_vars++;
     } else {
       throw ExpectedStatementEnd(tokenizer_->tokenToString(), compile_tag);
     }
   }
-  return n_additional_vars;
+  return;
 }
 
 void CompilationEngine::compileStatementCondition(
@@ -567,6 +594,8 @@ void CompilationEngine::compileKeywordConstant() {
     case Keyword::Type::FALSE:
       vm_writer_->writePush(Segment::CONSTANT, 0);
       return;
+    case Keyword::Type::THIS:
+      vm_writer_->writePush(Segment::POINTER, 0);
     default:
       return;
   }
@@ -629,27 +658,13 @@ bool CompilationEngine::currentTokenIsSimpleTerm() {
   return false;
 }
 
-void CompilationEngine::handleSubroutineDecKeyword() {
+Keyword::Type CompilationEngine::getSubroutineDecKeyword() {
   if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
-    if (tokenizer_->getKeyword() == Keyword::Type::FUNCTION) {
-      return;
-    } else if (tokenizer_->getKeyword() == Keyword::Type::METHOD) {
-      // Add this as the first argument to the subroutine symbol table.
-      scope_list_->define(/*var_name=*/"this",
-                          /*var_type=*/curr_class_,
-                          /*var_segment=*/Segment::ARGUMENT);
-      return;
-    } else if (tokenizer_->getKeyword() == Keyword::Type::CONSTRUCTOR) {
-      // Push the number of class attributes onto the stack and allocate
-      // the amount of memory needed for those attributes.
-      int n_attributes = scope_list_->varCount(Segment::THIS);
-      vm_writer_->writePush(Segment::CONSTANT, n_attributes);
-      vm_writer_->writeCall("Memory.alloc", 1);
-
-      // After calling `Memory.alloc`, the base address of the allocated memory
-      // segment is returned and placed at the top of the stack. So we pop this
-      // off and place it in the address of pointer 0, referring to THIS
-      vm_writer_->writePop(Segment::POINTER, 0);
+    Keyword::Type keyword = tokenizer_->getKeyword();
+    if ((keyword == Keyword::Type::FUNCTION) ||
+        (keyword == Keyword::Type::METHOD) ||
+        (keyword == Keyword::Type::CONSTRUCTOR)) {
+      return keyword;
     }
   }
   throw InvalidSubroutineDecKeyword(tokenizer_->tokenToString());

@@ -68,16 +68,17 @@ public:
   // Compiles a subroutine declaration.
   void compileSubroutineDec();
 
-  // compiles the body of the subroutine `subroutine_name`.
-  void compileSubroutineBody(std::string subroutine_name);
+  // compiles the body of the subroutine `subroutine_name`. `is_constructor`
+  // identifies whether the subroutine is a constructor.
+  void compileSubroutineBody(std::string subroutine_name, bool is_constructor);
 
 private:
   // Sets the jack file currently being compiled.
   void setJackFile(std::string jack_file);
 
-  // compiles a subroutine call and returns the number of arguments supplied
-  // to the subroutine call.
-  void compileSubroutineCall(std::stringstream* function_name);
+  // compiles a subroutine call and the name of the subroutine is streamed into
+  // `function_name`.
+  int compileSubroutineCall(std::stringstream* function_name);
 
   // Compiles additional variables listed in a variable declaration statement.
   // `var_type` and `var_segment` represent the variable segment and type,
@@ -112,12 +113,10 @@ private:
   // Handles the expection of the compiler receiving a valid identifier.
   void expectIdentifier();
 
-  // Handles the expectation of a subroutine declaration keyword. That is, one
-  // of `constructor`, `function`, `method`. If the keyword is `method` then
-  // `this` is added as the first argument to the subroutine symbol table. If
-  // the keyword is `constructor` then allocating enough memory for the object
-  // and setting the appropriate base address for this are handled.
-  void handleSubroutineDecKeyword();
+  // Retrieves a subroutine declaration keyword from the current token. That is,
+  // one of `constructor`, `function`, `method`. If the current token is not a
+  // subroutine declaration keyword, an error is thrown.
+  Keyword::Type getSubroutineDecKeyword();
 
   // Handles the expectation of the compiler receiving a valid function return
   // type. A function return type is either `void`, `int`, `char`, `bool`, or
