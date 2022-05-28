@@ -375,8 +375,9 @@ void CompilationEngine::compileTerm() {
       // Add the class name and `.` to the stream, then compile the rest of
       // the subroutine call.
       std::stringstream function_name;
-      function_name << identifier_name << '.';
-      int n_args = compileSubroutineCall(&function_name);
+      int n_args = 0;
+      handleSymbolDataForSubroutine(&function_name, &n_args, identifier_name);
+      n_args += compileSubroutineCall(&function_name);
       vm_writer_->writeCall(function_name.str(), n_args);
     } else {
       SymbolData var_data = getVarData(identifier_name);
@@ -527,30 +528,38 @@ void CompilationEngine::setJackFile(std::string jack_file) {
 int CompilationEngine::compileSubroutineCall(
   std::stringstream* function_name) {
   const std::string call_tag = "subroutineCall";
+  // The number of arguments to the subroutine.
+  int n_args = 0;
 
-  // expect an identifier (either `subroutineName` or `varName`).
+  // expect an identifier (either `subroutineName`, `varName`, or `className`).
   expectIdentifier();
   std::string identifier_name = tokenizer_->tokenToString();
   tokenizer_->nextToken();
 
-  // This means we are in the second case. So we write out the class tag and
-  // then compile the rest. Note that the part after `.` also has the form of
-  // a subroutine call so we can recurse.
+  // This means we are in the second case. So we handle the identifier
+  // representing a variable or class name. Then we handle the subroutine name.
   if (currentTokenIsExpectedSymbol('.')) {
-    // Stream the class name and the `.`.
-    (*function_name) << identifier_name << '.';
+    handleSymbolDataForSubroutine(function_name, &n_args, identifier_name);
 
-    // Advance past the `.`.
+    // Advance past the `.`. And assign the subroutine name to the identifier.
     tokenizer_->nextToken();
-
-    // Then recurse.
-    return compileSubroutineCall(function_name);
+    identifier_name = tokenizer_->tokenToString();
+    tokenizer_->nextToken();
+  } else {
+    // We have a plain subroutine call. If the stream is currently empty then
+    // it is calling a subroutine in the same class. Otherwise, the call arises
+    // from a let statement, so the call has already been added.
+    if (function_name->rdbuf()->in_avail() == 0) {
+      (*function_name) << curr_class_ << '.';
+    }
   }
 
-  // Otherwise, we have a plain subroutine call. So compile the expression list.
+  // Now we add the subroutine name to the stream.
   (*function_name) << identifier_name;
+
+  // Now compile the expression list.
   handleOpeningParenthesis('(', call_tag);
-  int n_args = compileExpressionList();
+  n_args += compileExpressionList();
   handleClosingParenthesis(')', call_tag);
 
   return n_args;
@@ -730,6 +739,24 @@ void CompilationEngine::handleClosingParenthesis(
   }
   tokenizer_->nextToken();
   return;
+}
+
+void CompilationEngine::handleSymbolDataForSubroutine(
+  std::stringstream* function_name, int* n_args, std::string identifier_name) {
+  // Check the symbol table to see if the identifier is the name of a variable.
+  SymbolData var_data = scope_list_->getVarData(identifier_name);
+  if (var_data.segment == Segment::UNKNOWN) {
+    // We have a class name, so stream the class name and the `.`
+    (*function_name) << identifier_name << '.';
+  } else {
+    // We have the form `varName.subroutineName(...)` so the `varName` is
+    // the first argument to the subroutine.
+    vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
+    (*n_args)++;
+
+    // The type of the variable is the class name, so stream this.
+    (*function_name) << var_data.symbol_type << '.';
+  }
 }
 
 bool CompilationEngine::currentTokenIsClassVarKeyword() {

@@ -151,6 +151,14 @@ private:
   void handleClosingParenthesis(
     char parenthesis, const std::string compile_tag);
 
+  // Streams the class associated with `identifier_name` into `function_name`.
+  // If `identifier_name` is the name of a class, the class is streamed into
+  // `function_name`. Otherwise, it is the name of a variable, the type of the
+  // variable identifies the function to which it belongs and the variable is
+  // the first argument to the function.
+  void handleSymbolDataForSubroutine(
+    std::stringstream* function_name, int* n_args, std::string identifier_name);
+
   // Returns whether the current token pointed to by the tokenizer is the
   // symbol `expected_symbol`.
   bool currentTokenIsExpectedSymbol(char expected_symbol);
