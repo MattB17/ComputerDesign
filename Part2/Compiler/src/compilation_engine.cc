@@ -195,22 +195,14 @@ void CompilationEngine::compileLet() {
     vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
 
     // Compile the expression for the index and push onto the stack.
-    handleOpeningParenthesis('[', let_tag)
+    handleOpeningParenthesis('[', let_tag);
     compileExpression();
     handleClosingParenthesis(']', let_tag);
 
     // Add the 2 top values on the stack: the array base address and index
     vm_writer_->writeArithmetic(OpCommand::ADD);
 
-    // Next, we expect an equal sign.
-    if (!currentTokenIsExpectedSymbol('=')) {
-      throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
-    }
-    tokenizer_->nextToken();
-
-    // Handle the expression on the right of the `=`. The VM commands for the
-    // expression will store the result of the expression on the stack.
-    compileExpression();
+    compileRightSideOfEquation(let_tag);
 
     // Pop the right hand side off the stack and into temp 0
     vm_writer_->writePop(Segment::TEMP, 0);
@@ -225,15 +217,7 @@ void CompilationEngine::compileLet() {
   } else {
     // We just have a simple assignment to a variable given by `var_name`,
     // so just compile the expression and pop the result into the variable.
-
-    if (!currentTokenIsExpectedSymbol('=')) {
-      throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
-    }
-    tokenizer_->nextToken();
-
-    // Handle the expression on the right of the `=`. The VM commands for the
-    // expression will store the result of the expression on the stack.
-    compileExpression();
+    compileRightSideOfEquation(let_tag);
 
     // Then we pop the result of the expression off the stack and into the
     // variable on the left of the `=`.
@@ -363,9 +347,10 @@ void CompilationEngine::compileTerm() {
   } else if (currentTokenIsSimpleTerm()) {
     if (tokenizer_->getTokenType() == TokenType::INT_CONST) {
       vm_writer_->writePush(Segment::CONSTANT, tokenizer_->getIntVal());
-    }
-    if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    } else if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
       compileKeywordConstant();
+    } else {
+      compileStringConstant();
     }
     tokenizer_->nextToken();
   } else {
@@ -646,12 +631,40 @@ void CompilationEngine::compileKeywordConstant() {
       vm_writer_->writeArithmetic(OpCommand::NEG);
       return;
     case Keyword::Type::FALSE:
+    case Keyword::Type::NULL_VAL:
       vm_writer_->writePush(Segment::CONSTANT, 0);
       return;
     case Keyword::Type::THIS:
       vm_writer_->writePush(Segment::POINTER, 0);
     default:
       return;
+  }
+}
+
+void CompilationEngine::compileRightSideOfEquation(std::string compile_tag) {
+  // First, we expect to have an equal sign.
+  if (!currentTokenIsExpectedSymbol('=')) {
+    throw ExpectedSymbol(tokenizer_->tokenToString(), "=", compile_tag);
+  }
+
+  tokenizer_->nextToken();
+
+  // Handle the expression on the right of the `=`. The VM commands for the
+  // expression will store the result of the expression on the stack.
+  compileExpression();
+}
+
+void CompilationEngine::compileStringConstant() {
+  std::string string_const = tokenizer_->getStringVal();
+
+  // We start by allocating enough space for the string.
+  vm_writer_->writePush(Segment::CONSTANT, string_const.length());
+  vm_writer_->writeCall("String.new", 1);
+
+  // Now we iterate through the string, and append each character one at a time.
+  for (size_t i = 0; i < string_const.length(); i++) {
+    vm_writer_->writePush(Segment::CONSTANT, int(string_const[i]));
+    vm_writer_->writeCall("String.appendChar", 2);
   }
 }
 

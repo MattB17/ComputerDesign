@@ -106,6 +106,13 @@ private:
   // Compiles a keyword constant to VM code.
   void compileKeywordConstant();
 
+  // Compiles the right side of an equation as part of a let statement. That
+  // is, it handles the `=` and the right side expression.
+  void compileRightSideOfEquation(std::string compile_tag);
+
+  // Compiles a string constant.
+  void compileStringConstant();
+
   // Gets the associated `SymbolData` for `var_name` from the scope list. An
   // error is generated if the variable is not in the scope list.
   SymbolData getVarData(std::string var_name);
