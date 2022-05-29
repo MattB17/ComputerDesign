@@ -186,37 +186,60 @@ void CompilationEngine::compileLet() {
 
   // expect a valid identifier for the variable name.
   expectIdentifier();
-  std::string var_name = tokenizer_->tokenToString();
+  SymbolData var_data = getVarData(/*var_name=*/tokenizer_->tokenToString());
   tokenizer_->nextToken();
 
   // If we encounter `[` then we know we are in the second case.
   if (currentTokenIsExpectedSymbol('[')) {
-    // Advance past the bracket.
+    // Push the base address of the array onto the stack, which is the variable.
+    vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
+
+    // Compile the expression for the index and push onto the stack.
+    handleOpeningParenthesis('[', let_tag)
+    compileExpression();
+    handleClosingParenthesis(']', let_tag);
+
+    // Add the 2 top values on the stack: the array base address and index
+    vm_writer_->writeArithmetic(OpCommand::ADD);
+
+    // Next, we expect an equal sign.
+    if (!currentTokenIsExpectedSymbol('=')) {
+      throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
+    }
     tokenizer_->nextToken();
 
-    // Compile the expression inside.
+    // Handle the expression on the right of the `=`. The VM commands for the
+    // expression will store the result of the expression on the stack.
     compileExpression();
 
-    // Handle the closing paranthesis.
-    handleClosingParenthesis(']', let_tag);
+    // Pop the right hand side off the stack and into temp 0
+    vm_writer_->writePop(Segment::TEMP, 0);
+
+    // Now the top most value on the stack is the address of the array entry
+    // on the left hand side of the equation. So set the THAT segment to this
+    // address, push temp 0 back onto the stack and pop it into THAT 0 which
+    // is the value of the array entry on the left hand side.
+    vm_writer_->writePop(Segment::POINTER, 1);
+    vm_writer_->writePush(Segment::TEMP, 0);
+    vm_writer_->writePop(Segment::THAT, 0);
+  } else {
+    // We just have a simple assignment to a variable given by `var_name`,
+    // so just compile the expression and pop the result into the variable.
+
+    if (!currentTokenIsExpectedSymbol('=')) {
+      throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
+    }
+    tokenizer_->nextToken();
+
+    // Handle the expression on the right of the `=`. The VM commands for the
+    // expression will store the result of the expression on the stack.
+    compileExpression();
+
+    // Then we pop the result of the expression off the stack and into the
+    // variable on the left of the `=`.
+    vm_writer_->writePop(var_data.segment, /*idx=*/var_data.offset);
   }
-
-  // Expect the equal sign.
-  if (!currentTokenIsExpectedSymbol('=')) {
-    throw ExpectedSymbol(tokenizer_->tokenToString(), "=", let_tag);
-  }
-  tokenizer_->nextToken();
-
-  // handle the expression on the right of the `=`. The VM commands for the
-  // expression will store the result of the expression on the stack.
-  compileExpression();
-
-  // Then we pop the result of the expression off the stack and into the
-  // variable on the left of the `=`.
-  SymbolData var_data = getVarData(var_name);
-  vm_writer_->writePop(var_data.segment, /*idx=*/var_data.offset);
-
-  // now we expect statement end.
+  // Now we expect statement end.
   handleStatementEnd(let_tag);
   return;
 }
@@ -353,11 +376,23 @@ void CompilationEngine::compileTerm() {
     tokenizer_->nextToken();
 
     if (currentTokenIsExpectedSymbol('[')) {
-      // In this case we have an array element. Start by writing the array
-      // variable name, then handle the array index.
+      // We have an array, so we start by pushing the base address of the array
+      // onto the stack. That is, the array variable itself.
+      SymbolData arr_data = getVarData(identifier_name);
+      vm_writer_->writePush(arr_data.segment, /*idx=*/arr_data.offset);
+
       handleOpeningParenthesis('[', term_tag);
+      // Compile the expression representing the index. This will be pushed onto
+      // the stack after the base address of the array.
       compileExpression();
       handleClosingParenthesis(']', term_tag);
+
+      // Add base address and index, which are the top 2 values on the stack.
+      vm_writer_->writeArithmetic(OpCommand::ADD);
+      // Pop the address into the THAT segment so that THAT 0 points to the
+      // corresponding array value and push that onto the stack.
+      vm_writer_->writePop(Segment::POINTER, 1);
+      vm_writer_->writePush(Segment::THAT, 0);
     } else if (currentTokenIsExpectedSymbol('(')) {
       // We have a subroutine call of the type `methodName(expressionList)`.
       // So we write the subroutine name and then proceed with handling the
@@ -380,6 +415,7 @@ void CompilationEngine::compileTerm() {
       n_args += compileSubroutineCall(&function_name);
       vm_writer_->writeCall(function_name.str(), n_args);
     } else {
+      // We just have a simple variable.
       SymbolData var_data = getVarData(identifier_name);
       vm_writer_->writePush(var_data.segment, /*idx=*/var_data.offset);
     }
