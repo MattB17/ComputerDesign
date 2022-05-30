@@ -53,7 +53,6 @@ void CompilationEngine::compileClass() {
 
 void CompilationEngine::compileVarDec() {
   Segment var_segment = Segment::LOCAL;
-
   const std::string var_tag = "varDec";
 
   // We know `var` is the current token as this is the precondition for
@@ -169,7 +168,7 @@ void CompilationEngine::compileReturn() {
     vm_writer_->writePush(Segment::CONSTANT, /*idx=*/0);
   }
 
-  // now we expect statement end.
+  // Now we expect statement end.
   handleStatementEnd(return_tag);
   vm_writer_->writeReturn();
   return;
@@ -258,7 +257,7 @@ void CompilationEngine::compileIf() {
     vm_writer_->writeLabel(endif_label);
 
     tokenizer_->nextToken();
-    compileScopedStatements("elseStatement");
+    compileScopedStatements(/*compile_tag=*/"elseStatement");
 
     // After we compile all the statements of the else, we add the endelse label
     // to signify this is where we jump to if we skip the else statements.
@@ -345,13 +344,7 @@ void CompilationEngine::compileTerm() {
       throw InvalidTerm(tokenizer_->tokenToString());
     }
   } else if (currentTokenIsSimpleTerm()) {
-    if (tokenizer_->getTokenType() == TokenType::INT_CONST) {
-      vm_writer_->writePush(Segment::CONSTANT, tokenizer_->getIntVal());
-    } else if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
-      compileKeywordConstant();
-    } else {
-      compileStringConstant();
-    }
+    compileSimpleTerm();
     tokenizer_->nextToken();
   } else {
     // we must have an identifier. Either a simple variable name, an array
@@ -463,7 +456,6 @@ int CompilationEngine::compileExpressionList() {
 
 void CompilationEngine::compileSubroutineDec() {
   scope_list_->startSubroutine();
-
   const std::string subroutine_tag = "subroutineDec";
 
   Keyword::Type dec_keyword = getSubroutineDecKeyword();
@@ -723,6 +715,16 @@ bool CompilationEngine::currentTokenIsSimpleTerm() {
     return true;
   }
   return false;
+}
+
+void CompilationEngine::compileSimpleTerm() {
+  if (tokenizer_->getTokenType() == TokenType::INT_CONST) {
+    vm_writer_->writePush(Segment::CONSTANT, tokenizer_->getIntVal());
+  } else if (tokenizer_->getTokenType() == TokenType::KEYWORD) {
+    compileKeywordConstant();
+  } else {
+    compileStringConstant();
+  }
 }
 
 Keyword::Type CompilationEngine::getSubroutineDecKeyword() {

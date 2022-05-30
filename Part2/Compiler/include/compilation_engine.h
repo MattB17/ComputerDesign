@@ -24,6 +24,7 @@ public:
   // Runs the compilation process. Translating the jack file to an XML file.
   void compile(std::string jack_file);
 
+private:
   // Runs the compilation process for an entire class.
   void compileClass();
 
@@ -80,7 +81,6 @@ public:
   // segment for the current object.
   void compileSubroutineInitCode(Keyword::Type dec_keyword);
 
-private:
   // Sets the jack file currently being compiled.
   void setJackFile(std::string jack_file);
 
@@ -112,6 +112,9 @@ private:
 
   // Compiles a string constant.
   void compileStringConstant();
+
+  // Compiles a simple term: an integer, a string, or a keyword constant.
+  void compileSimpleTerm();
 
   // Gets the associated `SymbolData` for `var_name` from the scope list. An
   // error is generated if the variable is not in the scope list.
