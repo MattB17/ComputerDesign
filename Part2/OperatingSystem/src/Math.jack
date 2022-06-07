@@ -9,16 +9,40 @@
  */
 class Math {
 
+    static Array twoToThe_;
+
     /** Initializes the library. */
     function void init() {
+      let twoToThe_ = Array.new(16);
+      let twoToThe_[0] = 1;
+      let twoToThe_[1] = 2;
+      let twoToThe_[2] = 4;
+      let twoToThe_[3] = 8;
+      let twoToThe_[4] = 16;
+      let twoToThe_[5] = 32;
+      let twoToThe_[6] = 64;
+      let twoToThe_[7] = 128;
+      let twoToThe_[8] = 256;
+      let twoToThe_[9] = 512;
+      let twoToThe_[10] = 1024;
+      let twoToThe_[11] = 2048;
+      let twoToThe_[12] = 4096;
+      let twoToThe_[13] = 8192;
+      let twoToThe_[14] = 16384;
+      let twoToThe_[15] = 32768;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+      if (x < 0) {
+        return multiply(x, -1);
+      } else {
+        return x;
+      }
     }
 
-    /** Returns the product of x and y. 
-     *  When a Jack compiler detects the multiplication operator '*' in the 
+    /** Returns the product of x and y.
+     *  When a Jack compiler detects the multiplication operator '*' in the
      *  program's code, it handles it by invoking this method. In other words,
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
@@ -26,7 +50,7 @@ class Math {
     }
 
     /** Returns the integer part of x/y.
-     *  When a Jack compiler detects the multiplication operator '/' in the 
+     *  When a Jack compiler detects the multiplication operator '/' in the
      *  program's code, it handles it by invoking this method. In other words,
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
@@ -39,9 +63,19 @@ class Math {
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+      if (a > b) {
+        return a;
+      } else {
+        return b;
+      }
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+      if (a < b) {
+        return a;
+      } else {
+        return b;
+      }
     }
 }

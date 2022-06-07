@@ -7,19 +7,33 @@
  * This library provides two services: direct access to the computer's main
  * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
  * consists of 32,768 words, each holding a 16-bit binary number.
- */ 
+ */
 class Memory {
+    static Array ram_;
+    static Array heap_;
+    static Array free_list_;
 
     /** Initializes the class. */
     function void init() {
+      let ram_ = 0;  // Base address of the RAM.
+      let heap = 2048;  // Base address of the heap.
+
+      // The free list starts at the base address of the heap.
+      let free_list_ = heap_;
+
+      // Initially the free list is just one long segment
+      let heap[0] = 0;  // Next pointer.
+      let heap[1] = 14334;  // Length of the segment.
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+      return ram_[address];
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+      let ram[address] = value;
     }
 
     /** Finds an available RAM block of the given size and returns
@@ -30,5 +44,5 @@ class Memory {
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
-    }    
+    }
 }
