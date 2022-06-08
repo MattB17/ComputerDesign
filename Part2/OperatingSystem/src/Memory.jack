@@ -14,7 +14,7 @@ class Memory {
     /** Initializes the class. */
     function void init() {
       let ram_ = 0;  // Base address of the RAM.
-      let heap = 2048;  // Base address of the heap.
+      let heap_ = 2048;  // Base address of the heap.
 
       // The free list starts at the base address of the heap.
       let free_list_ = heap_;
@@ -24,8 +24,10 @@ class Memory {
       let tail_addr_ = free_list_;
 
       // Initially the free list is just one long segment
-      let heap[0] = 0;  // Next pointer.
-      let heap[1] = 14334;  // Length of the segment.
+      let heap_[0] = 0;  // Next pointer.
+      let heap_[1] = 14334;  // Length of the segment.
+
+      return;
     }
 
     /** Returns the RAM value at the given address. */
@@ -35,7 +37,9 @@ class Memory {
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
-      let ram[address] = value;
+      let ram_[address] = value;
+
+      return;
     }
 
     /** Finds an available RAM block of the given size and returns
@@ -49,7 +53,7 @@ class Memory {
 
       // If it less than heap_ then we have left the heap and should exit.
       while (~(curr_node < heap_)) {
-        if (~(curr_node[1] < (size + 2)) {
+        if (~(curr_node[1] < (size + 2))) {
           let curr_node[1] = curr_node[1] - (size + 2);
 
           // The 2 gets us past the next and size of the current node. The
@@ -59,8 +63,8 @@ class Memory {
 
           // We set the next for the new segment to 0 (like null), and we set
           // the size of the new segment to size.
-          curr_node[new_segment_addr] = 0
-          curr_node[new_segment_addr + 1] = size;
+          let curr_node[new_segment_addr] = 0;
+          let curr_node[new_segment_addr + 1] = size;
 
           return new_segment_addr + 2;
         } else {
@@ -78,7 +82,9 @@ class Memory {
       // The tail now points to the node for the deallocated array. Which is
       // 2 less than the address of the array. So we first update the current
       // tail to point at this node, and then move the tail to this node.
-      tail_addr_[0] = o - 2;
-      tail_addr_ = o - 2;
+      let tail_addr_[0] = o - 2;
+      let tail_addr_ = o - 2;
+
+      return;
     }
 }
