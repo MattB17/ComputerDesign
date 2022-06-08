@@ -9,9 +9,7 @@
  * consists of 32,768 words, each holding a 16-bit binary number.
  */
 class Memory {
-    static Array ram_;
-    static Array heap_;
-    static Array free_list_;
+    static Array ram_, heap_, free_list_, tail_addr_;
 
     /** Initializes the class. */
     function void init() {
@@ -20,6 +18,10 @@ class Memory {
 
       // The free list starts at the base address of the heap.
       let free_list_ = heap_;
+
+      // There is only one segment, so the tail address is the address of the
+      // start of the free_list_.
+      let tail_addr_ = free_list_;
 
       // Initially the free list is just one long segment
       let heap[0] = 0;  // Next pointer.
@@ -39,10 +41,44 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+      var Array curr_node;
+      var int new_segment_addr;
+
+      // Start at the start of the free list.
+      let curr_node = free_list_;
+
+      // If it less than heap_ then we have left the heap and should exit.
+      while (~(curr_node < heap_)) {
+        if (~(curr_node[1] < (size + 2)) {
+          let curr_node[1] = curr_node[1] - (size + 2);
+
+          // The 2 gets us past the next and size of the current node. The
+          // second term passes the data segment of the current node (assuming
+          // we have already extracted the size + 2 length segment).
+          let new_segment_addr = 2 + curr_node[1];
+
+          // We set the next for the new segment to 0 (like null), and we set
+          // the size of the new segment to size.
+          curr_node[new_segment_addr] = 0
+          curr_node[new_segment_addr + 1] = size;
+
+          return new_segment_addr + 2;
+        } else {
+          let curr_node = curr_node[0];  // Go to the next node.
+        }
+      }
+
+      // If we could not allocate.
+      return -1;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
+      // The tail now points to the node for the deallocated array. Which is
+      // 2 less than the address of the array. So we first update the current
+      // tail to point at this node, and then move the tail to this node.
+      tail_addr_[0] = o - 2;
+      tail_addr_ = o - 2;
     }
 }
