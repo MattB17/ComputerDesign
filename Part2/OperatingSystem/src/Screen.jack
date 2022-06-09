@@ -6,22 +6,60 @@
 /**
  * A library of functions for displaying graphics on the screen.
  * The Hack physical screen consists of 256 rows (indexed 0..255, top to bottom)
- * of 512 pixels each (indexed 0..511, left to right). The top left pixel on 
+ * of 512 pixels each (indexed 0..511, left to right). The top left pixel on
  * the screen is indexed (0,0).
  */
 class Screen {
+    // Identifies whether the current draw color is black.
+    static boolean is_black_;
+
+    // Stores the powers of 2 for quickly picking the ith bit of a number.
+    static Array twoToThe_;
+
+    static int screen_base_addr_;
 
     /** Initializes the Screen. */
     function void init() {
+      let is_black_ = true;
+
+      let twoToThe_ = Array.new(16);
+      let twoToThe_[0] = 1;
+      let twoToThe_[1] = 2;
+      let twoToThe_[2] = 4;
+      let twoToThe_[3] = 8;
+      let twoToThe_[4] = 16;
+      let twoToThe_[5] = 32;
+      let twoToThe_[6] = 64;
+      let twoToThe_[7] = 128;
+      let twoToThe_[8] = 256;
+      let twoToThe_[9] = 512;
+      let twoToThe_[10] = 1024;
+      let twoToThe_[11] = 2048;
+      let twoToThe_[12] = 4096;
+      let twoToThe_[13] = 8192;
+      let twoToThe_[14] = 16384;
+      let twoToThe_[15] = ~32767;
+
+      let screen_base_addr_ = 16384;
+
+      return;
     }
 
     /** Erases the entire screen. */
     function void clearScreen() {
+      var boolean curr_color;
+
+      let curr_color = is_black_;
+
+      let is_black_ = false;
+      do Screen.drawRectangle(0, 0, 511, 255);
+      let is_black_ = curr_color;
     }
 
     /** Sets the current color, to be used for all subsequent drawXXX commands.
      *  Black is represented by true, white by false. */
     function void setColor(boolean b) {
+      let is_black_ = b;
     }
 
     /** Draws the (x,y) pixel, using the current color. */
