@@ -64,6 +64,28 @@ class Screen {
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
+      var int offset, curr_value;
+
+      let offset = (32 * y) + (x / 16);
+      let curr_value = Memory.peek(screen_base_addr_ + offset);
+
+      // If the current color is black we want to set the bit.
+      if (is_black_) {
+        // We take a power of 2 which has a 1 in that bit and 0 elsewhere. Then
+        // we or it with the current value, this will have the effect of leaving
+        // all the other bits of the current value unchanged and setting the
+        // bit of interest to 1.
+        let curr_value = curr_value | twoToThe_[x % 16];
+      } else {
+        // Otherwise, we want to set the current bit to white. So we take a
+        // power of 2 that has a 1 in that bit and 0 elsewhere. We not it to get
+        // a 0 in that bit and 1 elsewhere and then and it with the current
+        // value. This will leave all other bits of the current value unchanged
+        // and set the bit of interest to 0.
+        let curr_value = curr_value & (~(twoToThe_[x % 16]));
+      }
+
+      return;
     }
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */

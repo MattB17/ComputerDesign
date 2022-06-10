@@ -108,7 +108,7 @@ class Math {
 
       let y2 = y + y;
       let q = Math.divide(x, y2);
-      if ((x - (y2 * q)) < y) {
+      if ((x - qy2_) < y) {
         // Note qy2_ was last updated in the divide call which was called on y2,
         // which is twice y. So since then the value of y has been cut in half
         // whereas q will be multiplied by 2, so the value of qy2_ does not
@@ -118,8 +118,8 @@ class Math {
       } else {
         // qy2_ was last updated in the divide call which was called on y2,
         // which is twice y. Now q will be multiplied by 2 and we will add 1.
-        // So qy2_ will increase by twice y.
-        let qy2_ = 1;
+        // So qy2_ will increase by y (current y which will be divided by 2).
+        let qy2_ = qy2_ + y;
 
         let result = (q + q + 1);
       }
