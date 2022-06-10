@@ -90,11 +90,83 @@ class Screen {
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
+      var int curr_x, curr_y;
+      var boolean x_inc, y_inc;
+
+      let curr_x = x1;
+      let curr_y = y1;
+
+      // Whether we need to increase or decrease x to reach (x2, y2).
+      if (x1 < x2) {
+        let x_inc = true;
+      } else {
+        let x_inc = false;
+      }
+
+      // Whether we need to increase or decrease y to reach (x2, y2).
+      if (y1 < y2) {
+        let y_inc = true;
+      } else {
+        let y_inc = false;
+      }
+
+      // Optimize for drawing a straight horizontal line really fast.
+      if (y1 = y2) {
+        if (x_inc) {
+          while (~(curr_x > x2)) {
+            do Screen.drawPixel(curr_x, curr_y);
+            let curr_x = curr_x + 1;
+          }
+        } else {
+          while (~(curr_x < x2)) {
+            do Screen.drawPixel(curr_x, curr_y);
+            let curr_x = curr_x - 1;
+          }
+        }
+      }
+
+      // Optimize for drawing a straight vertical line really fast.
+      if (x1 = x2) {
+        if (y_inc) {
+          while (~(curr_y > y2)) {
+            do Screen.drawPixel(curr_x, curr_y);
+            let curr_y = curr_y + 1;
+          }
+        } else {
+          while (~(curr_y < y2)) {
+            do Screen.drawPixel(curr_x, curr_y);
+            let curr_y = curr_y - 1;
+          }
+        }
+      }
+
+      return;
     }
 
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      * and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
+      var int curr_y, y_inc, y_diff, diff_y_cnt;
+
+      let curr_y = y1;
+      let diff_y_cnt = 0;
+
+      // Identifies whether y1 < y2 or y2 >= y1.
+      if (y1 < y2) {
+        let y_inc = 1;
+        y_diff = y2 - y1;
+      } else {
+        let y_inc = -1;
+        y_diff = y1 - y2;
+      }
+
+      while (~(diff_y_cnt > y_diff)) {
+        do Screen.drawLine(x1, curr_y, x2, curr_y);
+        let curr_y = curr_y + y_inc;
+        let diff_y_cnt = diff_y_cnt + 1;
+      }
+
+      return;
     }
 
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
