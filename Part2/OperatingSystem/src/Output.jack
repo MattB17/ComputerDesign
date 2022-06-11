@@ -18,9 +18,37 @@ class Output {
 
     // Character map for displaying characters
     static Array charMaps_;
+    static int cursor_code_, cursor_x_, cursor_y_;
+    static int char_height_, char_width_;
+
+    // Treat segment as block of 2 letters (16 x 11) as we have 16 bit words and
+    // letters are (8 x 11). The boolean flag indicates whether the cursor
+    // occupies the first or second space in the segment.
+    static boolean cursor_starts_segment_;
+
+    // If the cursor is in the first space of the segment, the character to be
+    // displayed needs to be multiplied by this constant to place it in that
+    // first space.
+    static int segment_jump_;
+
+    static int screen_base_addr_;
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
+      Output.initMap();
+      let cursor_code_ = 63;
+      let cursor_x_ = 0;
+      let cursor_y = 0;
+
+      let cursor_starts_segment_ = true;
+      let segment_jump_ = 256;
+
+      let char_height_ = 11;
+      let char_width_ = 8;
+
+      let screen_base_addr_ = 16384;
+
+      return;
     }
 
     // Initializes the character map array
@@ -71,7 +99,7 @@ class Output {
         do Output.create(64,30,51,51,59,59,59,27,3,30,0,0);  // @
         do Output.create(63,30,51,51,24,12,12,0,12,12,0,0);  // ?
 
-        do Output.create(65,0,0,0,0,0,0,0,0,0,0,0);          // A ** TO BE FILLED **
+        do Output.create(65,12,30,51,51,63,63,51,51,51,0,0); // A
         do Output.create(66,31,51,51,51,31,51,51,51,31,0,0); // B
         do Output.create(67,28,54,35,3,3,3,35,54,28,0,0);    // C
         do Output.create(68,15,27,51,51,51,51,51,27,15,0,0); // D
@@ -137,7 +165,7 @@ class Output {
         do Output.create(125,7,12,12,12,56,12,12,12,7,0,0);    // }
         do Output.create(126,38,45,25,0,0,0,0,0,0,0,0);        // ~
 
-	return;
+	      return;
     }
 
     // Creates the character map array of the given character index, using the given values.
@@ -171,6 +199,23 @@ class Output {
             let c = 0;
         }
         return charMaps[c];
+    }
+
+    // Displays the cursor on the screen at the current cursor position.
+    function void displayCursor() {
+      var int cursor_offset, curr_val;
+
+      let cursor_offset = (32 * ((char_height_ * y) + 10)) + (x / 2);
+
+      if (cursor_starts_segment_) {
+        do Memory.poke(screen_base_addr_ + cursor_offset,
+                       cursor_code_ * segment_jump_);
+      } else {
+        let curr_val = Memory.peek(screen_base_addr_ + cursor_offset);
+        do Memory.poke(screen_base_addr_ + cursor_offset,
+                       curr_val | cursor_code_);
+      }
+      return;
     }
 
     /** Moves the cursor to the j-th column of the i-th row,
