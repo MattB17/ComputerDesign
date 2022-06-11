@@ -35,10 +35,10 @@ class Output {
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
-      Output.initMap();
+      do Output.initMap();
       let cursor_code_ = 63;
       let cursor_x_ = 0;
-      let cursor_y = 0;
+      let cursor_y_ = 0;
 
       let cursor_starts_segment_ = true;
       let segment_jump_ = 256;
@@ -207,15 +207,15 @@ class Output {
     function void displayCursor() {
       var int cursor_offset, curr_val;
 
-      let cursor_offset = (32 * ((char_height_ * y) + 10)) + (x / 2);
+      let cursor_offset =
+        (32 * ((char_height_ * cursor_y_) + 10)) + (cursor_x_ / 2);
 
       if (cursor_starts_segment_) {
-        do Memory.poke(screen_base_addr_ + cursor_offset,
-                       cursor_code_ * segment_jump_);
+        do Memory.poke(screen_base_addr_ + cursor_offset, cursor_code_);
       } else {
         let curr_val = Memory.peek(screen_base_addr_ + cursor_offset);
         do Memory.poke(screen_base_addr_ + cursor_offset,
-                       curr_val | cursor_code_);
+                       curr_val | (cursor_code_ * segment_jump_));
       }
       return;
     }
@@ -224,7 +224,8 @@ class Output {
     function void eraseCursor() {
       var int cursor_offset, curr_val;
 
-      let cursor_offset = (32 * ((char_height_ * y) + 10)) + (x / 2);
+      let cursor_offset =
+        (32 * ((char_height_ * cursor_y_) + 10)) + (cursor_x_ / 2);
 
       if (cursor_starts_segment_) {
         do Memory.poke(screen_base_addr_ + cursor_offset, 0);
@@ -234,7 +235,7 @@ class Output {
         // (segment_jump_ - 1) is 8 1s and then we multiply by segment_jump_
         // to get 8 1s followed by 8 0s. Then we and this with curr_val which
         do Memory.poke(screen_base_addr_ + cursor_offset,
-                       curr_val & ((segment_jump_ - 1) * segment_jump_));
+                       curr_val & ((segment_jump_ - 1)));
       }
 
       return;
@@ -243,24 +244,25 @@ class Output {
     /** Displays character c on the screen at the current cursor position. */
     function void displayChar(char c) {
       var Array map;
-      var int offset, char_row, curr_val;
+      var int offset, i, curr_val;
 
-      let map = getMap(c);
-      let offset = (32 * (char_height_ * y)) + (x / 2);
-      let char_row = 0;
+      let map = Output.getMap(c);
+      let offset = (32 * (char_height_ * cursor_y_)) + (cursor_x_ / 2);
+      let i = 0;
 
       if (cursor_starts_segment_) {
-        while (char_row < 11) {
-          do Memory.poke(screen_base_addr_ + offset, map[i] * segment_jump_);
-          offset = offset + 32;
-          char_row = char_row + 1;
+        while (i < 11) {
+          do Memory.poke(screen_base_addr_ + offset, map[i]);
+          let offset = offset + 32;
+          let i = i + 1;
         }
       } else {
-        while (char_row < 11) {
+        while (i < 11) {
           let curr_val = Memory.peek(screen_base_addr_ + offset);
-          do Memory.poke(screen_base_addr_, + offset, curr_val | map[i]);
-          offset = offset + 32;
-          char_row = char_row + 1;
+          do Memory.poke(screen_base_addr_ + offset,
+                         curr_val | (map[i] * segment_jump_));
+          let offset = offset + 32;
+          let i = i + 1;
         }
       }
 
@@ -270,7 +272,7 @@ class Output {
     /** advances cursor to the next position. Note, if we are at the end of
      *  the screen then we return to the top. */
     function void advanceCursor() {
-      if ((cursor_x_ = 63) & (cursor_y = 22)) {
+      if ((cursor_x_ = 63) & (cursor_y_ = 22)) {
         let cursor_x_ = 0;
         let cursor_y_ = 0;
         let cursor_starts_segment_ = true;
@@ -327,6 +329,7 @@ class Output {
       while (char_pos < s.length()) {
         do Output.displayChar(s.charAt(char_pos));
         do Output.advanceCursor();
+        let char_pos = char_pos + 1;
       }
 
       do Output.displayCursor();
@@ -340,8 +343,9 @@ class Output {
       // We convert the integer to a string and then print the string.
       var String s;
 
-      // A 16-bit integer can have at most 5 digits.
-      let s = String.new(5);
+      // A 16-bit integer can have at most 5 digits, and could start with a
+      // negative sign.
+      let s = String.new(6);
       do s.setInt(i);
 
       do Output.printString(s);
@@ -386,7 +390,7 @@ class Output {
         let cursor_starts_segment_ = ~cursor_starts_segment_;
       }
 
-      let offset = (32 * (char_height_ * y)) + (x / 2);
+      let offset = (32 * (char_height_ * cursor_y_)) + (cursor_x_ / 2);
       let char_row = 0;
 
       if (cursor_starts_segment_) {
@@ -396,19 +400,19 @@ class Output {
           let char_row = char_row + 1;
         }
         do Memory.poke(screen_base_addr_ + offset,
-                       cursor_code_ * segment_jump_);
+                       cursor_code_);
       } else {
         while (char_row < 10) {
           let curr_val = Memory.peek(screen_base_addr_ + offset);
           do Memory.poke(screen_base_addr_ + offset,
-                         curr_val & ((segment_jump_ - 1) * segment_jump_));
+                         curr_val & ((segment_jump_ - 1)));
           let offset = offset + 32;
           let char_row = char_row + 1;
         }
         let curr_val = Memory.peek(screen_base_addr_ + offset);
         do Memory.poke(
           screen_base_addr_ + offset,
-          curr_val & (((segment_jump_ - 1) * segment_jump_) + cursor_code_));
+          curr_val & ((segment_jump_ - 1) + (segment_jump_ * cursor_code_)));
       }
 
       return;
