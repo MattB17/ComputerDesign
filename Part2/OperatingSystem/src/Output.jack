@@ -29,7 +29,7 @@ class Output {
     // If the cursor is in the first space of the segment, the character to be
     // displayed needs to be multiplied by this constant to place it in that
     // first space.
-    static int segment_jump_;
+    static int segment_jump_, shifted_cursor_code_;
 
     static int screen_base_addr_;
 
@@ -43,12 +43,14 @@ class Output {
       let cursor_starts_segment_ = true;
       let segment_jump_ = 256;
 
+      // Only doing it once at initialization to avoid multiplication in each
+      // step that the cursor is moved.
+      let shifted_cursor_code_ = cursor_code_ * segment_jump_;
+
       let char_height_ = 11;
       let char_width_ = 8;
 
       let screen_base_addr_ = 16384;
-
-      do Output.displayCursor();
 
       return;
     }
@@ -215,7 +217,7 @@ class Output {
       } else {
         let curr_val = Memory.peek(screen_base_addr_ + cursor_offset);
         do Memory.poke(screen_base_addr_ + cursor_offset,
-                       curr_val | (cursor_code_ * segment_jump_));
+                       curr_val | shifted_cursor_code_);
       }
       return;
     }
@@ -294,15 +296,11 @@ class Output {
     /** Moves the cursor to the j-th column of the i-th row,
      *  and erases the character displayed there. */
     function void moveCursor(int i, int j) {
-      do Output.eraseCursor();
-
       let cursor_x_ = j;
       let cursor_y_ = i;
 
       // j & 1 is 0 only if j is even.
       let cursor_starts_segment_ = ((j & 1) = 0);
-
-      do Output.displayCursor();
 
       return;
     }
@@ -310,10 +308,8 @@ class Output {
     /** Displays the given character at the cursor location,
      *  and advances the cursor one column forward. */
     function void printChar(char c) {
-      do Output.eraseCursor();
       do Output.displayChar(c);
       do Output.advanceCursor();
-      do Output.displayCursor();
 
       return;
     }
@@ -323,16 +319,12 @@ class Output {
     function void printString(String s) {
       var int char_pos;
 
-      do Output.eraseCursor();
-
       let char_pos = 0;
       while (char_pos < s.length()) {
         do Output.displayChar(s.charAt(char_pos));
         do Output.advanceCursor();
         let char_pos = char_pos + 1;
       }
-
-      do Output.displayCursor();
 
       return;
     }
@@ -355,7 +347,6 @@ class Output {
 
     /** Advances the cursor to the beginning of the next line. */
     function void println() {
-      do Output.eraseCursor();
 
       if (cursor_y_ = 22) {
         let cursor_y_ = 0;
@@ -364,8 +355,6 @@ class Output {
       }
       let cursor_x_ = 0;
       let cursor_starts_segment_ = true;
-
-      do Output.displayCursor();
 
       return;
     }
@@ -377,8 +366,6 @@ class Output {
       if ((cursor_x_ = 0) & (cursor_y_ = 0)) {
         return;
       }
-
-      do Output.eraseCursor();
 
       // Move the cursor to the position being erased.
       if (cursor_x_ = 0) {
@@ -394,13 +381,11 @@ class Output {
       let char_row = 0;
 
       if (cursor_starts_segment_) {
-        while (char_row < 10) {
+        while (char_row < 11) {
           do Memory.poke(screen_base_addr_ + offset, 0);
           let offset = offset + 32;
           let char_row = char_row + 1;
         }
-        do Memory.poke(screen_base_addr_ + offset,
-                       cursor_code_);
       } else {
         while (char_row < 10) {
           let curr_val = Memory.peek(screen_base_addr_ + offset);
@@ -409,10 +394,6 @@ class Output {
           let offset = offset + 32;
           let char_row = char_row + 1;
         }
-        let curr_val = Memory.peek(screen_base_addr_ + offset);
-        do Memory.poke(
-          screen_base_addr_ + offset,
-          curr_val & ((segment_jump_ - 1) + (segment_jump_ * cursor_code_)));
       }
 
       return;
