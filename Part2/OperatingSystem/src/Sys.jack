@@ -10,6 +10,13 @@ class Sys {
 
     /** Performs all the initializations required by the OS. */
     function void init() {
+      Math.init();
+      Array.init();
+      Memory.init();
+      String.init();
+      Screen.init();
+      Output.init();
+      Keyboard.init();
     }
 
     /** Halts the program execution. */
