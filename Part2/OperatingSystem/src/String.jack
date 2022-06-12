@@ -64,26 +64,89 @@ class String {
 
     /** Erases the last character from this string. */
     method void eraseLastChar() {
+      // Note we don't actually have to delete the char, just decrement the
+      // length by 1.
+      if (s_len_ > 0) {
+        let s_len_ = s_len_ - 1;
+      }
+      return;
     }
 
     /** Returns the integer value of this string,
      *  until a non-digit character is detected. */
     method int intValue() {
+      var int val, curr_idx, curr_digit;
+      var bool is_negative;
+
+      let val = 0;
+      let curr_idx = 0;
+      let is_negative = false;
+
+      // Indicates a negative number.
+      if (s_[0] = 45) {
+        let is_negative = true;
+        let curr_idx = curr_idx + 1;
+      }
+
+      while (curr_idx < s_len_) {
+        // -48 because this is the code of 0.
+        let curr_digit = s_[curr_idx] - 48;
+        if ((curr_digit > -1) & (curr_digit < 10)) {
+          let val = (val * 10) + curr_digit;
+          let curr_idx = curr_idx + 1;
+        } else {
+          let curr_idx = s_len_;
+        }
+      }
+
+      if (is_negative) {
+        return -val;
+      }
+      return val;
     }
 
     /** Sets this string to hold a representation of the given value. */
     method void setInt(int val) {
+      let s_len_ = 0;
+
+      if (val < 0) {
+        // Negative symbol.
+        let s_[s_len_] = 45;
+        let s_len_ = s_len_ + 1;
+        do setPositiveInt(Math.abs(val));
+        return;
+      }
+
+      do setPositiveInt(val);
+      return;
+    }
+
+    /** Sets this string to hold the given positive value. */
+    method void setPositiveInt(int val) {
+      var char last_digit;
+      var int quotient;
+
+      let quotient = val / 10;
+      let last_digit = (val - (10 * quotient)) + 48;
+      if (~(quotient = 0)) {
+        setPositiveInt(quotient);
+      }
+      appendChar(last_digit);
+      return;
     }
 
     /** Returns the new line character. */
     function char newLine() {
+      return 128;
     }
 
     /** Returns the backspace character. */
     function char backSpace() {
+      return 129;
     }
 
     /** Returns the double quote (") character. */
     function char doubleQuote() {
+      return 34;
     }
 }

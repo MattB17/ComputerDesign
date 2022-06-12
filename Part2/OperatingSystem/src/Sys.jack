@@ -17,6 +17,8 @@ class Sys {
       Screen.init();
       Output.init();
       Keyboard.init();
+
+      return;
     }
 
     /** Halts the program execution. */
