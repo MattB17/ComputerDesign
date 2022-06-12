@@ -9,10 +9,12 @@
 class Keyboard {
 
     static int keyboard_addr_;
+    static int max_str_len_;
 
     /** Initializes the keyboard. */
     function void init() {
       let keyboard_addr_ = 24576;
+      let max_str_len_ = 64;
 
       return;
     }
@@ -68,8 +70,18 @@ class Keyboard {
       }
 
       do Output.eraseCursor();
-      do Output.printChar(c);
 
+      if (c = 128) {
+        do Output.println();
+        return c;
+      }
+
+      if (c = 129) {
+        do Output.backSpace();
+        return c;
+      }
+
+      do Output.printChar(c);
       return c;
     }
 
@@ -79,6 +91,26 @@ class Keyboard {
      * and returns its value. Also handles user backspaces.
      */
     function String readLine(String message) {
+      var String s;
+      var char next_char;
+
+      do Output.printString(message);
+
+      let s = String.new(64);
+
+      while (true) {
+        let next_char = Keyboard.readChar();
+        if (next_char = 128) {
+          return s;
+        }
+        if (next_char = 129) {
+          do s.eraseLastChar();
+        } else {
+          let s = s.appendChar(next_char);
+        }
+      }
+
+      return s;
     }
 
     /**
@@ -88,5 +120,43 @@ class Keyboard {
      * entered text is detected). Also handles user backspaces.
      */
     function int readInt(String message) {
+      var boolean keep_reading, is_negative;
+      var char next_char;
+      var int curr_int;
+
+      do Output.printString(message);
+
+      let keep_reading = true;
+      let is_negative = false;
+      let curr_int = 0;
+
+      let next_char = Keyboard.readChar();
+
+      // negative sign.
+      if (next_char = 45) {
+        let is_negative = true;
+        let next_char = Keyboard.readChar();
+      }
+
+      while (keep_reading) {
+        // We have a digit.
+        if ((next_char > 47) & (next_char < 58)) {
+          let curr_int = (10 * curr_int) + (next_char - 48);
+          let next_char = Keyboard.readChar();
+        } else {
+          if (next_char = 129) {
+            // backspace, so we remove the last digit.
+            let curr_int = curr_int / 10;
+            let next_char = Keyboard.readChar();
+          } else {
+            // We don't have a numeric character.
+            let keep_reading = false;
+          }
+        }
+      }
+      if (is_negative) {
+        return -curr_int;
+      }
+      return curr_int;
     }
 }
